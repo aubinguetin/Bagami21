@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { X, Phone, RefreshCw, Mail } from 'lucide-react';
+import { useT, useLocale } from '@/lib/i18n-helpers';
 
 interface OtpModalProps {
   isOpen: boolean;
@@ -13,6 +14,8 @@ interface OtpModalProps {
 }
 
 export default function OtpModal({ isOpen, contact, type, onVerify, onClose, isLoading = false }: OtpModalProps) {
+  const { settings } = useT();
+  const locale = useLocale();
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
   const [countdown, setCountdown] = useState(0);
   const [canResend, setCanResend] = useState(true);
@@ -72,6 +75,7 @@ export default function OtpModal({ isOpen, contact, type, onVerify, onClose, isL
         body: JSON.stringify({
           phoneNumber: contact,
           type: `${type}_verification`,
+          language: locale,
           ...(type === 'phone' && { countryInfo: { dialCode: contact.substring(0, 4) } })
         })
       });
@@ -85,11 +89,11 @@ export default function OtpModal({ isOpen, contact, type, onVerify, onClose, isL
         // Focus first input after resend
         setTimeout(() => inputRefs.current[0]?.focus(), 100);
       } else {
-        alert(result.message || 'Failed to resend verification code');
+        alert(result.message || settings('otpModal.resendFailed'));
       }
     } catch (error) {
       console.error('Resend OTP error:', error);
-      alert('Failed to resend verification code. Please try again.');
+      alert(settings('otpModal.resendFailed'));
     } finally {
       setIsResending(false);
     }
@@ -148,11 +152,14 @@ export default function OtpModal({ isOpen, contact, type, onVerify, onClose, isL
           </div>
           
           <h2 className="text-2xl font-bold text-gray-900 mb-2">
-            Verify your {type === 'email' ? 'email' : 'phone number'}
+            {type === 'email' 
+              ? settings('otpModal.verifyEmail')
+              : settings('otpModal.verifyPhone')
+            }
           </h2>
           
           <p className="text-gray-600">
-            We've sent a 6-digit verification code to{' '}
+            {settings('otpModal.codeSentTo')}{' '}
             <span className="font-medium text-gray-900">
               {formatContact(contact)}
             </span>
@@ -181,7 +188,7 @@ export default function OtpModal({ isOpen, contact, type, onVerify, onClose, isL
         <div className="text-center mb-6">
           {countdown > 0 ? (
             <p className="text-gray-600">
-              Resend code in <span className="font-medium">{countdown}s</span>
+              {settings('otpModal.resendIn')} <span className="font-medium">{countdown}s</span>
             </p>
           ) : (
             <button
@@ -192,10 +199,10 @@ export default function OtpModal({ isOpen, contact, type, onVerify, onClose, isL
               {isResending ? (
                 <>
                   <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
-                  Sending...
+                  {settings('otpModal.sending')}
                 </>
               ) : (
-                'Resend verification code'
+                settings('otpModal.resendCode')
               )}
             </button>
           )}
@@ -210,10 +217,10 @@ export default function OtpModal({ isOpen, contact, type, onVerify, onClose, isL
           {isLoading ? (
             <>
               <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
-              Verifying...
+              {settings('otpModal.verifying')}
             </>
           ) : (
-            'Verify Code'
+            settings('otpModal.verifyButton')
           )}
         </button>
       </div>

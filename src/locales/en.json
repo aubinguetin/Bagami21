@@ -1,0 +1,1761 @@
+{
+  "_comment": "BAGAMI TRANSLATION FILE - ENGLISH",
+  "_structure": "Organized by namespace/page. Each section corresponds to a specific page or component.",
+  
+  "common": {
+    "_comment": "Used across all pages - Navigation, actions, status labels, time, common UI elements",
+    "app": {
+      "name": "Bagami",
+      "tagline": "Smart Community-Powered Deliveries"
+    },
+    "navigation": {
+      "home": "Search",
+      "dashboard": "Dashboard",
+      "deliveries": "Deliveries",
+      "myDeliveries": "My Deliveries",
+      "messages": "Messages",
+      "notifications": "Notifications",
+      "wallet": "Wallet",
+      "profile": "Profile",
+      "settings": "Settings",
+      "alerts": "Notifications",
+      "reviews": "Reviews",
+      "backoffice": "Backoffice"
+    },
+    "actions": {
+      "save": "Save",
+      "cancel": "Cancel",
+      "delete": "Delete",
+      "edit": "Edit",
+      "confirm": "Confirm",
+      "back": "Back",
+      "next": "Next",
+      "submit": "Post",
+      "close": "Close",
+      "view": "View",
+      "search": "Search",
+      "filter": "Filter",
+      "clear": "Clear",
+      "upload": "Upload",
+      "download": "Download",
+      "send": "Send",
+      "reply": "Reply",
+      "refresh": "Refresh",
+      "login": "Login",
+      "signup": "Sign Up",
+      "logout": "Logout"
+    },
+    "status": {
+      "pending": "Pending",
+      "confirmed": "Confirmed",
+      "completed": "Completed",
+      "cancelled": "Cancelled",
+      "active": "Active",
+      "inactive": "Inactive",
+      "approved": "Approved",
+      "rejected": "Rejected",
+      "verified": "Verified",
+      "notVerified": "Not Verified"
+    },
+    "time": {
+      "now": "Now",
+      "today": "Today",
+      "yesterday": "Yesterday",
+      "tomorrow": "Tomorrow",
+      "minute": "minute",
+      "minutes": "minutes",
+      "hour": "hour",
+      "hours": "hours",
+      "day": "day",
+      "days": "days",
+      "week": "week",
+      "weeks": "weeks",
+      "month": "month",
+      "months": "months",
+      "year": "year",
+      "years": "years",
+      "ago": "ago"
+    },
+    "common": {
+      "loading": "Loading...",
+      "error": "Error",
+      "success": "Success",
+      "warning": "Warning",
+      "info": "Information",
+      "noData": "No data available",
+      "noResults": "No results found",
+      "all": "All",
+      "none": "None",
+      "select": "Select",
+      "selected": "Selected",
+      "required": "Required",
+      "optional": "Optional",
+      "yes": "Yes",
+      "no": "No",
+      "or": "or",
+      "and": "and"
+    }
+  },
+  
+  "auth": {
+    "_comment": "PAGE: Authentication pages - Login, Signup, Verification, Password Reset",
+    "login": {
+      "title": "Welcome back to Bagami",
+      "subtitle": "Sign in to continue",
+      "email": "Email",
+      "phone": "Phone",
+      "password": "Password",
+      "forgotPassword": "Forgot password?",
+      "noAccount": "Don't have an account?",
+      "signUpLink": "Sign up",
+      "contactMethod": "Contact method",
+      "countryCode": "Country code",
+      "enterPhone": "Enter phone number",
+      "enterEmail": "Enter email address",
+      "enterPassword": "Enter password"
+    },
+    "signup": {
+      "title": "Join Bagami",
+      "subtitle": "Create your account",
+      "fullName": "Full name",
+      "enterFullName": "Enter your full name",
+      "termsAgree": "I agree to Bagami's",
+      "termsLink": "Terms and Policy",
+      "haveAccount": "Already have an account?",
+      "loginLink": "Sign in"
+    },
+    "verification": {
+      "title": "Verify your account",
+      "subtitle": "Enter the code sent to",
+      "enterCode": "Enter verification code",
+      "resendCode": "Resend code",
+      "verify": "Verify",
+      "didNotReceive": "Didn't receive the code?"
+    },
+    "forgotPassword": {
+      "title": "Reset password",
+      "subtitle": "Enter your email or phone to reset password",
+      "sendCode": "Send code",
+      "backToLogin": "Back to login"
+    },
+    "newPassword": {
+      "title": "Create new password",
+      "subtitle": "Enter your new password",
+      "newPassword": "New password",
+      "confirmPassword": "Confirm password",
+      "resetPassword": "Reset password"
+    },
+    "oauth": {
+      "continueWithGoogle": "Continue with Google",
+      "continueWithFacebook": "Continue with Facebook",
+      "orContinueWith": "Or continue with"
+    }
+  },
+  
+  "validation": {
+    "_comment": "GLOBAL: Form validation messages used across all forms",
+    "required": "This field is required",
+    "email": {
+      "invalid": "Invalid email address",
+      "required": "Email is required"
+    },
+    "phone": {
+      "invalid": "Please enter a valid phone number",
+      "required": "Phone number is required"
+    },
+    "password": {
+      "required": "Password is required",
+      "minLength": "Password must be at least {count} characters",
+      "mismatch": "Passwords do not match"
+    },
+    "name": {
+      "required": "Name is required"
+    },
+    "countryCode": {
+      "required": "Country code is required"
+    },
+    "terms": {
+      "required": "You must agree to Bagami's Terms and Policy"
+    }
+  },
+  
+  "settings": {
+    "_comment": "PAGE: /settings - Main settings page with account settings, preferences, and logout",
+    "title": "Settings",
+    "accountSettings": {
+      "myInformation": "My Information",
+      "verifyMyID": "Verify my ID",
+      "password": "Password",
+      "verified": "Verified",
+      "pending": "Pending",
+      "rejected": "Rejected",
+      "notVerified": "Not Verified"
+    },
+    "preferences": {
+      "title": "Preferences",
+      "language": "Language",
+      "currency": "Currency"
+    },
+    "termsAndPolicy": "Terms and Policy",
+    "verifyIDModal": {
+      "title": "Verify my ID",
+      "signInPrompt": "Please sign in to verify your ID",
+      "signInButton": "Sign In",
+      "existingDocuments": "Your Documents",
+      "noDocuments": "No IDs uploaded yet.",
+      "selectDocumentType": "Select Document Type",
+      "nationalID": "National ID",
+      "nationalIDDescription": "Upload front and back of your national ID",
+      "passport": "Passport",
+      "passportDescription": "Upload your passport information page",
+      "uploadFront": "Front Side",
+      "uploadBack": "Back Side",
+      "uploadPassport": "Information Page",
+      "uploadTitle": "Upload",
+      "changeType": "Change type",
+      "frontSidePrompt": "Upload or take photo of front side",
+      "backSidePrompt": "Upload or take photo of back side",
+      "passportPrompt": "Upload or take photo of passport info page",
+      "browse": "Browse",
+      "takePhoto": "Take Photo",
+      "clickToUpload": "Click to upload",
+      "changeFile": "Change file",
+      "removeFile": "Remove file",
+      "submitForVerification": "Submit for Verification",
+      "uploading": "Uploading...",
+      "uploadDocuments": "Upload Documents",
+      "successTitle": "Upload Successful!",
+      "successMessage": "Documents uploaded successfully! Our team will review them shortly.",
+      "backToSettings": "Back to Settings",
+      "viewDocument": "View",
+      "deleteDocument": "Delete",
+      "replace": "Replace",
+      "deleteConfirm": "Delete this document?",
+      "noteTitle": "Note:",
+      "noteText": "Your documents will be stored securely. Supported formats: JPEG, PNG, JPG. Maximum file size: 5MB per file.",
+      "errors": {
+        "invalidFileType": "Please select a valid image file (JPEG, PNG, JPG)",
+        "fileSizeTooLarge": "File size must be less than 5MB",
+        "missingDocuments": "Please upload all required documents",
+        "uploadFailed": "Upload failed",
+        "deleteFailed": "Failed to delete document",
+        "unknownError": "Unknown error"
+      },
+      "status": {
+        "approved": "Verified",
+        "pending": "Pending Review",
+        "rejected": "Rejected"
+      },
+      "documentType": {
+        "national_id": "National ID",
+        "passport": "Passport"
+      },
+      "uploadedOn": "Uploaded on",
+      "loading": "Loading documents...",
+      "error": "Failed to load documents"
+    },
+    "myInformation": {
+      "title": "My Information",
+      "fullName": {
+        "label": "Full Name",
+        "placeholder": "Enter your full name",
+        "save": "Save",
+        "saved": "Saved",
+        "saving": "Saving...",
+        "error": "Please enter a valid full name",
+        "success": "Full name updated successfully!",
+        "failed": "Failed to update full name. Please try again."
+      },
+      "email": {
+        "label": "Email",
+        "placeholder": "Enter your email address",
+        "verify": "Verify",
+        "verified": "Verified",
+        "verifying": "Verifying...",
+        "errorEmpty": "Please enter an email address",
+        "alreadyVerified": "This email is already verified for your account",
+        "verificationFailed": "Failed to send verification email. Please try again.",
+        "success": "Email verified and updated successfully!"
+      },
+      "phone": {
+        "label": "Phone Number",
+        "placeholder": "Enter phone number",
+        "verify": "Verify",
+        "verified": "Verified",
+        "verifying": "Verifying...",
+        "errorEmpty": "Please enter a phone number",
+        "alreadyVerified": "This phone number is already verified for your account",
+        "verificationFailed": "Failed to send verification SMS. Please try again.",
+        "success": "Phone number verified and updated successfully!",
+        "searchCountry": "Search country..."
+      },
+      "verification": {
+        "invalidOTP": "Invalid OTP. Please try again.",
+        "verificationFailed": "Verification failed. Please try again.",
+        "emailAddress": "email address",
+        "phoneNumber": "phone number",
+        "alreadyInUse": "This {contactType} is already in use by another account. Please use a different {contactType}."
+      },
+      "security": {
+        "title": "Information Security",
+        "description": "Your personal information is encrypted and securely stored. We will never share your details with third parties without your consent."
+      }
+    },
+    "otpModal": {
+      "verifyEmail": "Verify your email",
+      "verifyPhone": "Verify your phone number",
+      "codeSentTo": "We've sent a 6-digit verification code to",
+      "resendIn": "Resend code in",
+      "sending": "Sending...",
+      "resendCode": "Resend verification code",
+      "verifying": "Verifying...",
+      "verifyButton": "Verify Code",
+      "resendFailed": "Failed to resend verification code. Please try again."
+    },
+    "changePassword": {
+      "title": "Change Password",
+      "currentPassword": {
+        "label": "Current password",
+        "placeholder": "Enter current password",
+        "hint": "If you signed up with Google or Facebook and never set a password, leave this field empty."
+      },
+      "newPassword": {
+        "label": "New password",
+        "placeholder": "Enter new password"
+      },
+      "confirmPassword": {
+        "label": "Confirm new password",
+        "placeholder": "Confirm new password"
+      },
+      "requirements": {
+        "newPasswordRequired": "New password is required",
+        "minLength": "Password must be at least 8 characters",
+        "uppercase": "Include at least one uppercase letter",
+        "lowercase": "Include at least one lowercase letter",
+        "number": "Include at least one number",
+        "special": "Include at least one special character",
+        "confirmRequired": "Please confirm your new password",
+        "passwordsMatch": "Passwords do not match",
+        "lengthLabel": "8+ characters",
+        "uppercaseLabel": "Uppercase letter",
+        "lowercaseLabel": "Lowercase letter",
+        "numberLabel": "Number",
+        "specialLabel": "Special character"
+      },
+      "submit": "Mettre à jour le mot de passe",
+      "submitting": "Updating...",
+      "success": "Password updated successfully",
+      "error": "Failed to change password"
+    }
+  },
+  
+  "termsAndPolicy": {
+    "_comment": "PAGE: /terms-and-policy - Terms and Policy page",
+    "title": "Terms and Policy",
+    "noContent": "No terms and policy have been set yet.",
+    "lastUpdated": "Last updated"
+  },
+  
+  "profile": {
+    "_comment": "PAGE: /profile - User profile page with wallet, navigation links, and account actions",
+    "title": "Profile",
+    "walletBalance": "Wallet Balance",
+    "settings": "Settings",
+    "myDeliveries": "My Deliveries",
+    "myAlerts": "My Alerts",
+    "messages": "Messages",
+    "myWallet": "My Wallet",
+    "reviews": "Reviews",
+    "contactBagami": "Contact Bagami",
+    "rateBagami": "Rate Bagami",
+    "shareBagami": "Share Bagami",
+    "logOut": "Log Out",
+    "deleteAccount": "Delete My Account",
+    "verificationStatus": {
+      "verified": "Verified",
+      "pending": "Pending",
+      "rejected": "Rejected",
+      "notVerified": "Not Verified"
+    },
+    "logOutModal": {
+      "title": "Log Out",
+      "message": "Are you sure you want to log out? You'll need to sign in again to access your account.",
+      "cancel": "Cancel",
+      "confirm": "Log Out"
+    },
+    "deleteAccountModal": {
+      "title": "Delete Account",
+      "message": "This action cannot be undone. This will permanently delete your account, all your deliveries, messages, and associated data.",
+      "warning": "⚠️ Warning: This is irreversible. Please make sure you want to proceed.",
+      "cancel": "Keep Account",
+      "confirm": "Delete Forever"
+    },
+    "bottomNav": {
+      "search": "Search",
+      "messages": "Messages",
+      "post": "Post",
+      "notifications": "Notifications",
+      "profile": "Profile"
+    },
+    "auth": {
+      "signInRequired": "Please sign in",
+      "authMessage": "You need to be authenticated to view this page."
+    }
+  },
+  
+  "myDeliveries": {
+    "_comment": "PAGE: /my-deliveries - User's personal deliveries page with search, filters, and delivery cards",
+    "title": "My Deliveries",
+    "loading": "Loading...",
+    "search": {
+      "placeholder": "Search by delivery names and cities",
+      "noResults": "No deliveries found",
+      "tryAdjusting": "Try adjusting your filters",
+      "noDeliveriesYet": "You haven't created any deliveries yet",
+      "browseDeliveries": "Browse Deliveries"
+    },
+    "filters": {
+      "type": "Type",
+      "all": "All",
+      "requests": "Requests",
+      "offers": "Offers",
+      "status": "Status",
+      "active": "Active",
+      "expired": "Expired"
+    },
+    "stats": {
+      "total": "Total",
+      "active": "Active",
+      "expired": "Expired"
+    },
+    "card": {
+      "weightTBD": "Weight TBD",
+      "by": "By",
+      "tbd": "TBD",
+      "edit": "Edit",
+      "expired": "Expired"
+    }
+  },
+  
+  "newRequest": {
+    "_comment": "PAGE: /deliveries/new-request - Create new delivery request page",
+    "title": "Request Delivery",
+    "loading": "Loading...",
+    "itemDetails": {
+      "title": "Item Details",
+      "itemType": "Item Type",
+      "itemTypePlaceholder": "Select type",
+      "itemTypes": {
+        "documents": "Documents",
+        "electronics": "Electronics",
+        "clothing": "Clothing",
+        "food": "Food/Consumables",
+        "gifts": "Gifts",
+        "other": "Other"
+      },
+      "weight": "Weight (kg)",
+      "weightPlaceholder": "2.5",
+      "description": "Description",
+      "descriptionPlaceholder": "Describe what you want to send..."
+    },
+    "route": {
+      "title": "Route",
+      "fromCountry": "From Country",
+      "fromCountryPlaceholder": "From country",
+      "fromCity": "From City",
+      "fromCityPlaceholder": "From city",
+      "toCountry": "To Country",
+      "toCountryPlaceholder": "To country",
+      "toCity": "To City",
+      "toCityPlaceholder": "To city"
+    },
+    "timeline": {
+      "title": "Timeline & Reward",
+      "neededBy": "Needed by",
+      "reward": "Reward (FCFA)",
+      "rewardPlaceholder": "2000"
+    },
+    "notes": {
+      "title": "Additional Notes (Optional)",
+      "placeholder": "Any special instructions or requirements..."
+    },
+    "actions": {
+      "cancel": "Cancel",
+      "submit": "Post Request",
+      "submitting": "Posting..."
+    },
+    "errors": {
+      "createFailed": "Failed to create delivery request",
+      "unexpectedError": "An error occurred. Please try again."
+    }
+  },
+  
+  "newOffer": {
+    "_comment": "PAGE: /deliveries/new-offer - Create new space offer page",
+    "title": "Offer Travel Space",
+    "loading": "Loading...",
+    "route": {
+      "title": "Travel Route",
+      "fromCountry": "From Country",
+      "fromCountryPlaceholder": "From country",
+      "fromCity": "From City",
+      "fromCityPlaceholder": "From city",
+      "toCountry": "To Country",
+      "toCountryPlaceholder": "To country",
+      "toCity": "To City",
+      "toCityPlaceholder": "To city"
+    },
+    "travelDetails": {
+      "title": "Travel Details",
+      "travelDate": "Travel Date",
+      "availableWeight": "Available Weight (kg)",
+      "weightPlaceholder": "5"
+    },
+    "pricing": {
+      "title": "Pricing",
+      "pricePerKg": "Price",
+      "pricePerKgPlaceholder": "1000",
+      "rateDescription": "Set your rate for carrying items"
+    },
+    "notes": {
+      "title": "Additional Notes (Optional)",
+      "placeholder": "Any restrictions or preferences (e.g., no fragile items, pickup times, etc.)..."
+    },
+    "actions": {
+      "cancel": "Cancel",
+      "submit": "Post Offer",
+      "submitting": "Posting..."
+    },
+    "errors": {
+      "createFailed": "Failed to create travel offer",
+      "unexpectedError": "An error occurred. Please try again."
+    }
+  },
+  "postModal": {
+    "delivery": {
+      "title": "Request Delivery",
+      "editTitle": "Edit Request",
+      "subtitle": "Find someone to deliver your items",
+      "postButton": "🚚 Post Request"
+    },
+    "travel": {
+      "title": "Offer Space",
+      "editTitle": "Edit Offer",
+      "subtitle": "Help others by carrying their items",
+      "postButton": "✈️ Offer Space"
+    },
+    "postType": {
+      "needDelivery": "Need Delivery",
+      "sendItems": "Send items",
+      "offerSpace": "Offer Space",
+      "carryItems": "Carry items"
+    },
+    "itemDetails": {
+      "title": "What & Where",
+      "itemType": "Item Type",
+      "itemTypePlaceholder": "Select type",
+      "itemTypes": {
+        "documents": "Documents",
+        "electronics": "Electronics",
+        "clothing": "Clothing",
+        "food": "Food/Consumables",
+        "gifts": "Gifts",
+        "other": "Other"
+      },
+      "weight": "Weight (kg)",
+      "weightPlaceholder": "2.5",
+      "description": "Description",
+      "descriptionPlaceholder": "Describe what you want to send..."
+    },
+    "route": {
+      "title": "Route",
+      "fromCountry": "From Country",
+      "fromCountryPlaceholder": "From country",
+      "fromCity": "From City",
+      "fromCityPlaceholder": "From city",
+      "toCountry": "To Country",
+      "toCountryPlaceholder": "To country",
+      "toCity": "To City",
+      "toCityPlaceholder": "To city"
+    },
+    "travelRoute": {
+      "title": "Travel Route"
+    },
+    "timeline": {
+      "title": "Timeline & Reward",
+      "neededBy": "Needed by",
+      "reward": "Reward (FCFA)",
+      "rewardPlaceholder": "2000"
+    },
+    "travelDetails": {
+      "title": "Travel Details",
+      "departureDate": "Departure Date",
+      "availableSpace": "Available Space (kg)",
+      "availableSpacePlaceholder": "5.0",
+      "rate": "Rate (FCFA per kg)",
+      "ratePlaceholder": "500"
+    },
+    "notes": {
+      "title": "Additional Notes (Optional)",
+      "placeholder": "Any special instructions or requirements..."
+    },
+    "actions": {
+      "cancel": "Cancel",
+      "posting": "Posting...",
+      "updating": "Updating...",
+      "update": "✓ Update"
+    },
+    "search": {
+      "searching": "Searching...",
+      "startTyping": "Start typing city name...",
+      "instantSearch": "Instant search as you type",
+      "citiesFound": "{count} cities found",
+      "noCitiesFound": "No cities found for \"{term}\"",
+      "tryDifferent": "Try a different spelling or shorter term"
+    },
+    "messages": {
+      "posted": "Posted successfully!",
+      "updated": "Updated successfully!",
+      "error": "Error: {message}",
+      "networkError": "Network error. Please try again."
+    }
+  },
+  
+  "deliveries": {
+    "_comment": "PAGE: /deliveries - Main deliveries browse page with search, filters, and delivery listings",
+    "title": "Browse Deliveries",
+    "search": {
+      "placeholder": "Search deliveries, cities, items...",
+      "fromCountry": "From country",
+      "destinationCountry": "Destination country",
+      "swapLocations": "Swap locations"
+    },
+    "filters": {
+      "show": "Show Filters",
+      "hide": "Hide Filters",
+      "postType": "Post Type",
+      "allPosts": "All Posts",
+      "requests": "Requests",
+      "offers": "Offers",
+      "viewOptions": "View Options",
+      "myPostsOnly": "My Posts Only",
+      "newestFirst": "Newest First",
+      "oldestFirst": "Oldest First",
+      "clearAll": "Clear All"
+    },
+    "buttons": {
+      "createAlert": "Create Alert",
+      "loadMore": "Load More",
+      "loading": "Loading..."
+    },
+    "card": {
+      "weightTBD": "Weight TBD",
+      "by": "By",
+      "tbd": "TBD",
+      "createdByYou": "Created by you",
+      "anonymous": "Anonymous",
+      "verified": "Verified",
+      "noReviews": "No reviews",
+      "expired": "Expired",
+      "deliveryRequest": "Delivery Request",
+      "spaceOffer": "Space Offer",
+      "request": "Request",
+      "offer": "Offer",
+      "to": "to"
+    },
+    "empty": {
+      "title": "No deliveries found",
+      "message": "Try adjusting your search filters or create a new delivery request."
+    },
+    "bottomNav": {
+      "search": "Search",
+      "messages": "Messages",
+      "post": "Post",
+      "notifications": "Notifications",
+      "profile": "Profile"
+    },
+    "detailsModal": {
+      "itemDetails": "Item Details",
+      "serviceDetails": "Service Details",
+      "route": "Route",
+      "timeline": "Timeline",
+      "departure": "Departure",
+      "arrival": "Arrival",
+      "sender": "Sender",
+      "traveler": "Traveler",
+      "contactSeller": "Contact Seller"
+    }
+  },
+  
+  "alertModal": {
+    "_comment": "COMPONENT: AlertModal - Create delivery alert modal (used on /deliveries page)",
+    "title": "Create Alert",
+    "subtitle": "Get notified of matching deliveries",
+    "route": "Route",
+    "fromCountry": "From Country",
+    "fromCity": "From City (Optional)",
+    "toCountry": "To Country",
+    "toCity": "To City (Optional)",
+    "anyCountry": "Any country",
+    "anyCity": "Any city (optional)",
+    "searchPlaceholder": "Search {label}...",
+    "searching": "Searching...",
+    "startTyping": "Start typing city name...",
+    "instantSearch": "Instant search as you type",
+    "citiesFound": "{count} cities found",
+    "noCitiesFound": "No cities found for \"{term}\"",
+    "tryDifferent": "Try a different spelling or shorter term",
+    "alertType": "Alert Type",
+    "allDeliveries": "All deliveries",
+    "requestsOnly": "Delivery requests only",
+    "offersOnly": "Space offers only",
+    "requestsExplain": "Delivery requests only: Get notified when someone needs to send goods to your destination. Perfect for travelers who have space available in their luggage.",
+    "offersExplain": "Space offers only: Get notified when travelers are going to your destination and have space available. Perfect when you want to send goods somewhere.",
+    "allExplain": "All deliveries: Get notified of both delivery requests and space offers for your selected route.",
+    "cancel": "Cancel",
+    "creating": "Creating...",
+    "createButton": "Create Alert",
+    "successTitle": "Alert Created!",
+    "successMessage": "You'll be notified when matching deliveries are found.",
+    "goToAlerts": "Go to My Alerts",
+    "backToDeliveries": "Back to Deliveries",
+    "close": "Close",
+    "error": "Error: {message}",
+    "networkError": "Network error. Please try again."
+  },
+  
+  "postTypeModal": {
+    "_comment": "COMPONENT: PostTypeModal - Choose post type modal (request vs offer)",
+    "title": "Create a Post",
+    "subtitle": "What would you like to do?",
+    "requestTitle": "Request Delivery",
+    "requestSubtitle": "I need someone to deliver my items",
+    "offerTitle": "Offer Travel Space",
+    "offerSubtitle": "I'm traveling and can carry items"
+  },
+  
+  "editRequest": {
+    "_comment": "PAGE: /deliveries/edit-request/[id] - Edit existing delivery request page",
+    "title": "Edit Delivery Request",
+    "loading": "Loading...",
+    "itemDetails": "Item Details",
+    "itemType": "Item Type",
+    "itemTypePlaceholder": "Select type",
+    "itemTypes": {
+      "documents": "Documents",
+      "electronics": "Electronics",
+      "clothing": "Clothing",
+      "food": "Food/Consumables",
+      "gifts": "Gifts",
+      "other": "Other"
+    },
+    "weight": "Weight (kg)",
+    "weightPlaceholder": "2.5",
+    "description": "Description",
+    "descriptionPlaceholder": "Describe what you want to send...",
+    "route": "Route",
+    "fromCountry": "From Country",
+    "fromCountryPlaceholder": "From country",
+    "fromCity": "From City",
+    "fromCityPlaceholder": "From city",
+    "toCountry": "To Country",
+    "toCountryPlaceholder": "To country",
+    "toCity": "To City",
+    "toCityPlaceholder": "To city",
+    "timelineReward": "Timeline & Reward",
+    "neededBy": "Needed by",
+    "reward": "Reward (FCFA)",
+    "rewardPlaceholder": "2000",
+    "additionalNotes": "Additional Notes (Optional)",
+    "notesPlaceholder": "Any special instructions or requirements...",
+    "deletionRestricted": "Deletion Restricted",
+    "deleteButton": "Delete",
+    "saveButton": "Save Changes",
+    "saving": "Saving...",
+    "confirmDelete": "Are you sure you want to delete this delivery? This action cannot be undone.",
+    "deleteSuccess": "Delivery deleted successfully!",
+    "updateSuccess": "Delivery request updated successfully!",
+    "updateError": "Failed to update delivery request",
+    "deleteError": "Failed to delete delivery",
+    "loadError": "Failed to load delivery",
+    "ownershipError": "You can only edit your own deliveries",
+    "genericError": "An error occurred. Please try again.",
+    "deleteBlockedPaymentPending": "Cannot delete this delivery because payment has been made but the delivery has not been confirmed yet.",
+    "deleteBlockedVerificationError": "Unable to verify deletion eligibility. Please try again."
+  },
+  
+  "editOffer": {
+    "_comment": "PAGE: /deliveries/edit-offer/[id] - Edit existing travel space offer page",
+    "title": "Edit Travel Offer",
+    "loading": "Loading...",
+    "travelRoute": "Travel Route",
+    "fromCountry": "From Country",
+    "fromCountryPlaceholder": "From country",
+    "fromCity": "From City",
+    "fromCityPlaceholder": "From city",
+    "toCountry": "To Country",
+    "toCountryPlaceholder": "To country",
+    "toCity": "To City",
+    "toCityPlaceholder": "To city",
+    "travelDetails": "Travel Details",
+    "departureDate": "Departure Date",
+    "availableSpace": "Available Space (kg)",
+    "spacePlaceholder": "5",
+    "pricePerKg": "Price (FCFA)",
+    "pricePlaceholder": "500",
+    "additionalNotes": "Additional Notes (Optional)",
+    "notesPlaceholder": "Any special conditions or preferences...",
+    "deletionRestricted": "Deletion Restricted",
+    "deleteButton": "Delete",
+    "saveButton": "Save Changes",
+    "saving": "Saving...",
+    "confirmDelete": "Are you sure you want to delete this travel offer? This action cannot be undone.",
+    "deleteSuccess": "Travel offer deleted successfully!",
+    "updateSuccess": "Travel offer updated successfully!",
+    "updateError": "Failed to update travel offer",
+    "deleteError": "Failed to delete travel offer",
+    "loadError": "Failed to load travel offer",
+    "ownershipError": "You can only edit your own travel offers",
+    "genericError": "An error occurred. Please try again.",
+    "deleteBlockedPaymentPending": "Cannot delete this delivery because payment has been made but the delivery has not been confirmed yet.",
+    "deleteBlockedVerificationError": "Unable to verify deletion eligibility. Please try again."
+  },
+  
+  "deliveryDetail": {
+    "_comment": "PAGE: /deliveries/[id] - Individual delivery detail page with sender info, contact modal, and action buttons",
+    "loading": "Loading delivery details...",
+    "notFound": "Delivery not found",
+    "title": "Delivery Details",
+    "route": {
+      "from": "From",
+      "to": "To"
+    },
+    "info": {
+      "weight": "Weight",
+      "price": "Price",
+      "neededBy": "Needed By",
+      "arrivalDate": "Arrival Date",
+      "departureDate": "Departure Date",
+      "itemDescription": "Item Description",
+      "serviceDescription": "Service Description",
+      "additionalInfo": "Additional Information"
+    },
+    "security": {
+      "paymentProtection": "Secure payment - Your money is protected",
+      "privacyNotice": "Personal information is partially hidden for privacy reasons. For your own privacy and security, please avoid sharing sensitive details."
+    },
+    "sender": {
+      "title": "Sender",
+      "traveler": "Traveler",
+      "requester": "Delivery Requester",
+      "viewProfile": "View Profile",
+      "noReviews": "No reviews yet",
+      "verified": "Verified",
+      "reviews": "Reviews"
+    },
+    "profile": {
+      "title": "Profile",
+      "contactInfo": "Contact Information",
+      "emailAddress": "Email Address",
+      "phoneNumber": "Phone Number",
+      "location": "Location"
+    },
+    "actions": {
+      "viewConversation": "View Conversation",
+      "acceptRequest": "Accept Request",
+      "contactTraveler": "Contact Traveler",
+      "startConversation": "Start Conversation",
+      "contact": "Contact",
+      "loading": "Loading...",
+      "starting": "Starting..."
+    },
+    "status": {
+      "available": "Available",
+      "inProgress": "In Progress",
+      "completed": "Completed",
+      "cancelled": "Cancelled"
+    },
+    "confirmModal": {
+      "acceptTitle": "Accept Request?",
+      "startTitle": "Start Conversation?",
+      "acceptMessage": "Chat with {name} about this delivery",
+      "startMessage": "Contact {name} about this offer",
+      "theRequester": "the requester",
+      "theTraveler": "the traveler"
+    }
+  },
+  
+  "messages": {
+    "_comment": "PAGE: /messages - Messages/chat page with conversations list and chat interface",
+    "title": "Messages",
+    "search": {
+      "placeholder": "Search conversations, cities, names...",
+      "clearFilters": "Clear all filters"
+    },
+    "filters": {
+      "deliveryType": "Delivery Type",
+      "deliveryStatus": "Delivery Status",
+      "priceRange": "Price Range",
+      "all": "All",
+      "requests": "Requests",
+      "offers": "Offers",
+      "delivered": "Delivered",
+      "pending": "Pending",
+      "low": "< 5,000 FCFA",
+      "medium": "5,000 - 20,000 FCFA",
+      "high": "> 20,000 FCFA"
+    },
+    "conversations": {
+      "title": "Conversations",
+      "noConversations": "No conversations yet",
+      "noResults": "No results found",
+      "selectConversation": "Select a conversation",
+      "selectPrompt": "Choose a conversation to start messaging"
+    },
+    "status": {
+      "delivered": "Delivered",
+      "deliveryDeleted": "Delivery Deleted"
+    },
+    "cardMessages": {
+      "sentOffer": "💰 Sent an offer",
+      "offerAccepted": "✅ Offer accepted",
+      "offerRejected": "❌ Offer rejected",
+      "paymentConfirmation": "💳 Payment confirmation",
+      "deliveryConfirmed": "📦 Delivery confirmed",
+      "systemMessage": "System message",
+      "sentCard": "📋 Sent a card"
+    },
+    "bottomNav": {
+      "search": "Search",
+      "messages": "Messages",
+      "post": "Post",
+      "notifications": "Notifications",
+      "profile": "Profile"
+    }
+  },
+  "chat": {
+    "_comment": "Individual chat/conversation page - /chat/[conversationId]",
+    "status": {
+      "online": "Online",
+      "offline": "Offline"
+    },
+    "notFound": {
+      "title": "Conversation Not Found",
+      "description": "The conversation you're looking for doesn't exist or you don't have access to it.",
+      "backButton": "Back to Messages"
+    },
+    "deliveryCard": {
+      "request": "Request",
+      "offer": "Offer"
+    },
+    "dateSeparator": {
+      "today": "Today",
+      "yesterday": "Yesterday"
+    },
+    "typingIndicator": "typing...",
+    "systemMessages": {
+      "requestAcceptedByYou": "You accepted {name}'s delivery request",
+      "requestAcceptedByOther": "{name} accepted your delivery request",
+      "offerRequestByYou": "You are requesting {name}'s approval for delivery offer from {fromCity}, {fromCountry} to {toCity}, {toCountry}",
+      "offerRequestByOther": "{name} is requesting your approval for delivery offer",
+      "offerAccepted": "Offer accepted! The agreed price is {price} {currency}.",
+      "offerDeclined": "Offer of {price} {currency} was declined.",
+      "conversationStarted": "Started conversation about delivery: {title}",
+      "deliveryDeleted": "This post has been deleted"
+    },
+    "offerCard": {
+      "title": "New Offer",
+      "acceptedTitle": "Offer Accepted",
+      "rejectedTitle": "Offer Rejected",
+      "from": "From",
+      "offered": "offered",
+      "agreedOn": "You both agreed on",
+      "declined": "You declined this offer",
+      "rejectedBy": "has rejected your offer",
+      "you": "You",
+      "waitingResponse": "Waiting for response...",
+      "processing": "Processing...",
+      "acceptButton": "Accept",
+      "declineButton": "Decline"
+    },
+    "paymentCard": {
+      "title": "Payment Successful",
+      "completed": "Payment completed",
+      "pending": "Payment pending",
+      "forDelivery": "for delivery",
+      "paidBy": "Paid by",
+      "breakdown": {
+        "deliveryFee": "Delivery Fee",
+        "platformFee": "Platform Fee (5%)",
+        "totalPaid": "Total Paid"
+      },
+      "deliveryCode": {
+        "title": "Delivery Confirmation Code",
+        "copyButton": "Copy Code",
+        "copiedAlert": "Code copied to clipboard!",
+        "instruction": "Share this code with the traveler when your item is delivered."
+      },
+      "delivererInstructions": {
+        "title": "Delivery Instructions",
+        "paymentAmount": "Payment Amount",
+        "platformFee": "Platform Fee",
+        "youReceive": "You Receive",
+        "step1": "Deliver the item safely",
+        "step2": "Ask {name} for their delivery code",
+        "step3": "Confirm delivery with the code to receive your payment",
+        "cautionTitle": "⚠️ Important",
+        "cautionText": "Ensure to perform a careful and thorough inspection of the items prior to transport. Bagami explicitly disclaims all responsibility for any misrepresentation, inaccuracy, or illegal nature of the items being carried.",
+        "termsLink": "See our Terms & Conditions"
+      }
+    },
+    "confirmationCard": {
+      "title": "Delivery Confirmed!",
+      "status": "Status",
+      "confirmed": "Confirmed",
+      "youConfirmed": "You confirmed delivery",
+      "paymentReleased": "Payment has been released to the traveler",
+      "paymentReleasedToWallet": "Payment has been released to your wallet",
+      "grossAmount": "Gross Amount",
+      "platformFee": "Platform Fee",
+      "netAmount": "Net Amount Received",
+      "thanksForUsing": "Thank you for using our service!"
+    },
+    "buttons": {
+      "pay": "Pay",
+      "paymentProtectionTitle": "Payment Protection",
+      "paymentProtectionDescription": "Your payment is <strong>protected and secured</strong> until the goods are delivered successfully.",
+      "makeOffer": "Make an offer",
+      "confirmDelivery": "Confirm Delivery",
+      "rate": "Rate"
+    },
+    "makeOfferModal": {
+      "title": "Make an Offer",
+      "subtitle": "Propose your price",
+      "deliveryLabel": "Delivery",
+      "currentPrice": "Current price:",
+      "offerPriceLabel": "Your Offer Price",
+      "offerPricePlaceholder": "Enter your offer",
+      "messageLabel": "Message (Optional)",
+      "messagePlaceholder": "Add a note to your offer...",
+      "cancelButton": "Cancel",
+      "sendButton": "Send Offer",
+      "sendingButton": "Sending..."
+    },
+    "messageInput": {
+      "placeholder": "Type your message...",
+      "sendButton": "Send"
+    },
+    "confirmDeliveryModal": {
+      "title": "Confirm Delivery",
+      "subtitle": "Enter the 6-digit code",
+      "instruction": "🔐 The payer has a unique 6-digit delivery code. Please ask them to provide it to complete the delivery confirmation.",
+      "codeLabel": "Delivery Code",
+      "codePlaceholder": "000000",
+      "codeHint": "Enter the 6-digit code provided by the payer",
+      "paymentReady": "Payment Ready",
+      "willBeReleased": "will be released to you after confirmation",
+      "confirmButton": "Confirm Delivery",
+      "confirming": "Confirming...",
+      "cancelButton": "Cancel",
+      "attemptsRemaining": "You have {count} attempts remaining.",
+      "cooldown30": "Too many failed attempts. Please try again in {minutes} minutes.",
+      "cooldown60": "Too many failed attempts. Please try again in {minutes} minutes."
+    },
+    "alerts": {
+      "deliveryConfirmed": "✅ Delivery confirmed! Payment has been released.",
+      "invalidCode": "❌ Invalid delivery code. Please check and try again.",
+      "offerAccepted": "✅ Offer accepted! Please proceed with payment.",
+      "offerRejected": "Offer has been declined.",
+      "errorProcessingOffer": "Error processing offer. Please try again."
+    },
+    "profileModal": {
+      "anonymousUser": "Anonymous User",
+      "requester": "Requester",
+      "traveler": "Traveler",
+      "noReviewsYet": "No reviews yet",
+      "verified": "Verified",
+      "contactInformation": "Contact Information",
+      "emailAddress": "Email Address",
+      "phoneNumber": "Phone Number",
+      "location": "Location",
+      "privacyNotice": "Personal information is partially hidden for privacy reasons. For your own privacy and security, please avoid sharing sensitive details.",
+      "closeButton": "Close",
+      "reviews": "reviews"
+    },
+    "ratingModal": {
+      "title": "Rate",
+      "experienceLabel": "How was your experience?",
+      "ratingPoor": "Poor",
+      "ratingFair": "Fair",
+      "ratingGood": "Good",
+      "ratingVeryGood": "Very Good",
+      "ratingExcellent": "Excellent",
+      "commentLabel": "Add a comment (optional)",
+      "commentPlaceholder": "Share more about your experience...",
+      "characters": "characters",
+      "cancelButton": "Cancel",
+      "submitButton": "Submit Rating",
+      "submitting": "Submitting...",
+      "selectRating": "Please select a rating",
+      "successMessage": "Rating submitted successfully!",
+      "errorMessage": "Failed to submit rating",
+      "networkError": "Network error. Please try again."
+    }
+  },
+  "payment": {
+    "title": "Payment Summary",
+    "successBanner": {
+      "title": "Direct Payment Successful!",
+      "message": "Payment of {amount} FCFA processed via {method}"
+    },
+    "tripDetails": {
+      "deliveryRequest": "Delivery Request",
+      "spaceOffer": "Space Offer"
+    },
+    "priceBreakdown": {
+      "originalPrice": "Original Price:",
+      "amountToPay": "Amount to Pay:",
+      "negotiated": "✓ Negotiated"
+    },
+    "protection": {
+      "title": "🔒 Payment Protection",
+      "messageRequest": "Your payment is held securely and will only be released to the traveler after successful delivery confirmation.",
+      "messageOffer": "Your payment is held securely and will only be released to the sender after successful delivery confirmation."
+    },
+    "buttons": {
+      "cancel": "Cancel",
+      "confirm": "Confirm",
+      "processing": "Processing..."
+    }
+  },
+  "insufficientBalance": {
+    "title": "Insufficient Balance",
+    "subtitle": "Not enough funds in wallet",
+    "requiredAmount": "Required Amount:",
+    "currentBalance": "Current Balance:",
+    "shortfall": "Shortfall:",
+    "howItWorks": {
+      "title": "How Direct Payment Works",
+      "step1": "Your current balance ({balance} {currency}) will be used",
+      "step2": "You'll pay the shortfall ({shortfall} {currency}) via your chosen payment method",
+      "step3": "Both payments will appear in your transaction history"
+    },
+    "buttons": {
+      "payDirectly": "Pay Directly",
+      "goToWallet": "Go to Wallet"
+    }
+  },
+  
+  "directPayment": {
+    "title": "Direct Payment",
+    "paymentBreakdown": {
+      "title": "Payment Breakdown",
+      "subtitle": "Review your payment details",
+      "totalRequired": "Total Required Amount",
+      "totalRequiredDesc": "Full payment for this delivery",
+      "yourBalance": "Your Current Balance",
+      "yourBalanceDesc": "Will be deducted from your wallet",
+      "amountToPay": "Amount to Pay Now",
+      "amountToPayDesc": "Remaining balance after wallet deduction"
+    },
+    "howItWorks": {
+      "title": "How This Works",
+      "step1": "Your wallet balance of {balance} will be used first",
+      "step2": "You'll pay the remaining {shortfall} via your chosen payment method",
+      "step3": "Both payments will appear in your transaction history"
+    },
+    "selectMethod": {
+      "title": "Select Payment Method",
+      "mobileMoney": {
+        "name": "Mobile Money",
+        "description": "MTN, Orange, Moov"
+      },
+      "card": {
+        "name": "Card Payment",
+        "description": "Visa, Mastercard"
+      },
+      "bankTransfer": {
+        "name": "Bank Transfer",
+        "description": "Direct bank transfer"
+      }
+    },
+    "notices": {
+      "gatewayPending": {
+        "title": "Payment Gateway Integration Pending",
+        "message": "The payment will be validated instantly for now. Real payment gateway integration will be added soon."
+      }
+    },
+    "buttons": {
+      "cancel": "Cancel",
+      "pay": "Pay {amount}",
+      "processing": "Processing..."
+    },
+    "errors": {
+      "paymentFailed": "Payment failed. Please try again.",
+      "invalidParameters": "Invalid payment parameters"
+    }
+  },
+  
+  "notifications": {
+    "title": "Notifications",
+    "markAllAsRead": "Mark all as read",
+    "empty": {
+      "title": "No notifications yet",
+      "message": "We'll notify you when there are updates about your deliveries and alerts."
+    },
+    "signIn": {
+      "title": "Please sign in",
+      "message": "You need to be authenticated to view notifications."
+    },
+    "types": {
+      "alertMatch": {
+        "requestTitle": "📦 New delivery request matching your alert",
+        "offerTitle": "✈️ New offer of space matching your alert"
+      },
+      "transaction": {
+        "walletTopUp": "💰 Wallet top-up",
+        "refundReceived": "💰 Refund received",
+        "paymentReceived": "💰 Payment received",
+        "walletCredited": "💰 Wallet credited",
+        "moneyReceived": "💰 Money received",
+        "withdrawalRequested": "📤 Withdrawal requested",
+        "paymentSent": "💸 Payment sent",
+        "moneySent": "💸 Money sent",
+        "directPaymentCompleted": "💳 Direct payment completed",
+        "paymentProcessed": "💸 Payment processed",
+        "withdrawalApproved": "✅ Withdrawal approved",
+        "withdrawalRejected": "❌ Withdrawal rejected",
+        "withdrawalApprovedMessage": "Your withdrawal of {amount} {currency} has been approved and processed",
+        "withdrawalRejectedMessage": "Your withdrawal of {amount} {currency} was rejected. Funds have been refunded to your wallet. Reason: {reason}"
+      },
+      "review": {
+        "title": "New review received",
+        "withComment": "{name} gave you {rating} stars: \"{comment}\"",
+        "withoutComment": "{name} gave you {rating} stars"
+      },
+      "ratingReminder": {
+        "title": "⭐ Rate your delivery partner",
+        "message": "It's been {time} since your delivery was completed. How was your experience with {name}? Share your feedback!"
+      },
+      "update": {
+        "profileUpdated": "📝 Profile updated",
+        "emailUpdated": "Your profile information has been updated: Email address",
+        "phoneUpdated": "Your profile information has been updated: Phone number",
+        "passwordChanged": "🔒 Password changed",
+        "passwordChangedMessage": "Your password has been successfully updated. If you did not make this change, please contact support immediately.",
+        "profileFieldsUpdated": "Your profile information has been updated: {fields}"
+      },
+      "idVerification": {
+        "approved": "✅ ID verification approved",
+        "rejected": "❌ ID verification rejected",
+        "approvedMessageNationalId": "Your national ID has been verified and approved. You can now access all platform features.",
+        "approvedMessagePassport": "Your passport has been verified and approved. You can now access all platform features.",
+        "rejectedMessageNationalId": "Your national ID verification was rejected. Please upload a clear, valid ID document and try again.",
+        "rejectedMessagePassport": "Your passport verification was rejected. Please upload a clear, valid ID document and try again."
+      }
+    }
+  },
+  "alertsPage": {
+    "title": "My Alerts",
+    "newAlert": "New Alert",
+    "loading": "Loading alerts...",
+    "deleteAlert": "Delete alert",
+    "emptyState": {
+      "title": "No Alerts Yet",
+      "description": "Get notified instantly when deliveries matching your preferences are posted",
+      "createButton": "Create First Alert"
+    },
+    "alertTypes": {
+      "requests": "Delivery Requests",
+      "offers": "Space Offers",
+      "all": "All Deliveries"
+    },
+    "errors": {
+      "deleteFailed": "Failed to delete alert",
+      "deleteError": "Error deleting alert"
+    }
+  },
+  "reviewsPage": {
+    "title": "My Reviews",
+    "loading": "Loading...",
+    "review": "review",
+    "reviews": "reviews",
+    "totalReviews": "Total Reviews",
+    "avgRating": "Avg Rating",
+    "fiveStarReviews": "5-Star Reviews",
+    "allReviews": "All Reviews",
+    "allRatings": "All Ratings",
+    "stars": "Stars",
+    "deliveryRequest": "Delivery Request",
+    "spaceOffer": "Space Offer",
+    "emptyState": {
+      "title": "No Reviews Yet",
+      "noFilter": "You haven't received any reviews yet. Complete deliveries to start getting reviews!",
+      "withFilter": "No {rating}-star reviews found. Try a different filter."
+    }
+  },
+  "walletPage": {
+    "title": "My Wallet",
+    "loading": "Loading wallet...",
+    "availableBalance": "Available Balance",
+    "hideBalance": "Hide balance",
+    "showBalance": "Show balance",
+    "pending": "pending",
+    "addMoney": "Add Money",
+    "withdraw": "Withdraw",
+    "credit": "Credit",
+    "debit": "Debit",
+    "transactions": "Transactions",
+    "all": "All",
+    "income": "Income",
+    "expenses": "Expenses",
+    "paymentMethods": "Payment Methods",
+    "add": "Add",
+    "mobileMoney": "Mobile Money",
+    "orangeMoney": "Orange Money",
+    "primary": "Primary",
+    "status": {
+      "completed": "Completed",
+      "pending": "Pending",
+      "failed": "Failed"
+    },
+    "categories": {
+      "deliveryPayment": "Delivery Payment",
+      "directPayment": "Direct Payment",
+      "platformFee": "Platform Fee",
+      "withdrawal": "Withdrawal",
+      "deposit": "Deposit",
+      "refund": "Refund",
+      "transfer": "Transfer",
+      "topUp": "Top-up",
+      "fee": "Fee",
+      "serviceFee": "Service Fee",
+      "commission": "Commission",
+      "bonus": "Bonus",
+      "deliveryIncome": "Delivery Income"
+    },
+    "descriptions": {
+      "paymentForDeliveryFromTo": "Payment for delivery from {from} to {to}",
+      "paymentForTravelOfferFromTo": "Payment for travel offer from {from} to {to}",
+      "paymentReceivedForTravelOffer": "Payment received for travel offer: {title}",
+      "paymentForDeliveryOffer": "Payment for delivery offer from {from} to {to}",
+      "paymentFrom": "Payment from {name}",
+      "paymentTo": "Payment to {name}",
+      "withdrawalRequest": "Withdrawal request",
+      "withdrawalTo": "Withdrawal to {destination}",
+      "withdrawalRejectedRefunded": "Withdrawal rejected - Amount refunded",
+      "walletTopUp": "Wallet top-up",
+      "walletTopUpFromBagami": "Wallet top-up from Bagami",
+      "walletTopUpVia": "Wallet top-up via {method}",
+      "directPaymentFrom": "Direct payment from {name}",
+      "directPaymentTo": "Direct payment to {name}",
+      "directPaymentForDelivery": "Direct payment for delivery: {title}",
+      "walletPaymentForDelivery": "Wallet payment for delivery: {title}",
+      "paymentReceivedForDelivery": "Payment received for delivery: {title}",
+      "moneyReceivedFrom": "Money received from {name}",
+      "moneySentTo": "Money sent to {name}",
+      "platformFeeFor": "Platform fee for {item}",
+      "refundFor": "Refund for {item}",
+      "serviceFee": "Service fee"
+    },
+    "emptyState": {
+      "title": "No Transactions Found",
+      "allMessage": "Your transaction history will appear here",
+      "creditMessage": "No income transactions found",
+      "debitMessage": "No expense transactions found"
+    },
+    "verificationModal": {
+      "title": "ID Verification Required",
+      "description": "To withdraw funds from your wallet, you need to verify your identity. This is required for security purposes and to comply with financial regulations.",
+      "whatYouNeed": "What you need:",
+      "requirement1": "A valid government-issued ID",
+      "requirement2": "Clear photo of your document",
+      "requirement3": "Verification typically takes 24-48 hours",
+      "cancel": "Cancel",
+      "verifyId": "Verify ID"
+    },
+    "transactionDetails": {
+      "title": "Transaction Details",
+      "received": "Received",
+      "sent": "Sent",
+      "detailsSection": "Details",
+      "description": "Description",
+      "category": "Category",
+      "dateTime": "Date & Time",
+      "transactionId": "Transaction ID",
+      "referenceId": "Reference ID",
+      "copyId": "Copy ID",
+      "copyReferenceId": "Copy Reference ID",
+      "copiedToClipboard": "Copied to clipboard!",
+      "paymentBreakdown": "Payment Breakdown",
+      "walletPayment": "Wallet Payment",
+      "directPayment": "Direct Payment",
+      "paymentMethod": "Payment Method",
+      "additionalInfo": "Additional Information",
+      "reason": "Reason",
+      "close": "Close",
+      "share": "Share"
+    },
+    "withdrawSuccess": "Withdrawal request submitted successfully! The transfert will be processed shortly to your mobile money account.",
+    "addMoneySuccess": "Successfully added {amount} to your wallet!",
+    "addMoneyModal": {
+      "title": "Add Money",
+      "subtitle": "Top up your wallet",
+      "amountLabel": "Amount to Add",
+      "amountPlaceholder": "Enter amount",
+      "quickSelect": "Quick Select",
+      "paymentMethodLabel": "Payment Method",
+      "mobileMoney": "Mobile Money",
+      "mobileMoneyDesc": "MTN, Orange, Moov",
+      "cardPayment": "Card Payment",
+      "cardPaymentDesc": "Visa, Mastercard",
+      "bankTransfer": "Bank Transfer",
+      "bankTransferDesc": "Direct transfer",
+      "cancel": "Cancel",
+      "addMoney": "Add Money",
+      "processing": "Processing...",
+      "errors": {
+        "invalidAmount": "Please enter a valid amount",
+        "minAmount": "Minimum amount is 100 FCFA",
+        "maxAmount": "Maximum amount is 10,000,000 FCFA per transaction"
+      }
+    },
+    "withdrawModal": {
+      "title": "Withdraw Funds",
+      "subtitle": "Request a withdrawal",
+      "availableBalance": "Available Balance",
+      "amountLabel": "Withdrawal Amount",
+      "amountPlaceholder": "Enter amount (min. 1,000)",
+      "minAmountInfo": "Minimum withdrawal: 1,000 FCFA",
+      "phoneLabel": "Mobile Money Phone Number",
+      "phonePlaceholder": "70 00 00 00",
+      "phoneInfo": "Enter your mobile money number",
+      "processingTimeTitle": "Processing Time",
+      "processingTimeDesc": "Funds will be sent to your mobile money account within <strong>1-2 hours.</strong>",
+      "internationalTitle": "International Transfers",
+      "internationalDesc": "Withdrawals outside the FCFA zone may incur currency conversion fees by your mobile money provider.",
+      "cancel": "Cancel",
+      "request": "Request",
+      "processing": "Processing...",
+      "errors": {
+        "invalidAmount": "Please enter a valid amount",
+        "minAmount": "Minimum withdrawal amount is 1,000 FCFA",
+        "insufficientBalance": "Insufficient balance. Your current balance is {balance} FCFA",
+        "phoneRequired": "Please enter your mobile money phone number",
+        "invalidPhone": "Please enter a valid phone number"
+      }
+    }
+  },
+  "authPage": {
+    "welcome": {
+      "login": "Welcome back! Connect with your community for smart, flexible deliveries.",
+      "signup": "Join Bagami - Transform every trip into an opportunity to connect, share, and support your community."
+    },
+    "tabs": {
+      "signIn": "Sign In",
+      "signUp": "Sign Up"
+    },
+    "labels": {
+      "signInWith": "Sign in with",
+      "contactInfo": "Contact Information",
+      "fullName": "Full Name",
+      "phoneNumber": "Phone Number",
+      "email": "Email",
+      "password": "Password",
+      "rememberMe": "Remember me",
+      "searchCountries": "Search countries..."
+    },
+    "placeholders": {
+      "phoneNumber": "Enter your phone number",
+      "email": "your.email@example.com",
+      "password": "Enter your password",
+      "fullName": "Enter your full name"
+    },
+    "buttons": {
+      "signIn": "Sign In",
+      "signUp": "Sign Up",
+      "signingIn": "Signing In...",
+      "creatingAccount": "Creating Account...",
+      "forgotPassword": "Forgot password?"
+    },
+    "terms": {
+      "agreeText": "I agree to Bagami's",
+      "terms": "Terms of Service",
+      "and": "and",
+      "policy": "Privacy Policy"
+    },
+    "or": "Or continue with",
+    "socialSignIn": {
+      "google": {
+        "signIn": "Sign in with Google",
+        "signUp": "Sign up with Google",
+        "signingIn": "Signing in..."
+      },
+      "facebook": {
+        "signIn": "Sign in with Facebook",
+        "signUp": "Sign up with Facebook",
+        "signingIn": "Signing in..."
+      }
+    },
+    "hints": {
+      "otpVerification": "This will be used for OTP verification",
+      "noCountriesFound": "No countries found"
+    },
+    "footer": "© 2025 Bagami - Smart Community-Powered Deliveries. All rights reserved.",
+    "validationErrors": {
+      "contactMethodRequired": "Contact method is required",
+      "phoneInvalid": "Please enter a valid phone number",
+      "phoneRequired": "Phone number is required",
+      "emailInvalid": "Invalid email",
+      "emailRequired": "Email is required",
+      "countryCodeRequired": "Country code is required",
+      "passwordMin": "Password must be at least 6 characters",
+      "passwordRequired": "Password is required",
+      "fullNameRequired": "Full name is required",
+      "termsRequired": "You must agree to Bagami's Terms and Policy",
+      "termsAcceptanceRequired": "Terms acceptance is required"
+    },
+    "errors": {
+      "signupFailed": "Signup failed. Please try again.",
+      "loginFailed": "Login failed. Please check your credentials and try again.",
+      "phoneExists": "This phone number is already registered",
+      "emailExists": "This email is already registered",
+      "invalidCredentials": "Invalid credentials",
+      "networkError": "Network error. Please check your connection."
+    },
+    "success": {
+      "verificationSent": "Verification code sent! Please check your phone.",
+      "accountCreated": "Account created successfully!"
+    },
+    "forgotPassword": {
+      "backToLogin": "Back to login",
+      "title": "Forgot Password",
+      "subtitle": "Enter your phone number or email address and we'll help you reset your password.",
+      "resetVia": "Reset password via",
+      "tabPhone": "Phone Number",
+      "tabEmail": "Email",
+      "enterPhonePlaceholder": "Enter your phone number",
+      "enterEmailPlaceholder": "your.email@example.com",
+      "searchCountries": "Search countries...",
+      "sending": "Sending...",
+      "receiveCode": "Receive code",
+      "rememberPassword": "Remember your password?",
+      "signInInstead": "Sign in instead",
+      "smsSent": "SMS Sent!",
+      "emailSent": "Email Sent!",
+      "smsSentMessage": "We've sent a verification code to",
+      "emailSentMessage": "We've sent password reset instructions to",
+      "redirectMessage": "You'll be redirected to enter the verification code in a moment...",
+      "checkEmail": "Please check your email and follow the instructions to reset your password.",
+      "checkSpam": "Don't forget to check your spam folder if you don't see the email.",
+      "backToLoginButton": "Back to Login",
+      "userNotFoundAlert": "⚠️ {message}\n\nPlease check your {contactType} or create a new account if you don't have one.",
+      "phoneNumber": "phone number",
+      "emailAddress": "email address"
+    },
+    "otpVerification": {
+      "back": "Back",
+      "titlePhone": "Verify Phone Number",
+      "titleEmail": "Verify Email",
+      "subtitleSent": "We've sent a 6-digit verification code to",
+      "hintRequest": "You can request a new code if needed",
+      "enterCode": "Enter verification code",
+      "sendNewCode": "Send New Code",
+      "sendingNewCode": "Sending New Code...",
+      "requestNewCodeIn": "Request new code in {seconds}s",
+      "verifyCode": "Verify Code",
+      "verifying": "Verifying...",
+      "didNotReceive": "Didn't receive the code?",
+      "changePhone": "Change phone number",
+      "changeEmail": "Change email",
+      "resendSuccess": "New verification code sent successfully!",
+      "resendFailed": "Failed to resend verification code"
+    },
+    "newPassword": {
+      "back": "Back",
+      "title": "Set New Password",
+      "subtitle": "Enter your new password for",
+      "newPasswordLabel": "New Password",
+      "newPasswordPlaceholder": "Enter your new password",
+      "strengthWeak": "Weak",
+      "strengthFair": "Fair",
+      "strengthGood": "Good",
+      "strengthStrong": "Strong",
+      "requirement8Chars": "8+ characters",
+      "requirementUppercase": "Uppercase letter",
+      "requirementLowercase": "Lowercase letter",
+      "requirementNumber": "Number",
+      "requirementSpecial": "Special character",
+      "updatePassword": "Update Password",
+      "updatingPassword": "Updating Password..."
+    }
+  },
+  
+  "contact": {
+    "_comment": "PAGE: /contact - Contact Bagami page",
+    "title": "Contact Bagami",
+    "infoTitle": "We're Here to Help!",
+    "infoMessage": "Have a question, suggestion, or need assistance? Send us a message and our team will get back to you as soon as possible.",
+    "nameLabel": "Your Name",
+    "namePlaceholder": "Enter your full name",
+    "emailLabel": "Email Address",
+    "emailPlaceholder": "your.email@example.com",
+    "subjectLabel": "Subject",
+    "subjectPlaceholder": "What is this about?",
+    "messageLabel": "Message",
+    "messagePlaceholder": "Tell us more about your inquiry...",
+    "messageHint": "Please provide as much detail as possible",
+    "sendButton": "Send Message",
+    "sending": "Sending...",
+    "successTitle": "Message Sent!",
+    "successMessage": "Thank you for contacting us. We'll get back to you within 24 hours.",
+    "redirecting": "Redirecting you back...",
+    "responseTime": "We typically respond within 24 hours",
+    "error": "Failed to send message. Please try again."
+  },
+
+  "homepage": {
+    "_comment": "PAGE: /homepage - Main authenticated home page",
+    "hero": {
+      "title": "Smart delivery.",
+      "titleGradient": "Powered by community.",
+      "subtitle": "Connect with travelers on existing routes to send packages affordably.",
+      "subtitleBold": "Save money while supporting sustainable delivery.",
+      "postDeliveries": "Post deliveries",
+      "browseListings": "Browse active listings",
+      "affordableRates": "Affordable rates",
+      "saveUpTo": "Save up to 70%",
+      "protectedPayments": "Protected payments",
+      "guaranteed": "100% guaranteed",
+      "trustedCommunity": "Trusted community",
+      "verifiedMembers": "Verified members"
+    },
+    "howItWorks": {
+      "title": "Getting started is",
+      "titleGradient": "quick and easy",
+      "subtitle": "Whether you need to send a package or have space while traveling, join thousands making deliveries happen",
+      "step1": {
+        "title": "Post your listing",
+        "needDelivery": "Need delivery?",
+        "needDeliveryDesc": "Post package details and destination.",
+        "traveling": "Traveling?",
+        "travelingDesc": "Share your route and available space."
+      },
+      "step2": {
+        "title": "Connect & negotiate",
+        "description": "Get matched with verified community members. Chat directly to discuss details, pricing, and arrange pickup/delivery."
+      },
+      "step3": {
+        "title": "Complete & rate",
+        "description": "Finalize with secure payments and delivery tracking. Leave reviews to help build trust in our community."
+      }
+    },
+    "winWin": {
+      "title": "Everyone wins",
+      "titleGradient": "with Bagami",
+      "subtitle": "Travelers offset their journey costs while senders enjoy affordable delivery rates. A mutually beneficial platform that creates value for everyone!",
+      "senders": {
+        "title": "Package Senders",
+        "description": "Send items of any size at rates",
+        "savingHighlight": "up to 70% lower",
+        "descriptionContinued": "than traditional couriers! Fast, reliable, and environmentally conscious delivery solutions at your fingertips.",
+        "cta": "Send a package"
+      },
+      "travelers": {
+        "title": "Travelers",
+        "description": "Earn",
+        "earningHighlight": "extra income",
+        "descriptionContinued": "on trips you're already making! Whether commuting or traveling, help others while covering your own journey expenses.",
+        "cta": "Start earning"
+      }
+    },
+    "whyChoose": {
+      "title": "Why choose",
+      "titleGradient": "Bagami?",
+      "feature1": {
+        "title": "Satisfied members",
+        "description": "Join thousands of active users who trust Bagami for their delivery needs and earning opportunities."
+      },
+      "feature2": {
+        "title": "Careful handling",
+        "description": "Your items are treated with exceptional care. Our 99.99% successful delivery rate speaks for itself."
+      },
+      "feature3": {
+        "title": "Community focused",
+        "description": "Building meaningful connections through mutual assistance. Everyone helps everyone thrive together."
+      },
+      "feature4": {
+        "title": "Responsive support",
+        "description": "Real people ready to help. Get answers to your questions quickly from our dedicated support team."
+      }
+    },
+    "trustSecurity": {
+      "title": "Your safety is our",
+      "titleGradient": "priority",
+      "subtitle": "We've built Bagami with security at its core. Every transaction is protected, every user is verified, and every delivery is tracked.",
+      "securePayments": {
+        "title": "Secure payments",
+        "description": "Payment held until successful delivery confirmation"
+      },
+      "verifiedUsers": {
+        "title": "Verified users",
+        "description": "All members go through identity verification"
+      },
+      "ratings": {
+        "title": "Ratings & reviews",
+        "description": "Community-driven trust through transparent feedback"
+      },
+      "deliveryTracking": {
+        "title": "Delivery Tracking",
+        "description": "Real-time package tracking"
+      },
+      "support": {
+        "title": "24/7 Support",
+        "description": "We're always here to help"
+      },
+      "encryption": {
+        "title": "Data Encryption",
+        "description": "Your data is fully encrypted"
+      },
+      "satisfaction": {
+        "title": "99.99% Satisfaction",
+        "description": "Based on verified reviews",
+        "rated": "Rated",
+        "successRate": "Success Rate",
+        "testimonial": "The Bagami platform transformed how I send packages! Quick connections with reliable travelers and the whole experience was seamless. Absolutely recommend to everyone!",
+        "testimonialAuthor": "- Sarah T.",
+        "lowerCost": "Lower cost",
+        "fastMatching": "Fast",
+        "matching": "Matching"
+      }
+    },
+    "finalCta": {
+      "title": "Join the Bagami community",
+      "subtitle": "Become part of a growing network where neighbors help neighbors, saving money while building connections.",
+      "cta": "Start your journey"
+    },
+    "bottomNav": {
+      "search": "Search",
+      "messages": "Messages",
+      "post": "Post",
+      "notifications": "Notifications",
+      "profile": "Profile"
+    }
+  },
+  "downloadPage": {
+    "tagline": "Your Global Delivery Network",
+    "downloadNow": "Download Now",
+    "downloadOn": "Download on the",
+    "getItOn": "GET IT ON",
+    "availableOn": "Available on iOS and Android",
+    "allRightsReserved": "All rights reserved.",
+    "features": {
+      "trusted": "Trusted Community",
+      "secure": "Secure Payments",
+      "fast": "Fast Delivery",
+      "global": "Global Network"
+    }
+  }
+}
+
+

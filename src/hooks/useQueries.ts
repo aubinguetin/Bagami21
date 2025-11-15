@@ -37,6 +37,11 @@ interface Conversation {
     name: string;
     email: string;
     phone?: string;
+    country?: string;
+    countryCode?: string;
+    averageRating?: number | null;
+    reviewCount?: number;
+    isVerified?: boolean;
   };
   lastMessage: any;
   unreadCount: number;
@@ -192,17 +197,19 @@ const fetchUnreadCount = async (): Promise<number> => {
 
 /**
  * Hook to fetch deliveries with caching and smart refresh
- * Cache duration: 5 minutes
- * Background refetch: enabled
+ * Cache duration: 10 seconds for real-time updates
+ * Background refetch: enabled with auto-polling
  */
 export const useDeliveries = (filters: DeliveryFilters, options?: Partial<UseQueryOptions<DeliveryResponse, Error>>) => {
   return useQuery({
     queryKey: queryKeys.deliveriesWithFilters(filters),
     queryFn: () => fetchDeliveries(filters),
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 10 * 1000, // 10 seconds (fresh for real-time feel)
     gcTime: 10 * 60 * 1000, // 10 minutes
     refetchOnWindowFocus: true,
     refetchOnMount: 'always',
+    refetchInterval: 10 * 1000, // Auto-refetch every 10 seconds for real-time updates
+    refetchIntervalInBackground: true, // Continue polling in background
     retry: 3,
     ...options,
   });

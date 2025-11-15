@@ -362,7 +362,7 @@ export async function POST(request: NextRequest) {
     });
 
     // Create a single system message with structured content for personalized display
-    const deliveryType = (delivery as any).type === 'request' ? 'delivery request' : 'travel offer';
+    const deliveryType = (delivery as any).type === 'request' ? 'delivery request' : 'space offer';
     const deliverySenderName = delivery.sender.name || 'Unknown User';
     const currentUserName = currentUser.name || 'Unknown User';
     

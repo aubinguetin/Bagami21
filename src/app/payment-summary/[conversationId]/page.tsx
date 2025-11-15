@@ -4,8 +4,9 @@ import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { ArrowLeft, Package, Plane, Check, MapPin, Calendar, Scale, Shield, Loader2 } from 'lucide-react';
-import { calculatePlatformFee } from '@/config/platform';
 import { InsufficientBalanceModal } from '@/components/InsufficientBalanceModal';
+import { formatAmount } from '@/utils/currencyFormatter';
+import { useT, useLocale, translateDeliveryTitle } from '@/lib/i18n-helpers';
 
 // Helper function to get country flag emoji from country code or name
 function getCountryFlag(countryCodeOrName: string): string {
@@ -65,6 +66,8 @@ export default function PaymentSummaryPage() {
   const params = useParams();
   const { data: session } = useSession();
   const conversationId = params?.conversationId as string;
+  const { payment } = useT();
+  const locale = useLocale();
   
   const [conversation, setConversation] = useState<Conversation | null>(null);
   const [agreedPrice, setAgreedPrice] = useState<number>(0);
@@ -73,6 +76,36 @@ export default function PaymentSummaryPage() {
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
   const [showInsufficientBalanceModal, setShowInsufficientBalanceModal] = useState(false);
   const [walletBalance, setWalletBalance] = useState<number>(0);
+  const [directPaymentCompleted, setDirectPaymentCompleted] = useState(false);
+  const [directPaymentMethod, setDirectPaymentMethod] = useState<string>('');
+  const [directPaymentAmount, setDirectPaymentAmount] = useState<number>(0);
+
+  // Check for direct payment completion
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const completed = urlParams.get('directPaymentCompleted');
+    const method = urlParams.get('method');
+    const amount = urlParams.get('amount');
+    
+    if (completed === 'true' && method && amount) {
+      setDirectPaymentCompleted(true);
+      setDirectPaymentMethod(method);
+      setDirectPaymentAmount(parseFloat(amount));
+    }
+  }, []);
+
+  // Auto-confirm payment after direct payment is completed
+  useEffect(() => {
+    // Only proceed if direct payment was completed, conversation is loaded, and not already processing
+    if (directPaymentCompleted && conversation && agreedPrice > 0 && !isProcessingPayment && session?.user?.id) {
+      // Small delay to ensure UI is ready
+      const timer = setTimeout(() => {
+        handleConfirmPayment();
+      }, 500);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [directPaymentCompleted, conversation, agreedPrice, session]);
 
   // Fetch conversation data
   useEffect(() => {
@@ -168,13 +201,34 @@ export default function PaymentSummaryPage() {
     
     setIsProcessingPayment(true);
     try {
-      // Calculate platform fee
-      const feeCalculation = calculatePlatformFee(agreedPrice);
+      // Calculate platform fee (call API endpoint instead of direct function)
+      const feeResponse = await fetch('/api/platform-fee/calculate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ amount: agreedPrice })
+      });
+      
+      if (!feeResponse.ok) {
+        throw new Error('Failed to calculate platform fee');
+      }
+      
+      const feeCalculation = await feeResponse.json();
+      
+      console.log('🔍 Platform Fee Calculation:', {
+        agreedPrice,
+        feeRate: feeCalculation.feeRate,
+        feePercentage: feeCalculation.feePercentage,
+        feeAmount: feeCalculation.feeAmount,
+        netAmount: feeCalculation.netAmount,
+        grossAmount: feeCalculation.grossAmount
+      });
       
       console.log('Payment data:', {
         userId: session.user.id,
         amount: agreedPrice,
-        description: `Payment for delivery: ${conversation.delivery.title}`
+        description: `Wallet payment for delivery: ${conversation.delivery.title}`,
+        platformFee: feeCalculation.feeAmount,
+        netAmount: feeCalculation.netAmount
       });
       
       // Check wallet balance first
@@ -187,12 +241,85 @@ export default function PaymentSummaryPage() {
       const walletData = await walletCheckResponse.json();
       const currentBalance = walletData.balance || 0;
       
-      // Check if user has sufficient balance
-      if (currentBalance < agreedPrice) {
-        setWalletBalance(currentBalance);
-        setShowInsufficientBalanceModal(true);
-        setIsProcessingPayment(false);
-        return;
+      // If direct payment was completed, we need to process both transactions
+      if (directPaymentCompleted && directPaymentAmount > 0) {
+        // User has already paid the shortfall via direct payment
+        // Now we need to deduct the wallet balance and create both transactions
+        
+        const walletAmount = currentBalance; // Use all available wallet balance
+        const shortfall = directPaymentAmount; // Amount paid via direct payment
+        
+        // Deduct wallet balance
+        if (walletAmount > 0) {
+          const walletRequestBody = {
+            userId: session.user.id,
+            amount: walletAmount,
+            description: `Wallet payment for delivery: ${conversation.delivery.title}`,
+            category: 'Delivery Payment',
+            referenceId: `DELIVERY-${conversation.delivery.id}`,
+            metadata: {
+              deliveryId: conversation.delivery.id,
+              deliveryType: conversation.delivery.type,
+              fromCity: conversation.delivery.fromCity,
+              toCity: conversation.delivery.toCity,
+              paymentType: 'partial_wallet',
+              totalAmount: agreedPrice,
+              walletAmount: walletAmount,
+              directPaymentAmount: shortfall
+            }
+          };
+          
+          const walletResponse = await fetch('/api/wallet/debit', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(walletRequestBody)
+          });
+  
+          if (!walletResponse.ok) {
+            throw new Error('Failed to deduct wallet balance');
+          }
+        }
+        
+        // Record the direct payment transaction
+        const directPaymentRequestBody = {
+          userId: session.user.id,
+          amount: shortfall,
+          description: `Direct payment for delivery: ${conversation.delivery.title}`,
+          category: 'Delivery Payment',
+          type: 'debit',
+          referenceId: `DELIVERY-${conversation.delivery.id}`,
+          metadata: {
+            deliveryId: conversation.delivery.id,
+            deliveryType: conversation.delivery.type,
+            fromCity: conversation.delivery.fromCity,
+            toCity: conversation.delivery.toCity,
+            paymentType: 'direct_payment',
+            paymentMethod: directPaymentMethod,
+            totalAmount: agreedPrice,
+            walletAmount: walletAmount,
+            directPaymentAmount: shortfall
+          }
+        };
+        
+        const directPaymentResponse = await fetch('/api/wallet/record-transaction', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(directPaymentRequestBody)
+        });
+
+        if (!directPaymentResponse.ok) {
+          throw new Error('Failed to record direct payment transaction');
+        }
+        
+        // Continue with payment confirmation...
+      } else {
+        // Check if user has sufficient balance for full wallet payment
+        if (currentBalance < agreedPrice) {
+          setWalletBalance(currentBalance);
+          setShowInsufficientBalanceModal(true);
+          setIsProcessingPayment(false);
+          return;
+        }
       }
       
       // Validate all required fields before sending
@@ -208,44 +335,55 @@ export default function PaymentSummaryPage() {
         throw new Error('Delivery title is missing');
       }
       
-      // Deduct payment from user's wallet
-      const requestBody = {
-        userId: session.user.id,
-        amount: agreedPrice,
-        description: `Payment for delivery: ${conversation.delivery.title}`,
-        category: 'Delivery Payment',
-        referenceId: `DELIVERY-${conversation.delivery.id}`,
-        metadata: {
-          deliveryId: conversation.delivery.id,
-          deliveryType: conversation.delivery.type,
-          fromCity: conversation.delivery.fromCity,
-          toCity: conversation.delivery.toCity,
-          grossAmount: feeCalculation.grossAmount,
-          platformFee: feeCalculation.feeAmount,
-          netAmount: feeCalculation.netAmount
+      let walletResult;
+      
+      // Only deduct full amount from wallet if NOT using direct payment
+      if (!directPaymentCompleted) {
+        // Deduct payment from user's wallet
+        const requestBody = {
+          userId: session.user.id,
+          amount: agreedPrice,
+          description: `Wallet payment for delivery: ${conversation.delivery.title}`,
+          category: 'Delivery Payment',
+          referenceId: `DELIVERY-${conversation.delivery.id}`,
+          metadata: {
+            deliveryId: conversation.delivery.id,
+            deliveryType: conversation.delivery.type,
+            fromCity: conversation.delivery.fromCity,
+            toCity: conversation.delivery.toCity,
+            grossAmount: feeCalculation.grossAmount,
+            platformFee: feeCalculation.feeAmount,
+            netAmount: feeCalculation.netAmount
+          }
+        };
+        
+        console.log('Sending wallet debit request:', requestBody);
+        
+        const walletResponse = await fetch('/api/wallet/debit', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(requestBody)
+        });
+
+        if (!walletResponse.ok) {
+          const error = await walletResponse.json();
+          throw new Error(error.error || 'Insufficient balance in wallet');
         }
-      };
-      
-      console.log('Sending wallet debit request:', requestBody);
-      
-      const walletResponse = await fetch('/api/wallet/debit', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(requestBody)
-      });
 
-      if (!walletResponse.ok) {
-        const error = await walletResponse.json();
-        throw new Error(error.error || 'Insufficient balance in wallet');
+        walletResult = await walletResponse.json();
+      } else {
+        // Get updated wallet balance after partial deduction
+        const balanceResponse = await fetch(`/api/wallet/balance?userId=${session.user.id}`);
+        if (balanceResponse.ok) {
+          walletResult = await balanceResponse.json();
+        }
       }
-
-      const walletResult = await walletResponse.json();
       
       // Generate a 6-digit delivery confirmation code
       const deliveryCode = Math.floor(100000 + Math.random() * 900000).toString();
       
       // Create payment confirmation data
-      const paymentData = {
+      const paymentData: any = {
         type: 'payment',
         amount: agreedPrice,
         currency: agreedCurrency,
@@ -257,13 +395,24 @@ export default function PaymentSummaryPage() {
         paidAt: new Date().toISOString(),
         status: 'completed',
         deliveryCode: deliveryCode,
-        transactionId: walletResult.transaction.id,
-        newBalance: walletResult.wallet.balance,
+        newBalance: walletResult?.balance || walletResult?.wallet?.balance || 0,
         platformFee: feeCalculation.feeAmount,
         netAmount: feeCalculation.netAmount,
         feeRate: feeCalculation.feeRate,
         feePercentage: feeCalculation.feePercentage
       };
+      
+      // Add payment breakdown if direct payment was used
+      if (directPaymentCompleted && directPaymentAmount > 0) {
+        paymentData.paymentBreakdown = {
+          totalAmount: agreedPrice,
+          walletAmount: currentBalance,
+          directPaymentAmount: directPaymentAmount,
+          directPaymentMethod: directPaymentMethod
+        };
+      } else if (walletResult?.transaction?.id) {
+        paymentData.transactionId = walletResult.transaction.id;
+      }
 
       // Send payment confirmation message
       await fetch(`/api/conversations/${conversationId}/messages`, {
@@ -296,6 +445,31 @@ export default function PaymentSummaryPage() {
     );
   }
 
+  // Show processing indicator when auto-confirming after direct payment
+  if (directPaymentCompleted && isProcessingPayment) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50 flex items-center justify-center">
+        <div className="text-center bg-white rounded-2xl shadow-xl p-8 max-w-md mx-4">
+          <div className="bg-gradient-to-r from-orange-500 to-red-500 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Loader2 className="w-8 h-8 text-white animate-spin" />
+          </div>
+          <h2 className="text-xl font-bold text-gray-900 mb-2">Processing Your Payment</h2>
+          <p className="text-gray-600 mb-4">
+            Completing your payment transaction...
+          </p>
+          <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+            <p className="text-sm text-green-800">
+              ✓ Direct payment of {formatAmount(directPaymentAmount)} FCFA received
+            </p>
+            <p className="text-xs text-green-600 mt-1">
+              Finalizing transaction details
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (!conversation) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center">
@@ -315,27 +489,51 @@ export default function PaymentSummaryPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
       {/* Header */}
-      <div className={`${
-        conversation.delivery.type === 'request'
-          ? 'bg-gradient-to-r from-orange-600 to-orange-500'
-          : 'bg-gradient-to-r from-blue-600 to-blue-500'
-      } text-white shadow-lg`}>
+      <div className="bg-transparent sticky top-0 z-10">
         <div className="max-w-4xl mx-auto px-4 py-3">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-center relative">
             <button
               onClick={() => router.back()}
-              className="p-1.5 hover:bg-white/20 rounded-lg transition-colors"
+              className={`absolute left-0 flex items-center justify-center w-10 h-10 bg-white rounded-full border-2 transition-all hover:scale-105 ${
+                conversation.delivery.type === 'request'
+                  ? 'border-orange-500 text-orange-600'
+                  : 'border-blue-500 text-blue-600'
+              }`}
             >
               <ArrowLeft className="w-5 h-5" />
             </button>
-            <h1 className="text-lg font-bold absolute left-1/2 transform -translate-x-1/2">Payment Summary</h1>
-            <div className="w-8"></div> {/* Spacer for balance */}
+            <div className={`px-6 py-2 rounded-full border-2 ${
+              conversation.delivery.type === 'request'
+                ? 'bg-orange-500 border-orange-500'
+                : 'bg-blue-500 border-blue-500'
+            }`}>
+              <h1 className="text-base font-bold text-white">{payment('title')}</h1>
+            </div>
           </div>
         </div>
       </div>
 
       {/* Main Content */}
       <div className="max-w-4xl mx-auto px-4 py-4">
+        {/* Direct Payment Success Banner */}
+        {directPaymentCompleted && !isProcessingPayment && (
+          <div className="bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-xl p-4 mb-4 shadow-lg">
+            <div className="flex items-center space-x-3">
+              <div className="bg-white/20 p-2 rounded-full">
+                <Check className="w-5 h-5" />
+              </div>
+              <div className="flex-1">
+                <h3 className="font-bold text-sm">{payment('successBanner.title')}</h3>
+                <p className="text-xs text-white/90 mt-0.5">
+                  {payment('successBanner.message')
+                    .replace('{amount}', formatAmount(directPaymentAmount))
+                    .replace('{method}', directPaymentMethod.replace('_', ' '))}
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
         <div className="bg-white rounded-xl shadow-xl overflow-hidden">
           <div className="p-4 space-y-3">
             {/* Trip Details Card */}
@@ -355,7 +553,7 @@ export default function PaymentSummaryPage() {
                   )}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h3 className="font-bold text-gray-900 text-sm leading-tight">{conversation.delivery.title}</h3>
+                  <h3 className="font-bold text-gray-900 text-sm leading-tight">{translateDeliveryTitle(conversation.delivery.title, locale)}</h3>
                   {conversation.delivery.description && (
                     <p className="text-xs text-gray-600 mt-1 line-clamp-2">{conversation.delivery.description}</p>
                   )}
@@ -403,12 +601,12 @@ export default function PaymentSummaryPage() {
                 {conversation.delivery.type === 'request' ? (
                   <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-orange-100 text-orange-700 rounded-full text-xs font-semibold">
                     <Package className="w-3 h-3" />
-                    Delivery Request
+                    {payment('tripDetails.deliveryRequest')}
                   </span>
                 ) : (
                   <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-semibold">
                     <Plane className="w-3 h-3" />
-                    Travel Offer
+                    {payment('tripDetails.spaceOffer')}
                   </span>
                 )}
               </div>
@@ -417,20 +615,20 @@ export default function PaymentSummaryPage() {
             {/* Price Breakdown */}
             <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-lg p-3 border border-green-200 space-y-2">
               <div className="flex items-center justify-between pb-2 border-b border-green-200">
-                <span className="text-xs text-gray-600">Original Price:</span>
+                <span className="text-xs text-gray-600">{payment('priceBreakdown.originalPrice')}</span>
                 <span className="text-xs text-gray-500 line-through">
-                  {conversation.delivery.price.toLocaleString()} {conversation.delivery.currency}
+                  {formatAmount(conversation.delivery.price)} FCFA
                 </span>
               </div>
               <div className="flex items-center justify-between">
                 <div>
-                  <span className="text-sm font-bold text-gray-900">Amount to Pay:</span>
+                  <span className="text-sm font-bold text-gray-900">{payment('priceBreakdown.amountToPay')}</span>
                   {agreedPrice !== conversation.delivery.price && (
-                    <p className="text-xs text-green-600 mt-0.5">✓ Negotiated</p>
+                    <p className="text-xs text-green-600 mt-0.5">{payment('priceBreakdown.negotiated')}</p>
                   )}
                 </div>
                 <span className="text-2xl font-bold text-green-600">
-                  {agreedPrice.toLocaleString()} {agreedCurrency}
+                  {formatAmount(agreedPrice)} {agreedCurrency}
                 </span>
               </div>
             </div>
@@ -439,9 +637,12 @@ export default function PaymentSummaryPage() {
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 flex items-start gap-2">
               <Shield className="w-4 h-4 text-blue-600 flex-shrink-0 mt-0.5" />
               <div className="text-xs text-gray-700">
-                <p className="font-bold text-blue-900 mb-1">🔒 Payment Protection</p>
+                <p className="font-bold text-blue-900 mb-1">{payment('protection.title')}</p>
                 <p className="leading-relaxed">
-                  Your payment is held securely and will only be released to the {conversation.delivery.type === 'request' ? 'traveler' : 'sender'} after successful delivery confirmation.
+                  {conversation.delivery.type === 'request' 
+                    ? payment('protection.messageRequest')
+                    : payment('protection.messageOffer')
+                  }
                 </p>
               </div>
             </div>
@@ -453,7 +654,7 @@ export default function PaymentSummaryPage() {
                 disabled={isProcessingPayment}
                 className="flex-1 px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm"
               >
-                Cancel
+                {payment('buttons.cancel')}
               </button>
               <button
                 onClick={handleConfirmPayment}
@@ -463,12 +664,12 @@ export default function PaymentSummaryPage() {
                 {isProcessingPayment ? (
                   <>
                     <Loader2 className="w-4 h-4 animate-spin" />
-                    Processing...
+                    {payment('buttons.processing')}
                   </>
                 ) : (
                   <>
                     <Check className="w-4 h-4" />
-                    Confirm
+                    {payment('buttons.confirm')}
                   </>
                 )}
               </button>
@@ -485,8 +686,9 @@ export default function PaymentSummaryPage() {
         currentBalance={walletBalance}
         currency={agreedCurrency}
         onPayDirectly={() => {
-          // TODO: Implement direct payment method (e.g., mobile money, card payment)
-          alert('Direct payment feature coming soon! Please top up your wallet for now.');
+          // Navigate to direct payment page
+          const shortfall = agreedPrice - walletBalance;
+          router.push(`/direct-payment?conversationId=${conversationId}&required=${agreedPrice}&balance=${walletBalance}&currency=${agreedCurrency}`);
         }}
       />
     </div>

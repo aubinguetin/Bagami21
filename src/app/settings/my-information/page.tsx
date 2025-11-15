@@ -14,10 +14,13 @@ import {
 } from 'lucide-react';
 import { countryCodes, getDefaultCountry } from '@/data/countryCodes';
 import OtpModal from '@/components/OtpModal';
+import { useT, useLocale } from '@/lib/i18n-helpers';
 
 export default function MyInformationPage() {
   const router = useRouter();
   const { data: session } = useSession();
+  const { settings } = useT();
+  const locale = useLocale();
   const [isLoading, setIsLoading] = useState(false);
   
   // Form state
@@ -199,35 +202,36 @@ export default function MyInformationPage() {
   };
 
   // Save full name
-  const handleSaveFullName = async () => {
-    if (!formData.fullName?.trim()) {
-      alert('Please enter a valid full name');
+    const handleSaveFullName = async () => {
+    if (!formData.fullName || formData.fullName.trim() === '') {
+      alert(settings('myInformation.fullName.error'));
       return;
     }
 
     setLoadingStates(prev => ({ ...prev, fullName: true }));
     try {
-      // API call to save full name
       const response = await fetch('/api/user/profile', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          name: formData.fullName.trim()
+          name: formData.fullName
         })
       });
 
       const result = await response.json();
-      
-      if (result.success) {
-        // Update original data
+      if (response.ok) {
         setOriginalData(prev => ({ ...prev, fullName: formData.fullName }));
-        alert('Full name updated successfully!');
+        alert(settings('myInformation.fullName.success'));
+        // Mark profile as updated in localStorage
+        localStorage.setItem('profileUpdated', Date.now().toString());
+        // Dispatch event to notify other pages (like Profile page) to refresh
+        window.dispatchEvent(new Event('profileUpdated'));
       } else {
-        alert(result.error || 'Failed to update full name');
+        alert(result.error || settings('myInformation.fullName.failed'));
       }
     } catch (error) {
       console.error('Error saving full name:', error);
-      alert('Failed to update full name. Please try again.');
+      alert(settings('myInformation.fullName.failed'));
     } finally {
       setLoadingStates(prev => ({ ...prev, fullName: false }));
     }
@@ -236,13 +240,13 @@ export default function MyInformationPage() {
   // Verify email
   const handleVerifyEmail = async () => {
     if (!formData.email) {
-      alert('Please enter an email address');
+      alert(settings('myInformation.email.errorEmpty'));
       return;
     }
 
     // Check if email is the same as current (no need to verify)
     if (formData.email === originalData.email && verificationStatus.email) {
-      alert('This email is already verified for your account');
+      alert(settings('myInformation.email.alreadyVerified'));
       return;
     }
 
@@ -254,7 +258,8 @@ export default function MyInformationPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           phoneNumber: formData.email, // API expects 'phoneNumber' for both email and phone
-          type: 'email_verification'
+          type: 'email_verification',
+          language: locale
         })
       });
 
@@ -269,11 +274,11 @@ export default function MyInformationPage() {
           isVerifying: false
         });
       } else {
-        alert(result.message || 'Failed to send verification email');
+        alert(result.message || settings('myInformation.email.verificationFailed'));
       }
     } catch (error) {
       console.error('Error sending email verification:', error);
-      alert('Failed to send verification email. Please try again.');
+      alert(settings('myInformation.email.verificationFailed'));
     } finally {
       setLoadingStates(prev => ({ ...prev, email: false }));
     }
@@ -282,7 +287,7 @@ export default function MyInformationPage() {
   // Verify phone number
   const handleVerifyPhone = async () => {
     if (!formData.phoneNumber) {
-      alert('Please enter a phone number');
+      alert(settings('myInformation.phone.errorEmpty'));
       return;
     }
 
@@ -290,7 +295,7 @@ export default function MyInformationPage() {
     
     // Check if phone is the same as current (no need to verify)
     if (formData.phoneNumber === originalData.phoneNumber && verificationStatus.phone) {
-      alert('This phone number is already verified for your account');
+      alert(settings('myInformation.phone.alreadyVerified'));
       return;
     }
 
@@ -304,6 +309,7 @@ export default function MyInformationPage() {
         body: JSON.stringify({
           phoneNumber: fullPhoneNumber, // API expects 'phoneNumber' for both email and phone
           type: 'phone_verification',
+          language: locale,
           countryInfo: { dialCode: selectedCountry.dialCode } // Include country info for validation
         })
       });
@@ -319,11 +325,11 @@ export default function MyInformationPage() {
           isVerifying: false
         });
       } else {
-        alert(result.message || 'Failed to send verification SMS');
+        alert(result.message || settings('myInformation.phone.verificationFailed'));
       }
     } catch (error) {
       console.error('Error sending SMS verification:', error);
-      alert('Failed to send verification SMS. Please try again.');
+      alert(settings('myInformation.phone.verificationFailed'));
     } finally {
       setLoadingStates(prev => ({ ...prev, phone: false }));
     }
@@ -368,7 +374,12 @@ export default function MyInformationPage() {
         // Refresh user data to get the latest information
         await fetchUserData();
         
-        alert(`${otpState.type === 'email' ? 'Email' : 'Phone number'} verified and updated successfully!`);
+        alert(otpState.type === 'email' ? settings('myInformation.email.success') : settings('myInformation.phone.success'));
+        
+        // Mark profile as updated in localStorage
+        localStorage.setItem('profileUpdated', Date.now().toString());
+        // Dispatch event to notify other pages (like Profile page) to refresh
+        window.dispatchEvent(new Event('profileUpdated'));
         
         // Close OTP modal
         setOtpState({ show: false, type: '', contact: '', isVerifying: false });
@@ -378,16 +389,17 @@ export default function MyInformationPage() {
         // Handle specific error cases
         if (response.status === 409) {
           // Duplicate email/phone error
-          const contactType = otpState.type === 'email' ? 'email address' : 'phone number';
-          alert(`This ${contactType} is already in use by another account. Please use a different ${contactType}.`);
+          const contactType = otpState.type === 'email' ? settings('myInformation.verification.emailAddress') : settings('myInformation.verification.phoneNumber');
+          const errorMessage = settings('myInformation.verification.alreadyInUse').replace(/{contactType}/g, contactType);
+          alert(errorMessage);
         } else {
           // Generic error
-          alert(result.message || 'Invalid OTP. Please try again.');
+          alert(result.message || settings('myInformation.verification.invalidOTP'));
         }
       }
     } catch (error) {
       console.error('Error verifying OTP:', error);
-      alert('Verification failed. Please try again.');
+      alert(settings('myInformation.verification.verificationFailed'));
     } finally {
       setOtpState(prev => ({ ...prev, isVerifying: false }));
     }
@@ -405,18 +417,25 @@ export default function MyInformationPage() {
   return (
     <div className="min-h-screen bg-gray-50 pb-20">
       {/* Header */}
-      <div className="bg-white shadow-sm border-b border-gray-100 sticky top-0 z-10">
-        <div className="flex items-center justify-between px-4 py-4">
-          <button
-            onClick={() => router.back()}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-          >
-            <ArrowLeft className="w-5 h-5 text-gray-600" />
-          </button>
-          <h1 className="text-lg font-semibold text-gray-900">My Information</h1>
-          <div className="w-9 h-9"></div> {/* Spacer for centering */}
+      <div className="fixed top-0 left-0 right-0 bg-transparent z-50">
+        <div className="px-4 py-3">
+          <div className="flex items-center justify-between">
+            <button
+              onClick={() => router.back()}
+              className="flex items-center justify-center w-10 h-10 bg-white rounded-full border border-gray-300 text-gray-700 transition-all hover:scale-105 hover:border-gray-400"
+            >
+              <ArrowLeft className="w-5 h-5" />
+            </button>
+            <div className="flex-1 mx-4 flex justify-center">
+              <div className="bg-white px-6 py-2 rounded-full border border-gray-300">
+                <h1 className="text-base font-semibold text-gray-900">{settings('myInformation.title')}</h1>
+              </div>
+            </div>
+            <div className="w-10"></div>
+          </div>
         </div>
       </div>
+      <div className="pt-16"></div>
 
       {/* Form Content */}
       <div className="px-4 py-6 space-y-6 max-w-md mx-auto">
@@ -425,14 +444,14 @@ export default function MyInformationPage() {
         <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
           <div className="flex items-center space-x-3 mb-2">
             <User className="w-4 h-4 text-gray-600" />
-            <label className="text-xs font-medium text-gray-700">Full Name</label>
+            <label className="text-xs font-medium text-gray-700">{settings('myInformation.fullName.label')}</label>
           </div>
           <div className="flex space-x-2">
             <input
               type="text"
               value={formData.fullName}
               onChange={(e) => handleInputChange('fullName', e.target.value)}
-              placeholder="Enter your full name"
+              placeholder={settings('myInformation.fullName.placeholder')}
               className="flex-1 px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition-colors bg-gray-50 text-gray-900"
             />
             <button
@@ -444,7 +463,7 @@ export default function MyInformationPage() {
                   : 'bg-green-100 text-green-700 cursor-default'
               } ${loadingStates.fullName ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
-              {loadingStates.fullName ? 'Saving...' : formData.fullName !== originalData.fullName ? 'Save' : 'Saved'}
+              {loadingStates.fullName ? settings('myInformation.fullName.saving') : formData.fullName !== originalData.fullName ? settings('myInformation.fullName.save') : settings('myInformation.fullName.saved')}
             </button>
           </div>
         </div>
@@ -453,14 +472,14 @@ export default function MyInformationPage() {
         <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
           <div className="flex items-center space-x-3 mb-2">
             <Mail className="w-4 h-4 text-gray-600" />
-            <label className="text-xs font-medium text-gray-700">Email</label>
+            <label className="text-xs font-medium text-gray-700">{settings('myInformation.email.label')}</label>
           </div>
           <div className="flex space-x-2">
             <input
               type="email"
               value={formData.email}
               onChange={(e) => handleInputChange('email', e.target.value)}
-              placeholder="Enter your email address"
+              placeholder={settings('myInformation.email.placeholder')}
               className="flex-1 px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition-colors bg-gray-50 text-gray-900"
             />
             <button
@@ -472,7 +491,7 @@ export default function MyInformationPage() {
                   : 'bg-green-100 text-green-700 cursor-not-allowed'
               } ${loadingStates.email ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
-              {loadingStates.email ? 'Verifying...' : (verificationStatus.email && formData.email === originalData.email) ? 'Verified' : 'Verify'}
+              {loadingStates.email ? settings('myInformation.email.verifying') : (verificationStatus.email && formData.email === originalData.email) ? settings('myInformation.email.verified') : settings('myInformation.email.verify')}
             </button>
           </div>
         </div>
@@ -481,7 +500,7 @@ export default function MyInformationPage() {
         <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
           <div className="flex items-center space-x-3 mb-2">
             <Phone className="w-4 h-4 text-gray-600" />
-            <label className="text-xs font-medium text-gray-700">Phone Number</label>
+            <label className="text-xs font-medium text-gray-700">{settings('myInformation.phone.label')}</label>
           </div>
           <div className="flex space-x-2">
             {/* Country Code Dropdown */}
@@ -507,7 +526,7 @@ export default function MyInformationPage() {
                       <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                       <input
                         type="text"
-                        placeholder="Search countries..."
+                        placeholder={settings('myInformation.phone.searchCountry')}
                         value={countrySearch}
                         onChange={(e) => setCountrySearch(e.target.value)}
                         onClick={(e) => e.stopPropagation()}
@@ -546,7 +565,7 @@ export default function MyInformationPage() {
               type="tel"
               value={formData.phoneNumber}
               onChange={(e) => handleInputChange('phoneNumber', e.target.value)}
-              placeholder="Enter your phone number"
+              placeholder={settings('myInformation.phone.placeholder')}
               className="flex-1 px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition-colors bg-gray-50 text-gray-900"
             />
 
@@ -560,7 +579,7 @@ export default function MyInformationPage() {
                   : 'bg-green-100 text-green-700 cursor-not-allowed'
               } ${loadingStates.phone ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
-              {loadingStates.phone ? 'Verifying...' : (verificationStatus.phone && formData.phoneNumber === originalData.phoneNumber) ? 'Verified' : 'Verify'}
+              {loadingStates.phone ? settings('myInformation.phone.verifying') : (verificationStatus.phone && formData.phoneNumber === originalData.phoneNumber) ? settings('myInformation.phone.verified') : settings('myInformation.phone.verify')}
             </button>
           </div>
         </div>
@@ -572,9 +591,9 @@ export default function MyInformationPage() {
               <span className="text-white text-xs font-bold">i</span>
             </div>
             <div>
-              <h3 className="font-medium text-blue-900 mb-1">Information Security</h3>
+              <h3 className="font-medium text-blue-900 mb-1">{settings('myInformation.security.title')}</h3>
               <p className="text-sm text-blue-700">
-                Your personal information is encrypted and securely stored. We will never share your details with third parties without your consent.
+                {settings('myInformation.security.description')}
               </p>
             </div>
           </div>

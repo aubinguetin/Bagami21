@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import { requireActiveUser } from '@/lib/checkUserActive';
+import { checkAndNotifyAlertMatches } from '@/lib/notificationService';
 
 export async function POST(request: NextRequest) {
   try {
@@ -95,15 +97,31 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Authentication required. Please log in.' }, { status: 401 });
     }
 
+    // Check if user is suspended (real-time check)
+    try {
+      await requireActiveUser(userId);
+    } catch (error) {
+      return NextResponse.json({ 
+        error: 'Your account has been suspended. Please contact customer service.',
+        code: 'ACCOUNT_SUSPENDED'
+      }, { status: 403 });
+    }
+
     // Generate title based on post type
     const title = postType === 'delivery' 
-      ? `${itemType} delivery` 
-      : `Travel offer: ${fromLocation} to ${toLocation}`;
+      ? `Space request: ${itemType} delivery` 
+      : `Space offer: ${fromLocation} to ${toLocation}`;
+
+    // Combine description and notes for delivery requests
+    let finalDescription = description || "";
+    if (postType === 'delivery' && notes && notes.trim()) {
+      finalDescription = `${description}\n\nAdditional Notes:\n${notes}`;
+    }
 
     // Create delivery post in database
     const deliveryData: any = {
       title,
-      description: description || "",
+      description: finalDescription,
       weight: weight ? parseFloat(weight) : null,
       price: price ? parseFloat(price) : null,
       currency: 'XOF', // Default currency
@@ -132,6 +150,20 @@ export async function POST(request: NextRequest) {
     });
 
     console.log('📦 New delivery post created:', delivery.id);
+
+    // Check for matching alerts and send notifications (async, don't wait)
+    checkAndNotifyAlertMatches({
+      id: delivery.id,
+      type: delivery.type as 'request' | 'offer',
+      fromCountry: delivery.fromCountry,
+      fromCity: delivery.fromCity,
+      toCountry: delivery.toCountry,
+      toCity: delivery.toCity,
+      senderId: delivery.senderId
+    }).catch(error => {
+      console.error('❌ Error in alert notification:', error);
+      // Don't fail the request if notification fails
+    });
 
     return NextResponse.json({ 
       success: true, 

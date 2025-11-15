@@ -28,7 +28,7 @@ export async function GET(request: Request) {
         data: {
           userId,
           balance: 0,
-          currency: 'XAF'
+          currency: 'XOF'
         },
         select: {
           balance: true,

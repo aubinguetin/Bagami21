@@ -7,23 +7,92 @@ export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
     
+    console.log('📧 Alert creation - Session:', session ? 'Found' : 'Not found');
+    
     if (!session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const body = await request.json();
+    console.log('📧 Alert creation - Body received:', body);
+    
     const {
       name,
       departureCountry,
+      departureCity,
       destinationCountry,
+      destinationCity,
       alertType,
-      keywords,
       emailNotifications
     } = body;
 
     // Validate required fields
     if (!name || !alertType) {
+      console.log('❌ Missing required fields - name:', name, 'alertType:', alertType);
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+    }
+
+    // Find or get user ID
+    let userId: string | undefined = session.user?.id;
+    console.log('📧 Alert creation - Initial userId from session:', userId);
+    
+    if (!userId && session.user?.email) {
+      const user = await prisma.user.findUnique({
+        where: { email: session.user.email }
+      });
+      userId = user?.id;
+      console.log('📧 Alert creation - userId from email lookup:', userId);
+    }
+
+    if (!userId) {
+      console.log('❌ User not found');
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    }
+
+    console.log('📧 Alert creation - Creating alert with userId:', userId);
+
+    // Create the alert in the database
+    const alert = await prisma.alert.create({
+      data: {
+        userId,
+        name,
+        departureCountry: departureCountry || null,
+        departureCity: departureCity || null,
+        destinationCountry: destinationCountry || null,
+        destinationCity: destinationCity || null,
+        alertType,
+        emailNotifications: emailNotifications ?? true,
+        isActive: true
+      }
+    });
+
+    console.log('🔔 New delivery alert created:', alert);
+
+    return NextResponse.json({ 
+      success: true, 
+      message: 'Alert created successfully',
+      alert 
+    });
+    
+  } catch (error) {
+    console.error('❌ Error creating alert:', error);
+    console.error('Error details:', JSON.stringify(error, null, 2));
+    
+    // Return more detailed error message
+    const errorMessage = error instanceof Error ? error.message : 'Internal server error';
+    return NextResponse.json({ 
+      error: 'Internal server error',
+      details: errorMessage 
+    }, { status: 500 });
+  }
+}
+
+export async function GET(request: NextRequest) {
+  try {
+    const session = await getServerSession(authOptions);
+    
+    if (!session) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     // Find or get user ID
@@ -39,52 +108,20 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
-    // For now, let's create a simple alert object and log it
-    // In a full implementation, you'd want to create an Alert table in your schema
-    const alertData = {
-      name,
-      userId,
-      departureCountry: departureCountry || null,
-      destinationCountry: destinationCountry || null,
-      alertType,
-      keywords: keywords || null,
-      emailNotifications: emailNotifications || false,
-      isActive: true,
-      createdAt: new Date().toISOString()
-    };
-
-    console.log('🔔 New delivery alert created:', alertData);
-
-    // TODO: In a real implementation, you would:
-    // 1. Save the alert to a database table
-    // 2. Set up a background job to check for matches
-    // 3. Send notifications when matches are found
-
-    return NextResponse.json({ 
-      success: true, 
-      message: 'Alert created successfully',
-      alert: alertData 
+    // Fetch user's alerts from database
+    const alerts = await prisma.alert.findMany({
+      where: {
+        userId,
+        isActive: true
+      },
+      orderBy: {
+        createdAt: 'desc'
+      }
     });
-    
-  } catch (error) {
-    console.error('❌ Error creating alert:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
-  }
-}
 
-export async function GET(request: NextRequest) {
-  try {
-    const session = await getServerSession(authOptions);
-    
-    if (!session) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    // For now, return empty array
-    // In a real implementation, you'd fetch user's alerts from database
     return NextResponse.json({
       success: true,
-      alerts: []
+      alerts
     });
     
   } catch (error) {

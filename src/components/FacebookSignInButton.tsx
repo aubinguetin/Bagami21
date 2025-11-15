@@ -2,23 +2,25 @@
 
 import { signIn } from 'next-auth/react';
 import { useState } from 'react';
+import { useT } from '@/lib/i18n-helpers';
 
 interface FacebookSignInButtonProps {
-  text?: string;
+  isSignUp?: boolean;
   className?: string;
 }
 
 export default function FacebookSignInButton({ 
-  text = "Continue with Facebook", 
+  isSignUp = false,
   className = "" 
 }: FacebookSignInButtonProps) {
   const [isLoading, setIsLoading] = useState(false);
+  const t = useT();
 
   const handleFacebookSignIn = async () => {
     try {
       setIsLoading(true);
       await signIn('facebook', {
-        callbackUrl: '/', // Redirect to homepage after sign-in
+        callbackUrl: '/deliveries', // Redirect to deliveries page after sign-in
         redirect: true,
       });
     } catch (error) {
@@ -27,6 +29,9 @@ export default function FacebookSignInButton({
       setIsLoading(false);
     }
   };
+
+  const text = isSignUp ? t.authPage('socialSignIn.facebook.signUp') : t.authPage('socialSignIn.facebook.signIn');
+  const loadingText = t.authPage('socialSignIn.facebook.signingIn');
 
   return (
     <button
@@ -45,7 +50,7 @@ export default function FacebookSignInButton({
       </svg>
       
       <span className="text-sm font-medium text-gray-700">
-        {isLoading ? 'Signing in...' : text}
+        {isLoading ? loadingText : text}
       </span>
     </button>
   );

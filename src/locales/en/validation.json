@@ -1,0 +1,25 @@
+{
+  "required": "This field is required",
+  "email": {
+    "invalid": "Invalid email address",
+    "required": "Email is required"
+  },
+  "phone": {
+    "invalid": "Please enter a valid phone number",
+    "required": "Phone number is required"
+  },
+  "password": {
+    "required": "Password is required",
+    "minLength": "Password must be at least {count} characters",
+    "mismatch": "Passwords do not match"
+  },
+  "name": {
+    "required": "Name is required"
+  },
+  "countryCode": {
+    "required": "Country code is required"
+  },
+  "terms": {
+    "required": "You must agree to Bagami's Terms and Policy"
+  }
+}

@@ -20,14 +20,19 @@ import {
   Gift,
   UserCheck,
   Lock,
-  HelpCircle,
+  Mail,
   Heart,
   Trash2,
   Edit3,
   Eye,
   CreditCard,
-  Award
+  Award,
+  Plus,
+  Search,
+  Share2
 } from 'lucide-react';
+import { PostTypeSelectionModal } from '@/components/PostTypeSelectionModal';
+import { useT } from '@/lib/i18n-helpers';
 
 interface UserInfo {
   id?: string | null;
@@ -37,12 +42,16 @@ interface UserInfo {
   image?: string | null;
   emailVerified?: boolean;
   phoneVerified?: boolean;
+  idVerificationStatus?: 'approved' | 'pending' | 'rejected' | null;
 }
 
 function ProfileSection({ userInfo, onSignOut, onRefresh, router, isLoading }: { userInfo: UserInfo; onSignOut: () => void; onRefresh: () => void; router: any; isLoading?: boolean }) {
+  const { profile } = useT();
   const [showSignOutConfirm, setShowSignOutConfirm] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [walletBalance, setWalletBalance] = useState<number>(0);
+  const [shareMessage, setShareMessage] = useState<string>('');
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
@@ -50,224 +59,271 @@ function ProfileSection({ userInfo, onSignOut, onRefresh, router, isLoading }: {
     setTimeout(() => setIsRefreshing(false), 500); // Brief delay to show the animation
   };
 
+  const handleShare = async () => {
+    const shareUrl = `${window.location.origin}/download`;
+    const shareData = {
+      title: 'Bagami - Your Global Delivery Network',
+      text: 'Join Bagami and connect with travelers to send packages worldwide!',
+      url: shareUrl
+    };
+
+    try {
+      // Check if Web Share API is available (works on mobile and some desktop browsers)
+      if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
+        await navigator.share(shareData);
+        console.log('Shared successfully');
+      } else if (navigator.share) {
+        // Fallback for browsers that support share but not canShare
+        await navigator.share(shareData);
+        console.log('Shared successfully');
+      } else {
+        // Fallback: Copy to clipboard
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          await navigator.clipboard.writeText(shareUrl);
+          setShareMessage('Link copied to clipboard! ✓');
+          setTimeout(() => setShareMessage(''), 3000);
+        } else {
+          // Ultimate fallback for older browsers
+          const textArea = document.createElement('textarea');
+          textArea.value = shareUrl;
+          textArea.style.position = 'fixed';
+          textArea.style.left = '-999999px';
+          document.body.appendChild(textArea);
+          textArea.select();
+          try {
+            document.execCommand('copy');
+            setShareMessage('Link copied to clipboard! ✓');
+            setTimeout(() => setShareMessage(''), 3000);
+          } catch (err) {
+            console.error('Failed to copy:', err);
+            setShareMessage('Could not copy link');
+            setTimeout(() => setShareMessage(''), 3000);
+          }
+          document.body.removeChild(textArea);
+        }
+      }
+    } catch (error: any) {
+      // User cancelled the share or an error occurred
+      if (error.name !== 'AbortError') {
+        console.error('Error sharing:', error);
+        // Try clipboard as fallback
+        try {
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            await navigator.clipboard.writeText(shareUrl);
+            setShareMessage('Link copied to clipboard! ✓');
+            setTimeout(() => setShareMessage(''), 3000);
+          }
+        } catch (clipboardError) {
+          console.error('Clipboard fallback failed:', clipboardError);
+        }
+      }
+    }
+  };
+
+  // Fetch wallet balance
+  const fetchWalletBalance = async () => {
+    if (!userInfo.id) {
+      console.log('⏳ Waiting for user ID to fetch wallet balance...');
+      return;
+    }
+
+    try {
+      console.log('💰 Fetching wallet balance for user:', userInfo.id);
+      const response = await fetch(`/api/wallet?userId=${userInfo.id}`);
+      const data = await response.json();
+      
+      if (response.ok && data.stats) {
+        const balance = data.stats.balance || 0;
+        setWalletBalance(balance);
+        console.log('✅ Wallet balance updated:', balance, 'FCFA');
+      } else {
+        console.error('❌ Error in wallet response:', data.error || 'Unknown error');
+      }
+    } catch (error) {
+      console.error('❌ Error fetching wallet balance:', error);
+    }
+  };
+
+  // Fetch wallet balance when userInfo.id becomes available
+  useEffect(() => {
+    if (userInfo.id) {
+      fetchWalletBalance();
+    }
+  }, [userInfo.id]);
+
+  // Refresh wallet balance when page becomes visible
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (!document.hidden && userInfo.id) {
+        console.log('🔄 Page visible - refreshing wallet balance');
+        fetchWalletBalance();
+      }
+    };
+
+    const handleFocus = () => {
+      if (userInfo.id) {
+        console.log('🔄 Window focused - refreshing wallet balance');
+        fetchWalletBalance();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('focus', handleFocus);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('focus', handleFocus);
+    };
+  }, [userInfo.id]);
+
   return (
-    <div className="px-4 py-4 space-y-3 max-w-md mx-auto">
-      {/* Profile Header */}
-      <div className="bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl p-6 text-white shadow-lg">
-        <div className="flex flex-col items-center">
-          {/* Profile Avatar */}
-          <div className="w-20 h-20 mb-4 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center border-2 border-white/30 shadow-inner">
-            {userInfo.image ? (
-              <img src={userInfo.image} alt="Profile" className="w-16 h-16 rounded-full object-cover" />
-            ) : (
-              <User className="w-10 h-10 text-white" />
-            )}
-          </div>
-          
-          {/* Name & Contact */}
-          <div className="text-center mb-4">
-            <div className="flex items-center justify-center gap-2 mb-2">
-              <h1 className="text-xl font-bold">{userInfo.name || 'User'}</h1>
-              <button
-                onClick={handleRefresh}
-                disabled={isRefreshing || isLoading}
-                className="p-1 hover:bg-white/20 rounded-full transition-colors"
-                title="Refresh profile information"
-              >
-                <svg 
-                  className={`w-4 h-4 text-white ${isRefreshing || isLoading ? 'animate-spin' : ''}`} 
-                  fill="none" 
-                  stroke="currentColor" 
-                  viewBox="0 0 24 24"
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                </svg>
-              </button>
+    <div className="px-4 py-4 space-y-2 max-w-md mx-auto">
+      {/* Wallet Card */}
+      <button 
+        onClick={() => router.push('/wallet')}
+        className="w-full bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl p-3 text-white shadow-lg hover:shadow-xl transition-all duration-200 active:scale-[0.98]"
+      >
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-3">
+            <div className="w-9 h-9 bg-white/20 backdrop-blur-sm rounded-lg flex items-center justify-center border border-white/30">
+              <Wallet className="w-4 h-4 text-white" />
             </div>
-            {isLoading && (
-              <div className="text-xs text-white/70 mb-2">Updating profile...</div>
-            )}
-            
-            {/* Contact Information */}
-            <div className="flex flex-col gap-2">
-              {userInfo.email && (
-                <div className="inline-flex items-center space-x-2 bg-white/15 px-3 py-1.5 rounded-full backdrop-blur-sm border border-white/20">
-                  <span className="text-sm">📧</span>
-                  <span className="font-medium text-sm text-white/90">{userInfo.email}</span>
-                  {userInfo.emailVerified && (
-                    <span className="text-xs bg-green-500/80 text-white px-1.5 py-0.5 rounded-full">✓</span>
-                  )}
-                </div>
-              )}
-              
-              {userInfo.phone && (
-                <div className="inline-flex items-center space-x-2 bg-white/15 px-3 py-1.5 rounded-full backdrop-blur-sm border border-white/20">
-                  <span className="text-sm">📱</span>
-                  <span className="font-medium text-sm text-white/90">{userInfo.phone}</span>
-                  {userInfo.phoneVerified && (
-                    <span className="text-xs bg-green-500/80 text-white px-1.5 py-0.5 rounded-full">✓</span>
-                  )}
-                </div>
-              )}
+            <div className="text-left">
+              <p className="text-white/80 text-xs font-medium">{profile('walletBalance')}</p>
+              <p className="text-white text-base font-bold">{walletBalance.toLocaleString()} FCFA</p>
             </div>
           </div>
-          
-          {/* Quick Stats Grid */}
-          <div className="grid grid-cols-3 gap-4 w-full">
-            <div className="text-center bg-white/10 rounded-xl p-3 backdrop-blur-sm border border-white/20">
-              <div className="flex items-center justify-center mb-1">
-                <Star className="w-4 h-4 text-yellow-300 fill-current" />
-              </div>
-              <div className="font-bold text-lg">4.8</div>
-              <div className="text-xs text-white/70 font-medium">Rating</div>
-            </div>
-            <div className="text-center bg-white/10 rounded-xl p-3 backdrop-blur-sm border border-white/20">
-              <div className="flex items-center justify-center mb-1">
-                <Package className="w-4 h-4 text-white" />
-              </div>
-              <div className="font-bold text-lg">45</div>
-              <div className="text-xs text-white/70 font-medium">Deliveries</div>
-            </div>
-            <div className="text-center bg-white/10 rounded-xl p-3 backdrop-blur-sm border border-white/20">
-              <div className="flex items-center justify-center mb-1">
-                <TrendingUp className="w-4 h-4 text-green-300" />
-              </div>
-              <div className="font-bold text-lg">98.2%</div>
-              <div className="text-xs text-white/70 font-medium">Balance</div>
-            </div>
-          </div>
+          <ChevronRight className="w-4 h-4 text-white/70" />
         </div>
-      </div>
+      </button>
 
-      {/* My Account Section */}
-      <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
-        <div className="space-y-2">
-          <button 
-            onClick={() => router.push('/settings')}
-            className="w-full flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-orange-50 transition-all duration-200 group"
-          >
-            <div className="flex items-center space-x-3">
-              <Edit3 className="w-4 h-4 text-gray-600 group-hover:text-orange-600 transition-colors" />
-              <span className="font-medium text-gray-700 group-hover:text-orange-700">Settings</span>
-            </div>
-            <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-orange-600 transition-colors" />
-          </button>
-
-          <button 
-            onClick={() => router.push('/deliveries')}
-            className="w-full flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-orange-50 transition-all duration-200 group"
-          >
-            <div className="flex items-center space-x-3">
-              <Package className="w-4 h-4 text-gray-600 group-hover:text-orange-600 transition-colors" />
-              <span className="font-medium text-gray-700 group-hover:text-orange-700">My Deliveries</span>
-            </div>
-            <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-orange-600 transition-colors" />
-          </button>
-
-          <button 
-            onClick={() => router.push('/messages')}
-            className="w-full flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-orange-50 transition-all duration-200 group"
-          >
-            <div className="flex items-center space-x-3">
-              <MessageCircle className="w-4 h-4 text-gray-600 group-hover:text-orange-600 transition-colors" />
-              <span className="font-medium text-gray-700 group-hover:text-orange-700">Messages</span>
-            </div>
-            <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-orange-600 transition-colors" />
-          </button>
+      {/* Settings */}
+      <button 
+        onClick={() => router.push('/settings')}
+        className="w-full flex items-center justify-between p-3 bg-white rounded-xl shadow-sm border border-gray-100"
+      >
+        <div className="flex items-center space-x-3">
+          <Settings className="w-4 h-4 text-gray-600" />
+          <span className="font-medium text-gray-700">{profile('settings')}</span>
         </div>
-      </div>
+        <ChevronRight className="w-4 h-4 text-gray-400" />
+      </button>
 
-      {/* Wallet & Rewards Section */}
-      <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
-        <div className="space-y-1">
-          <button 
-            onClick={() => router.push('/wallet')}
-            className="w-full flex items-center justify-between p-2 bg-gray-50 rounded-lg hover:bg-orange-50 transition-all duration-200 group"
-          >
-            <div className="flex items-center space-x-3">
-              <CreditCard className="w-4 h-4 text-gray-600 group-hover:text-orange-600 transition-colors" />
-              <span className="font-medium text-gray-700 group-hover:text-orange-700">My Wallet</span>
-            </div>
-            <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-orange-600 transition-colors" />
-          </button>
-
-          <button className="w-full flex items-center justify-between p-2 bg-gray-50 rounded-lg hover:bg-orange-50 transition-all duration-200 group">
-            <div className="flex items-center space-x-3">
-              <Gift className="w-4 h-4 text-gray-600 group-hover:text-orange-600 transition-colors" />
-              <span className="font-medium text-gray-700 group-hover:text-orange-700">Loyalty Points</span>
-            </div>
-            <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-orange-600 transition-colors" />
-          </button>
+      {/* My Deliveries */}
+      <button 
+        onClick={() => router.push('/my-deliveries')}
+        className="w-full flex items-center justify-between p-3 bg-white rounded-xl shadow-sm border border-gray-100"
+      >
+        <div className="flex items-center space-x-3">
+          <Package className="w-4 h-4 text-gray-600" />
+          <span className="font-medium text-gray-700">{profile('myDeliveries')}</span>
         </div>
-      </div>
+        <ChevronRight className="w-4 h-4 text-gray-400" />
+      </button>
 
-      {/* Reviews & Trust Section */}
-      <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
+      {/* My Alerts */}
+      <button 
+        onClick={() => router.push('/alerts')}
+        className="w-full flex items-center justify-between p-3 bg-white rounded-xl shadow-sm border border-gray-100"
+      >
+        <div className="flex items-center space-x-3">
+          <Bell className="w-4 h-4 text-gray-600" />
+          <span className="font-medium text-gray-700">{profile('myAlerts')}</span>
+        </div>
+        <ChevronRight className="w-4 h-4 text-gray-400" />
+      </button>
+
+      {/* Messages */}
+      <button 
+        onClick={() => router.push('/messages?from=profile')}
+        className="w-full flex items-center justify-between p-3 bg-white rounded-xl shadow-sm border border-gray-100"
+      >
+        <div className="flex items-center space-x-3">
+          <MessageCircle className="w-4 h-4 text-gray-600" />
+          <span className="font-medium text-gray-700">{profile('messages')}</span>
+        </div>
+        <ChevronRight className="w-4 h-4 text-gray-400" />
+      </button>
+
+      {/* My Wallet */}
+      <button 
+        onClick={() => router.push('/wallet')}
+        className="w-full flex items-center justify-between p-3 bg-white rounded-xl shadow-sm border border-gray-100"
+      >
+        <div className="flex items-center space-x-3">
+          <CreditCard className="w-4 h-4 text-gray-600" />
+          <span className="font-medium text-gray-700">{profile('myWallet')}</span>
+        </div>
+        <ChevronRight className="w-4 h-4 text-gray-400" />
+      </button>
+
+      {/* Reviews */}
+      <button 
+        onClick={() => router.push('/reviews')}
+        className="w-full flex items-center justify-between p-3 bg-white rounded-xl shadow-sm border border-gray-100"
+      >
+        <div className="flex items-center space-x-3">
+          <UserCheck className="w-4 h-4 text-gray-600" />
+          <span className="font-medium text-gray-700">{profile('reviews')}</span>
+        </div>
+        <ChevronRight className="w-4 h-4 text-gray-400" />
+      </button>
+
+      {/* Contact Bagami */}
+      <button 
+        onClick={() => router.push('/contact')}
+        className="w-full flex items-center justify-between p-3 bg-white rounded-xl shadow-sm border border-gray-100"
+      >
+        <div className="flex items-center space-x-3">
+          <Mail className="w-4 h-4 text-gray-600" />
+          <span className="font-medium text-gray-700">{profile('contactBagami')}</span>
+        </div>
+        <ChevronRight className="w-4 h-4 text-gray-400" />
+      </button>
+
+      {/* Rate Bagami */}
+      <button className="w-full flex items-center justify-between p-3 bg-white rounded-xl shadow-sm border border-gray-100">
+        <div className="flex items-center space-x-3">
+          <Heart className="w-4 h-4 text-gray-600" />
+          <span className="font-medium text-gray-700">{profile('rateBagami')}</span>
+        </div>
+        <ChevronRight className="w-4 h-4 text-gray-400" />
+      </button>
+
+      {/* Share Bagami */}
+      <button 
+        onClick={handleShare}
+        className="w-full flex items-center justify-between p-3 bg-gradient-to-r from-orange-50 to-orange-100 rounded-xl shadow-sm border border-orange-200 hover:from-orange-100 hover:to-orange-200 transition-all active:scale-95"
+      >
+        <div className="flex items-center space-x-3">
+          <Share2 className="w-4 h-4 text-orange-600" />
+          <span className="font-medium text-orange-700">
+            {shareMessage || profile('shareBagami')}
+          </span>
+        </div>
+        <ChevronRight className="w-4 h-4 text-orange-500" />
+      </button>
+
+      {/* Log Out */}
+      <button 
+        onClick={() => setShowSignOutConfirm(true)}
+        className="w-full flex items-center justify-between p-3 bg-orange-50 rounded-xl shadow-sm border border-orange-100"
+      >
+        <div className="flex items-center space-x-3">
+          <LogOut className="w-4 h-4 text-orange-600" />
+          <span className="font-medium text-orange-700">{profile('logOut')}</span>
+        </div>
+        <ChevronRight className="w-4 h-4 text-orange-500" />
+      </button>
+      
+      {/* Delete Account */}
+      <div className="text-center">
         <button 
-          onClick={() => router.push('/reviews')}
-          className="w-full flex items-center justify-between p-2 bg-gray-50 rounded-lg hover:bg-orange-50 transition-all duration-200 group"
+          onClick={() => setShowDeleteConfirm(true)}
+          className="text-red-600 hover:text-red-700 underline text-sm font-medium transition-colors"
         >
-          <div className="flex items-center space-x-3">
-            <UserCheck className="w-4 h-4 text-gray-600 group-hover:text-orange-600 transition-colors" />
-            <span className="font-medium text-gray-700 group-hover:text-orange-700">Reviews</span>
-          </div>
-          <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-orange-600 transition-colors" />
+          {profile('deleteAccount')}
         </button>
-      </div>
-
-      {/* Security & Privacy Section */}
-      <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
-        <button className="w-full flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-orange-50 transition-all duration-200 group">
-          <div className="flex items-center space-x-3">
-            <Lock className="w-4 h-4 text-gray-600 group-hover:text-orange-600 transition-colors" />
-            <span className="font-medium text-gray-700 group-hover:text-orange-700">Privacy and Security</span>
-          </div>
-          <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-orange-600 transition-colors" />
-        </button>
-      </div>
-
-      {/* Support & Feedback Section */}
-      <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
-        <div className="space-y-2">
-          <button className="w-full flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-orange-50 transition-all duration-200 group">
-            <div className="flex items-center space-x-3">
-              <HelpCircle className="w-4 h-4 text-gray-600 group-hover:text-orange-600 transition-colors" />
-              <span className="font-medium text-gray-700 group-hover:text-orange-700">Help</span>
-            </div>
-            <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-orange-600 transition-colors" />
-          </button>
-
-          <button className="w-full flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-orange-50 transition-all duration-200 group">
-            <div className="flex items-center space-x-3">
-              <Heart className="w-4 h-4 text-gray-600 group-hover:text-orange-600 transition-colors" />
-              <span className="font-medium text-gray-700 group-hover:text-orange-700">Rate Bagami</span>
-            </div>
-            <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-orange-600 transition-colors" />
-          </button>
-        </div>
-      </div>
-
-      {/* Account Actions Section */}
-      <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
-        <button 
-          onClick={() => setShowSignOutConfirm(true)}
-          className="w-full flex items-center justify-between p-3 bg-orange-50 rounded-lg hover:bg-orange-100 transition-all duration-200 group"
-        >
-          <div className="flex items-center space-x-3">
-            <LogOut className="w-4 h-4 text-orange-600 group-hover:text-orange-700 transition-colors" />
-            <span className="font-medium text-orange-700 group-hover:text-orange-800">Log Out</span>
-          </div>
-          <ChevronRight className="w-4 h-4 text-orange-500 group-hover:text-orange-600 transition-colors" />
-        </button>
-        
-        <div className="mt-4 text-center">
-          <button 
-            onClick={() => setShowDeleteConfirm(true)}
-            className="text-red-600 hover:text-red-700 underline text-sm font-medium transition-colors"
-          >
-            Delete My Account
-          </button>
-        </div>
       </div>
 
       {/* Sign Out Confirmation Modal */}
@@ -279,9 +335,9 @@ function ProfileSection({ userInfo, onSignOut, onRefresh, router, isLoading }: {
                 <LogOut className="w-8 h-8 text-orange-600" />
               </div>
               
-              <h3 className="text-lg font-bold text-slate-800 mb-2">Log Out</h3>
+              <h3 className="text-lg font-bold text-slate-800 mb-2">{profile('logOutModal.title')}</h3>
               <p className="text-gray-600 text-sm mb-6 leading-relaxed">
-                Are you sure you want to log out? You'll need to sign in again to access your account.
+                {profile('logOutModal.message')}
               </p>
               
               <div className="flex gap-3">
@@ -289,7 +345,7 @@ function ProfileSection({ userInfo, onSignOut, onRefresh, router, isLoading }: {
                   onClick={() => setShowSignOutConfirm(false)}
                   className="flex-1 px-4 py-3 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-all font-medium"
                 >
-                  Cancel
+                  {profile('logOutModal.cancel')}
                 </button>
                 <button
                   onClick={() => {
@@ -298,7 +354,7 @@ function ProfileSection({ userInfo, onSignOut, onRefresh, router, isLoading }: {
                   }}
                   className="flex-1 px-4 py-3 bg-orange-500 hover:bg-orange-600 text-white rounded-xl font-medium transition-all shadow-sm hover:shadow-md"
                 >
-                  Log Out
+                  {profile('logOutModal.confirm')}
                 </button>
               </div>
             </div>
@@ -315,15 +371,14 @@ function ProfileSection({ userInfo, onSignOut, onRefresh, router, isLoading }: {
                 <Trash2 className="w-8 h-8 text-red-600" />
               </div>
               
-              <h3 className="text-lg font-bold text-slate-800 mb-2">Delete Account</h3>
+              <h3 className="text-lg font-bold text-slate-800 mb-2">{profile('deleteAccountModal.title')}</h3>
               <p className="text-gray-600 text-sm mb-6 leading-relaxed">
-                This action cannot be undone. This will permanently delete your account, 
-                all your deliveries, messages, and associated data.
+                {profile('deleteAccountModal.message')}
               </p>
               
               <div className="bg-red-50 border border-red-200 rounded-xl p-3 mb-6">
                 <p className="text-red-700 text-xs font-medium">
-                  ⚠️ Warning: This is irreversible. Please make sure you want to proceed.
+                  {profile('deleteAccountModal.warning')}
                 </p>
               </div>
               
@@ -332,7 +387,7 @@ function ProfileSection({ userInfo, onSignOut, onRefresh, router, isLoading }: {
                   onClick={() => setShowDeleteConfirm(false)}
                   className="flex-1 px-4 py-3 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-all font-medium"
                 >
-                  Keep Account
+                  {profile('deleteAccountModal.cancel')}
                 </button>
                 <button
                   onClick={() => {
@@ -342,7 +397,7 @@ function ProfileSection({ userInfo, onSignOut, onRefresh, router, isLoading }: {
                   }}
                   className="flex-1 px-4 py-3 bg-red-500 hover:bg-red-600 text-white rounded-xl font-medium transition-all shadow-sm hover:shadow-md"
                 >
-                  Delete Forever
+                  {profile('deleteAccountModal.confirm')}
                 </button>
               </div>
             </div>
@@ -354,26 +409,67 @@ function ProfileSection({ userInfo, onSignOut, onRefresh, router, isLoading }: {
 }
 
 export default function ProfilePage() {
+  const { profile } = useT();
   const { data: session, status } = useSession();
   const router = useRouter();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [unreadMessageCount, setUnreadMessageCount] = useState(0);
+  const [unreadNotificationCount, setUnreadNotificationCount] = useState(0);
+  const [showPostTypeModal, setShowPostTypeModal] = useState(false);
   
-  // State for user information from API
-  const [userInfo, setUserInfo] = useState<UserInfo>({
-    id: null,
-    name: null,
-    email: null,
-    phone: null,
-    image: null,
-    emailVerified: false,
-    phoneVerified: false
-  });
+  // Initialize user info immediately from session to avoid loading delay
+  const getInitialUserInfo = (): UserInfo => {
+    if (session?.user) {
+      return {
+        id: session.user.id || null,
+        name: session.user.name || null,
+        email: session.user.email || null,
+        phone: (session.user as any).phone || null,
+        image: session.user.image || null,
+        emailVerified: !!(session.user as any).emailVerified,
+        phoneVerified: !!(session.user as any).phoneVerified,
+        idVerificationStatus: (session.user as any).idVerificationStatus || null
+      };
+    }
+    return {
+      id: null,
+      name: null,
+      email: null,
+      phone: null,
+      image: null,
+      emailVerified: false,
+      phoneVerified: false,
+      idVerificationStatus: null
+    };
+  };
+
+  // State for user information - initialized with session data for instant display
+  const [userInfo, setUserInfo] = useState<UserInfo>(getInitialUserInfo());
   const [isLoadingUserInfo, setIsLoadingUserInfo] = useState(false);
 
-  // Function to fetch user data from API
-  const fetchUserInfo = async () => {
-    setIsLoadingUserInfo(true);
+  // Update userInfo when session changes - but preserve existing data
+  useEffect(() => {
+    if (session?.user) {
+      setUserInfo(prev => ({
+        id: session.user.id || prev.id,
+        name: session.user.name || prev.name,
+        email: session.user.email || prev.email,
+        phone: (session.user as any).phone || prev.phone,
+        image: session.user.image || prev.image,
+        emailVerified: !!(session.user as any).emailVerified,
+        phoneVerified: !!(session.user as any).phoneVerified,
+        idVerificationStatus: (session.user as any).idVerificationStatus || prev.idVerificationStatus
+      }));
+    }
+  }, [session]);
+
+  // Function to fetch user data from API (for additional details and verification status)
+  const fetchUserInfo = async (silent = false) => {
+    // Only show loading state if we don't have data yet and not silent refresh
+    if (!silent && !userInfo.id) {
+      setIsLoadingUserInfo(true);
+    }
+    
     try {
       const response = await fetch('/api/user/profile');
       const result = await response.json();
@@ -387,6 +483,12 @@ export default function ProfilePage() {
           displayPhone = `${user.countryCode} ${user.phone}`;
         }
         
+        // Get ID verification status
+        let idVerificationStatus = null;
+        if (user.idDocuments && user.idDocuments.length > 0) {
+          idVerificationStatus = user.idDocuments[0].verificationStatus;
+        }
+        
         setUserInfo({
           id: user.id,
           name: user.name,
@@ -394,27 +496,19 @@ export default function ProfilePage() {
           phone: displayPhone,
           image: user.image,
           emailVerified: !!user.emailVerified,
-          phoneVerified: !!user.phoneVerified
+          phoneVerified: !!user.phoneVerified,
+          idVerificationStatus: idVerificationStatus
         });
         
         console.log('✅ User info updated:', user);
       }
     } catch (error) {
       console.error('Error fetching user info:', error);
-      // Fallback to session data if API fails
-      if (session?.user) {
-        setUserInfo({
-          id: session.user.id,
-          name: session.user.name,
-          email: session.user.email,
-          phone: (session.user as any).phone,
-          image: session.user.image,
-          emailVerified: false,
-          phoneVerified: false
-        });
-      }
+      // Keep existing session data if API fails
     } finally {
-      setIsLoadingUserInfo(false);
+      if (!silent) {
+        setIsLoadingUserInfo(false);
+      }
     }
   };
 
@@ -462,6 +556,25 @@ export default function ProfilePage() {
     }
   };
 
+  // Fetch unread notification count
+  const fetchUnreadNotificationCount = async () => {
+    if (!isAuthenticated) return;
+    
+    try {
+      const { userId: currentUserId } = getCurrentUserInfo();
+      if (!currentUserId) return;
+      
+      const response = await fetch(`/api/notifications/unread-count?userId=${currentUserId}`);
+      const result = await response.json();
+
+      if (response.ok && result.success) {
+        setUnreadNotificationCount(result.unreadCount || 0);
+      }
+    } catch (error) {
+      console.error('Error fetching notification count:', error);
+    }
+  };
+
   useEffect(() => {
     // Check for simple authentication flag
     const bagamiAuth = localStorage.getItem('bagami_authenticated');
@@ -480,14 +593,39 @@ export default function ProfilePage() {
   // Fetch user info when component mounts or authentication changes
   useEffect(() => {
     if (isAuthenticated) {
-      fetchUserInfo();
+      // Check if profile was updated while user was away
+      const profileUpdated = localStorage.getItem('profileUpdated');
+      if (profileUpdated) {
+        // Clear the flag
+        localStorage.removeItem('profileUpdated');
+        console.log('🔄 Profile was updated, fetching latest data...');
+        // Visible refresh when there was an explicit update
+        fetchUserInfo(false);
+      } else {
+        // Silent background refresh (no loading state)
+        fetchUserInfo(true);
+      }
     }
   }, [isAuthenticated]);
+
+  // Check for profile updates on every mount (when user navigates back to profile)
+  useEffect(() => {
+    // Check if profile was recently updated
+    const profileUpdated = localStorage.getItem('profileUpdated');
+    if (profileUpdated && session?.user?.id) {
+      // Clear the flag
+      localStorage.removeItem('profileUpdated');
+      console.log('🔄 Profile update detected on mount, refreshing...');
+      // Visible refresh when there was an explicit update
+      fetchUserInfo(false);
+    }
+  }, []); // Run once on mount
 
   // Listen for profile updates from other pages
   useEffect(() => {
     const handleProfileUpdate = () => {
-      fetchUserInfo();
+      // Visible refresh when explicitly triggered by an update event
+      fetchUserInfo(false);
     };
 
     // Listen for custom profile update events
@@ -496,7 +634,8 @@ export default function ProfilePage() {
     // Also refresh when page becomes visible (user returns to tab)
     const handleVisibilityChange = () => {
       if (!document.hidden && isAuthenticated) {
-        fetchUserInfo();
+        // Silent background refresh when tab becomes visible
+        fetchUserInfo(true);
       }
     };
 
@@ -515,13 +654,17 @@ export default function ProfilePage() {
     if (!isAuthenticated) return;
 
     fetchUnreadCount();
+    fetchUnreadNotificationCount();
     
     // Smart polling: faster when active, slower when background
     const getPollingInterval = () => {
       return document.hidden ? 30000 : 5000; // 30s background, 5s active
     };
 
-    let interval = setInterval(fetchUnreadCount, getPollingInterval());
+    let interval = setInterval(() => {
+      fetchUnreadCount();
+      fetchUnreadNotificationCount();
+    }, getPollingInterval());
 
     // Handle visibility change for immediate updates
     const handleVisibilityChange = () => {
@@ -530,10 +673,14 @@ export default function ProfilePage() {
       if (!document.hidden) {
         // Immediate refresh when returning to tab
         fetchUnreadCount();
+        fetchUnreadNotificationCount();
       }
       
       // Restart with appropriate interval
-      interval = setInterval(fetchUnreadCount, getPollingInterval());
+      interval = setInterval(() => {
+        fetchUnreadCount();
+        fetchUnreadNotificationCount();
+      }, getPollingInterval());
     };
 
     // Listen for focus events for even faster response
@@ -592,8 +739,8 @@ export default function ProfilePage() {
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <User className="mx-auto h-12 w-12 text-gray-400" />
-          <h2 className="mt-4 text-lg font-medium text-gray-900">Please sign in</h2>
-          <p className="mt-2 text-sm text-gray-600">You need to be authenticated to view this page.</p>
+          <h2 className="mt-4 text-lg font-medium text-gray-900">{profile('auth.signInRequired')}</h2>
+          <p className="mt-2 text-sm text-gray-600">{profile('auth.authMessage')}</p>
         </div>
       </div>
     );
@@ -602,54 +749,100 @@ export default function ProfilePage() {
   return (
     <div className="min-h-screen bg-gray-50 pb-20">
       {/* Top Header */}
-      <header className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <div className="flex items-center">
-              <h1 className="text-xl font-semibold text-gray-900">
-                Profile
+      <header className="fixed top-0 left-0 right-0 bg-transparent z-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
+          <div className="flex items-center justify-center">
+            <div className="bg-white px-6 py-2 rounded-full border border-gray-300">
+              <h1 className="text-base font-bold text-slate-800">
+                {profile('title')}
               </h1>
-            </div>
-            
-            <div className="flex items-center space-x-4">
-              {/* Messages */}
-              <button
-                onClick={() => router.push('/messages')}
-                className="relative p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
-              >
-                <MessageCircle className="w-6 h-6" />
-              </button>
             </div>
           </div>
         </div>
       </header>
+      <div className="pt-16"></div>
+
+      {/* User Info Section - Below Header */}
+      <div className="bg-gray-50 py-4">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="bg-transparent rounded-lg p-3">
+            <div className="flex items-center space-x-3">
+              {/* Avatar */}
+              <div className="w-14 h-14 bg-gradient-to-br from-orange-100 to-orange-200 rounded-full flex items-center justify-center border-2 border-white shadow-md flex-shrink-0">
+                {userInfo.image ? (
+                  <img src={userInfo.image} alt="Profile" className="w-14 h-14 rounded-full object-cover" />
+                ) : (
+                  <span className="text-xl font-bold text-orange-600">
+                    {(userInfo.name || 'U').charAt(0).toUpperCase()}
+                  </span>
+                )}
+              </div>
+              
+              {/* User Info - Right Side */}
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-1">
+                  <h2 className="text-lg font-bold text-slate-800 truncate">
+                    {userInfo.name || 'User'}
+                  </h2>
+                  {/* ID Verification Badge */}
+                  {userInfo.idVerificationStatus === 'approved' && (
+                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-green-100 text-green-800 flex-shrink-0">
+                      <Shield className="w-3 h-3 mr-1" />
+                      {profile('verificationStatus.verified')}
+                    </span>
+                  )}
+                  {userInfo.idVerificationStatus === 'pending' && (
+                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-800 flex-shrink-0">
+                      <Shield className="w-3 h-3 mr-1" />
+                      {profile('verificationStatus.pending')}
+                    </span>
+                  )}
+                  {userInfo.idVerificationStatus === 'rejected' && (
+                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-800 flex-shrink-0">
+                      <Shield className="w-3 h-3 mr-1" />
+                      {profile('verificationStatus.rejected')}
+                    </span>
+                  )}
+                  {!userInfo.idVerificationStatus && (
+                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-gray-100 text-gray-800 flex-shrink-0">
+                      <Shield className="w-3 h-3 mr-1" />
+                      {profile('verificationStatus.notVerified')}
+                    </span>
+                  )}
+                </div>
+                {userInfo.email && (
+                  <p className="text-sm text-gray-600 truncate">
+                    {userInfo.email}
+                  </p>
+                )}
+                {userInfo.phone && (
+                  <p className="text-sm text-gray-600 truncate">
+                    {userInfo.phone}
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
 
       {/* Main Content */}
       <main className="flex-1">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <ProfileSection userInfo={userInfo} onSignOut={handleSignOut} onRefresh={refreshUserInfo} router={router} isLoading={isLoadingUserInfo} />
         </div>
       </main>
 
       {/* Bottom Navigation */}
       <nav className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-lg border-t border-gray-200/50 z-50 safe-bottom shadow-[0_-4px_16px_rgba(0,0,0,0.08)]">
-        <div className="grid grid-cols-4 h-16 max-w-screen-xl mx-auto">
-          {/* Home */}
-          <button
-            onClick={() => router.push('/')}
-            className="group flex flex-col items-center justify-center space-y-1 text-gray-600 hover:text-gray-900 transition-all duration-200 active:scale-95"
-          >
-            <Home className="w-6 h-6 transition-transform group-hover:scale-110" />
-            <span className="text-[10px] font-semibold tracking-wide">Home</span>
-          </button>
-
-          {/* Deliveries */}
+        <div className="grid grid-cols-5 h-16 max-w-screen-xl mx-auto">
+          {/* Search */}
           <button
             onClick={() => router.push('/deliveries')}
             className="group flex flex-col items-center justify-center space-y-1 text-gray-600 hover:text-gray-900 transition-all duration-200 active:scale-95"
           >
-            <Package className="w-6 h-6 transition-transform group-hover:scale-110" />
-            <span className="text-[10px] font-semibold tracking-wide">Deliveries</span>
+            <Search className="w-6 h-6 transition-transform group-hover:scale-110" />
+            <span className="text-[10px] font-semibold tracking-wide">{profile('bottomNav.search')}</span>
           </button>
 
           {/* Messages */}
@@ -665,7 +858,42 @@ export default function ProfilePage() {
                 </span>
               )}
             </div>
-            <span className="text-[10px] font-semibold tracking-wide">Messages</span>
+            <span className="text-[10px] font-semibold tracking-wide">{profile('bottomNav.messages')}</span>
+          </button>
+
+          {/* Post Button - Center */}
+          <button
+            onClick={() => setShowPostTypeModal(true)}
+            className="relative flex flex-col items-center justify-center space-y-1 transition-all duration-200 active:scale-95"
+          >
+            {/* Icon container with white background and orange border */}
+            <div className="relative">
+              {/* Glow effect */}
+              <div className="absolute inset-0 bg-gradient-to-br from-orange-500 to-orange-600 rounded-md blur-md opacity-40" />
+              
+              {/* Icon container */}
+              <div className="relative bg-white border-2 border-orange-500 p-1 rounded-md shadow-lg">
+                <Plus className="w-3 h-3 text-orange-500" />
+              </div>
+            </div>
+            
+            <span className="text-[10px] font-semibold text-orange-600 tracking-wide">{profile('bottomNav.post')}</span>
+          </button>
+
+          {/* Notifications */}
+          <button
+            onClick={() => router.push('/notifications')}
+            className="group relative flex flex-col items-center justify-center space-y-1 text-gray-600 hover:text-gray-900 transition-all duration-200 active:scale-95"
+          >
+            <div className="relative">
+              <Bell className="w-6 h-6 transition-transform group-hover:scale-110" />
+              {unreadNotificationCount > 0 && (
+                <span className="absolute -top-1 -right-1 bg-gradient-to-br from-red-500 to-red-600 text-white text-[10px] rounded-full h-5 w-5 flex items-center justify-center font-bold border-2 border-white shadow-lg">
+                  {unreadNotificationCount > 99 ? '99+' : unreadNotificationCount}
+                </span>
+              )}
+            </div>
+            <span className="text-[10px] font-semibold tracking-wide">{profile('bottomNav.notifications')}</span>
           </button>
 
           {/* Profile - Active */}
@@ -683,10 +911,16 @@ export default function ProfilePage() {
               </div>
             </div>
             
-            <span className="text-[10px] font-semibold text-orange-600 tracking-wide">Profile</span>
+            <span className="text-[10px] font-semibold text-orange-600 tracking-wide">{profile('bottomNav.profile')}</span>
           </button>
         </div>
       </nav>
+
+      {/* Post Type Selection Modal */}
+      <PostTypeSelectionModal 
+        isOpen={showPostTypeModal}
+        onClose={() => setShowPostTypeModal(false)}
+      />
     </div>
   );
 }

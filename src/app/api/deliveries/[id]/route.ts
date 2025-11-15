@@ -3,6 +3,94 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 
+// GET - Fetch single delivery
+export async function GET(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const deliveryId = params.id;
+    
+    // Allow unauthenticated access to view deliveries
+    const delivery = await prisma.delivery.findUnique({
+      where: {
+        id: deliveryId,
+      },
+      include: {
+        sender: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            phone: true,
+            reviewsReceived: {
+              select: {
+                id: true,
+                rating: true,
+                comment: true,
+                createdAt: true,
+                reviewer: {
+                  select: {
+                    id: true,
+                    name: true,
+                    image: true
+                  }
+                }
+              },
+              orderBy: {
+                createdAt: 'desc'
+              }
+            },
+            idDocuments: {
+              select: {
+                verificationStatus: true
+              }
+            }
+          },
+        },
+      },
+    });
+
+    if (!delivery) {
+      return NextResponse.json(
+        { error: 'Delivery not found' },
+        { status: 404 }
+      );
+    }
+
+    // Calculate average rating for the sender
+    const reviews = delivery.sender.reviewsReceived || [];
+    const averageRating = reviews.length > 0
+      ? reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length
+      : null;
+    const reviewCount = reviews.length;
+
+    // Check if user has at least one approved ID document
+    const isVerified = delivery.sender.idDocuments?.some(
+      (doc) => doc.verificationStatus === 'approved'
+    ) || false;
+
+    // Return delivery with calculated rating and verification status
+    const responseData = {
+      ...delivery,
+      sender: {
+        ...delivery.sender,
+        averageRating: averageRating ? parseFloat(averageRating.toFixed(1)) : null,
+        reviewCount,
+        isVerified
+      }
+    };
+
+    return NextResponse.json(responseData);
+  } catch (error) {
+    console.error('Error fetching delivery:', error);
+    return NextResponse.json(
+      { error: 'Failed to fetch delivery' },
+      { status: 500 }
+    );
+  }
+}
+
 // PUT - Edit delivery
 export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
   try {
@@ -11,6 +99,8 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
     const body = await request.json();
     
     const { 
+      postType,
+      itemType,
       fromCountry, 
       fromCity, 
       toCountry, 
@@ -21,6 +111,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
       arrivalDate,
       weight,
       price,
+      notes,
       // Support fallback auth
       currentUserId: fallbackUserId,
       currentUserContact: fallbackUserContact
@@ -52,20 +143,50 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
       return NextResponse.json({ error: 'Forbidden: You can only update your own deliveries' }, { status: 403 });
     }
 
+    // Prepare update data
+    const fromLocation = `${fromCity}, ${fromCountry}`;
+    const toLocation = `${toCity}, ${toCountry}`;
+
+    // Generate title based on post type
+    let finalTitle = title;
+    if (!finalTitle) {
+      finalTitle = postType === 'delivery' 
+        ? `Space request: ${itemType} delivery` 
+        : `Space offer: ${fromLocation} to ${toLocation}`;
+    }
+
+    // Handle description/notes based on post type
+    let finalDescription = description || "";
+    if (postType === 'delivery' && notes && notes.trim()) {
+      // For delivery requests, combine description and notes
+      finalDescription = `${description}\n\nAdditional Notes:\n${notes}`;
+    } else if (postType === 'travel' && notes) {
+      // For travel offers, use notes as description
+      finalDescription = notes || 'Travel offer';
+    }
+
+    // Prepare update data object
+    const updateData: any = {
+      fromCountry,
+      fromCity,
+      toCountry,
+      toCity,
+      title: finalTitle,
+      description: finalDescription,
+      departureDate: new Date(departureDate),
+      weight: weight ? parseFloat(weight) : undefined,
+      price: price ? parseFloat(price) : undefined,
+    };
+
+    // Only update arrivalDate if provided (for delivery requests)
+    if (arrivalDate) {
+      updateData.arrivalDate = new Date(arrivalDate);
+    }
+
     // Update delivery
     const updatedDelivery = await prisma.delivery.update({
       where: { id: deliveryId },
-      data: {
-        fromCountry,
-        fromCity,
-        toCountry,
-        toCity,
-        title,
-        description,
-        departureDate: new Date(departureDate),
-        weight: weight ? parseFloat(weight) : undefined,
-        price: price ? parseFloat(price) : undefined,
-      }
+      data: updateData
     });
 
     return NextResponse.json({ 
@@ -128,9 +249,10 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
       return NextResponse.json({ error: 'Forbidden: You can only delete your own deliveries' }, { status: 403 });
     }
 
-    // Delete delivery
-    await prisma.delivery.delete({
-      where: { id: deliveryId }
+    // Soft delete delivery (set deletedAt timestamp)
+    await prisma.delivery.update({
+      where: { id: deliveryId },
+      data: { deletedAt: new Date() }
     });
 
     return NextResponse.json({ 

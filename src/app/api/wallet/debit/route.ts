@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
 import { debitWallet } from '@/services/walletService';
+import { requireActiveUser } from '@/lib/checkUserActive';
+import { prisma } from '@/lib/prisma';
 
 export async function POST(request: Request) {
   try {
@@ -11,6 +13,16 @@ export async function POST(request: Request) {
         { error: 'Missing required fields: userId, amount, description' },
         { status: 400 }
       );
+    }
+
+    // Check if user is suspended (real-time check)
+    try {
+      await requireActiveUser(userId);
+    } catch (error) {
+      return NextResponse.json({ 
+        error: 'Your account has been suspended. Please contact customer service.',
+        code: 'ACCOUNT_SUSPENDED'
+      }, { status: 403 });
     }
 
     if (amount <= 0) {

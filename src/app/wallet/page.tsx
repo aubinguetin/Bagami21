@@ -1,8 +1,8 @@
 'use client';
 
 import { useSession } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useEffect, useState, useRef } from 'react';
 import { 
   ArrowLeft, 
   Wallet,
@@ -20,8 +20,15 @@ import {
   Filter,
   Calendar,
   Eye,
-  EyeOff
+  EyeOff,
+  Shield,
+  AlertCircle
 } from 'lucide-react';
+import { formatAmount, formatCurrency } from '@/utils/currencyFormatter';
+import { WithdrawModal } from '@/components/WithdrawModal';
+import { AddMoneyModal } from '@/components/AddMoneyModal';
+import { TransactionDetailsModal } from '@/components/TransactionDetailsModal';
+import { useT, useLocale, translateDeliveryTitle } from '@/lib/i18n-helpers';
 
 interface Transaction {
   id: string;
@@ -46,11 +53,16 @@ interface WalletStats {
 export default function WalletPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const transactionRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
+  const t = useT();
+  const locale = useLocale();
+  
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [walletStats, setWalletStats] = useState<WalletStats>({
     balance: 0,
-    currency: 'XAF',
+    currency: 'XOF',
     totalCredit: 0,
     totalDebit: 0,
     pendingAmount: 0
@@ -58,6 +70,223 @@ export default function WalletPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [filterType, setFilterType] = useState<'all' | 'credit' | 'debit'>('all');
   const [isBalanceHidden, setIsBalanceHidden] = useState(false);
+  const [isWithdrawModalOpen, setIsWithdrawModalOpen] = useState(false);
+  const [isAddMoneyModalOpen, setIsAddMoneyModalOpen] = useState(false);
+  const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
+  const [isTransactionDetailsOpen, setIsTransactionDetailsOpen] = useState(false);
+  const [isUserVerified, setIsUserVerified] = useState(false);
+  const [showVerificationModal, setShowVerificationModal] = useState(false);
+  const [highlightedTransactionId, setHighlightedTransactionId] = useState<string | null>(null);
+
+  // Helper function to translate transaction descriptions and categories using translation keys
+  const translateTransaction = (description: string, category: string) => {
+    // Translate category using t function
+    const categoryTranslations: { [key: string]: string } = {
+      'Delivery Payment': t.walletPage('categories.deliveryPayment'),
+      'Direct Payment': t.walletPage('categories.directPayment'),
+      'Platform Fee': t.walletPage('categories.platformFee'),
+      'Withdrawal': t.walletPage('categories.withdrawal'),
+      'Deposit': t.walletPage('categories.deposit'),
+      'Refund': t.walletPage('categories.refund'),
+      'Transfer': t.walletPage('categories.transfer'),
+      'Top-up': t.walletPage('categories.topUp'),
+      'Fee': t.walletPage('categories.fee'),
+      'Service Fee': t.walletPage('categories.serviceFee'),
+      'Commission': t.walletPage('categories.commission'),
+      'Bonus': t.walletPage('categories.bonus'),
+      'Delivery Income': t.walletPage('categories.deliveryIncome')
+    };
+
+    const translatedCategory = categoryTranslations[category] || category;
+
+    // Try to match description patterns and use translation keys
+    let translatedDescription = description;
+    
+    // Match: "Withdrawal rejected - Amount refunded"
+    if (description.match(/^Withdrawal rejected - Amount refunded$/i)) {
+      translatedDescription = t.walletPage('descriptions.withdrawalRejectedRefunded');
+      return { description: translatedDescription, category: translatedCategory };
+    }
+
+    // Match: "Direct payment for delivery: X"
+    const directPaymentDeliveryMatch = description.match(/^Direct payment for delivery:\s*(.+)$/i);
+    if (directPaymentDeliveryMatch) {
+      const deliveryTitle = translateDeliveryTitle(directPaymentDeliveryMatch[1], locale);
+      translatedDescription = t.walletPage('descriptions.directPaymentForDelivery')
+        .replace('{title}', deliveryTitle);
+      return { description: translatedDescription, category: translatedCategory };
+    }
+
+    // Match: "Wallet payment for delivery: X"
+    const walletPaymentDeliveryMatch = description.match(/^Wallet payment for delivery:\s*(.+)$/i);
+    if (walletPaymentDeliveryMatch) {
+      const deliveryTitle = translateDeliveryTitle(walletPaymentDeliveryMatch[1], locale);
+      translatedDescription = t.walletPage('descriptions.walletPaymentForDelivery')
+        .replace('{title}', deliveryTitle);
+      return { description: translatedDescription, category: translatedCategory };
+    }
+
+    // Match: "Payment received for delivery: X"
+    const paymentReceivedDeliveryMatch = description.match(/^Payment received for delivery:\s*(.+)$/i);
+    if (paymentReceivedDeliveryMatch) {
+      const deliveryTitle = translateDeliveryTitle(paymentReceivedDeliveryMatch[1], locale);
+      translatedDescription = t.walletPage('descriptions.paymentReceivedForDelivery')
+        .replace('{title}', deliveryTitle);
+      return { description: translatedDescription, category: translatedCategory };
+    }
+
+    // Match: "Payment for delivery: X" (legacy format, treat as wallet payment)
+    const paymentForDeliveryMatch = description.match(/^Payment for delivery:\s*(.+)$/i);
+    if (paymentForDeliveryMatch) {
+      const deliveryTitle = translateDeliveryTitle(paymentForDeliveryMatch[1], locale);
+      translatedDescription = t.walletPage('descriptions.walletPaymentForDelivery')
+        .replace('{title}', deliveryTitle);
+      return { description: translatedDescription, category: translatedCategory };
+    }
+
+    // Match: "Payment received for travel offer: X"
+    const paymentReceivedTravelOfferMatch = description.match(/^Payment received for travel offer:\s*(.+)$/i);
+    if (paymentReceivedTravelOfferMatch) {
+      const deliveryTitle = translateDeliveryTitle(paymentReceivedTravelOfferMatch[1], locale);
+      translatedDescription = t.walletPage('descriptions.paymentReceivedForTravelOffer')
+        .replace('{title}', deliveryTitle);
+      return { description: translatedDescription, category: translatedCategory };
+    }
+    
+    // Match: "Payment for delivery from X to Y"
+    const deliveryMatch = description.match(/^Payment for delivery from (.+) to (.+)$/i);
+    if (deliveryMatch) {
+      translatedDescription = t.walletPage('descriptions.paymentForDeliveryFromTo')
+        .replace('{from}', deliveryMatch[1])
+        .replace('{to}', deliveryMatch[2]);
+      return { description: translatedDescription, category: translatedCategory };
+    }
+
+    // Match: "Payment for travel offer from X to Y"
+    const travelOfferMatch = description.match(/^Payment for travel offer from (.+) to (.+)$/i);
+    if (travelOfferMatch) {
+      translatedDescription = t.walletPage('descriptions.paymentForTravelOfferFromTo')
+        .replace('{from}', travelOfferMatch[1])
+        .replace('{to}', travelOfferMatch[2]);
+      return { description: translatedDescription, category: translatedCategory };
+    }
+
+    // Match: "Payment for delivery offer from X to Y"
+    const deliveryOfferMatch = description.match(/^Payment for delivery offer from (.+) to (.+)$/i);
+    if (deliveryOfferMatch) {
+      translatedDescription = t.walletPage('descriptions.paymentForDeliveryOffer')
+        .replace('{from}', deliveryOfferMatch[1])
+        .replace('{to}', deliveryOfferMatch[2]);
+      return { description: translatedDescription, category: translatedCategory };
+    }
+
+    // Match: "Payment from X"
+    const paymentFromMatch = description.match(/^Payment from (.+)$/i);
+    if (paymentFromMatch) {
+      translatedDescription = t.walletPage('descriptions.paymentFrom')
+        .replace('{name}', paymentFromMatch[1]);
+      return { description: translatedDescription, category: translatedCategory };
+    }
+
+    // Match: "Payment to X"
+    const paymentToMatch = description.match(/^Payment to (.+)$/i);
+    if (paymentToMatch) {
+      translatedDescription = t.walletPage('descriptions.paymentTo')
+        .replace('{name}', paymentToMatch[1]);
+      return { description: translatedDescription, category: translatedCategory };
+    }
+
+    // Match: "Withdrawal request"
+    if (description.match(/^Withdrawal request$/i)) {
+      translatedDescription = t.walletPage('descriptions.withdrawalRequest');
+      return { description: translatedDescription, category: translatedCategory };
+    }
+
+    // Match: "Withdrawal to X"
+    const withdrawalToMatch = description.match(/^Withdrawal to (.+)$/i);
+    if (withdrawalToMatch) {
+      translatedDescription = t.walletPage('descriptions.withdrawalTo')
+        .replace('{destination}', withdrawalToMatch[1]);
+      return { description: translatedDescription, category: translatedCategory };
+    }
+
+    // Match: "Wallet top-up"
+    if (description.match(/^Wallet top-up$/i)) {
+      translatedDescription = t.walletPage('descriptions.walletTopUp');
+      return { description: translatedDescription, category: translatedCategory };
+    }
+
+    // Match: "Wallet top-up from Bagami"
+    if (description.match(/^Wallet top-up from Bagami/i)) {
+      translatedDescription = t.walletPage('descriptions.walletTopUpFromBagami');
+      return { description: translatedDescription, category: translatedCategory };
+    }
+
+    // Match: "Wallet top-up via X"
+    const walletTopUpViaMatch = description.match(/^Wallet top-up via (.+)$/i);
+    if (walletTopUpViaMatch) {
+      translatedDescription = t.walletPage('descriptions.walletTopUpVia')
+        .replace('{method}', walletTopUpViaMatch[1]);
+      return { description: translatedDescription, category: translatedCategory };
+    }
+
+    // Match: "Direct payment from X"
+    const directPaymentFromMatch = description.match(/^Direct payment from (.+)$/i);
+    if (directPaymentFromMatch) {
+      translatedDescription = t.walletPage('descriptions.directPaymentFrom')
+        .replace('{name}', directPaymentFromMatch[1]);
+      return { description: translatedDescription, category: translatedCategory };
+    }
+
+    // Match: "Direct payment to X"
+    const directPaymentToMatch = description.match(/^Direct payment to (.+)$/i);
+    if (directPaymentToMatch) {
+      translatedDescription = t.walletPage('descriptions.directPaymentTo')
+        .replace('{name}', directPaymentToMatch[1]);
+      return { description: translatedDescription, category: translatedCategory };
+    }
+
+    // Match: "Money received from X"
+    const moneyReceivedMatch = description.match(/^Money received from (.+)$/i);
+    if (moneyReceivedMatch) {
+      translatedDescription = t.walletPage('descriptions.moneyReceivedFrom')
+        .replace('{name}', moneyReceivedMatch[1]);
+      return { description: translatedDescription, category: translatedCategory };
+    }
+
+    // Match: "Money sent to X"
+    const moneySentMatch = description.match(/^Money sent to (.+)$/i);
+    if (moneySentMatch) {
+      translatedDescription = t.walletPage('descriptions.moneySentTo')
+        .replace('{name}', moneySentMatch[1]);
+      return { description: translatedDescription, category: translatedCategory };
+    }
+
+    // Match: "Platform fee for X"
+    const platformFeeMatch = description.match(/^Platform fee for (.+)$/i);
+    if (platformFeeMatch) {
+      translatedDescription = t.walletPage('descriptions.platformFeeFor')
+        .replace('{item}', platformFeeMatch[1]);
+      return { description: translatedDescription, category: translatedCategory };
+    }
+
+    // Match: "Refund for X"
+    const refundForMatch = description.match(/^Refund for (.+)$/i);
+    if (refundForMatch) {
+      translatedDescription = t.walletPage('descriptions.refundFor')
+        .replace('{item}', refundForMatch[1]);
+      return { description: translatedDescription, category: translatedCategory };
+    }
+
+    // Match: "Service fee"
+    if (description.match(/^Service fee$/i)) {
+      translatedDescription = t.walletPage('descriptions.serviceFee');
+      return { description: translatedDescription, category: translatedCategory };
+    }
+
+    // If no pattern matched, return original
+    return { description, category: translatedCategory };
+  };
 
   // Authentication check
   useEffect(() => {
@@ -101,17 +330,53 @@ export default function WalletPage() {
       }
     };
 
+    const fetchUserVerification = async () => {
+      try {
+        const response = await fetch('/api/user/profile');
+        const data = await response.json();
+        
+        if (data.success && data.user) {
+          console.log('👤 User profile data:', data.user);
+          console.log('📄 ID Documents:', data.user.idDocuments);
+          
+          // Check if user has any approved ID document
+          const hasApprovedId = data.user.idDocuments?.some(
+            (doc: any) => doc.verificationStatus === 'approved'
+          );
+          
+          console.log('✅ User verification status:', hasApprovedId);
+          setIsUserVerified(hasApprovedId || false);
+        }
+      } catch (error) {
+        console.error('Error fetching user verification status:', error);
+        setIsUserVerified(false);
+      }
+    };
+
     fetchWalletData();
+    fetchUserVerification();
   }, [isAuthenticated]);
 
-  const formatCurrency = (amount: number, currency: string = 'XAF') => {
-    return new Intl.NumberFormat('fr-FR', {
-      style: 'currency',
-      currency: currency,
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0
-    }).format(amount);
-  };
+  // Handle transaction highlighting from URL params
+  useEffect(() => {
+    const transactionId = searchParams.get('transactionId');
+    if (transactionId && transactions.length > 0) {
+      setHighlightedTransactionId(transactionId);
+      
+      // Scroll to the highlighted transaction
+      setTimeout(() => {
+        const element = transactionRefs.current[transactionId];
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 300);
+
+      // Remove highlight after 5 seconds
+      setTimeout(() => {
+        setHighlightedTransactionId(null);
+      }, 5000);
+    }
+  }, [searchParams, transactions]);
 
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -144,12 +409,110 @@ export default function WalletPage() {
     return transaction.type === filterType;
   });
 
+  const handleTransactionClick = (transaction: Transaction) => {
+    // Translate the transaction before setting it
+    const { description, category } = translateTransaction(transaction.description, transaction.category);
+    const translatedTransaction = {
+      ...transaction,
+      description,
+      category
+    };
+    setSelectedTransaction(translatedTransaction);
+    setIsTransactionDetailsOpen(true);
+  };
+
+  const handleWithdrawClick = () => {
+    if (!isUserVerified) {
+      setShowVerificationModal(true);
+    } else {
+      setIsWithdrawModalOpen(true);
+    }
+  };
+
+  const handleWithdraw = async (amount: number, phoneNumber: string) => {
+    try {
+      const response = await fetch('/api/wallet/withdraw', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ amount, phoneNumber })
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to process withdrawal');
+      }
+
+      const data = await response.json();
+
+      // Refresh wallet data
+      const currentUserId = localStorage.getItem('bagami_user_id');
+      const currentUserContact = localStorage.getItem('bagami_user_contact');
+
+      const params = new URLSearchParams();
+      if (currentUserId) params.set('userId', currentUserId);
+      if (currentUserContact) params.set('userContact', encodeURIComponent(currentUserContact));
+
+      const walletResponse = await fetch(`/api/wallet?${params.toString()}`);
+      const walletData = await walletResponse.json();
+
+      if (walletResponse.ok) {
+        setWalletStats(walletData.stats);
+        setTransactions(walletData.transactions);
+      }
+
+      // Show success message
+      alert(t.walletPage('withdrawSuccess'));
+
+    } catch (error: any) {
+      throw new Error(error.message || 'Failed to process withdrawal');
+    }
+  };
+
+  const handleAddMoney = async (amount: number, paymentMethod: string) => {
+    try {
+      const response = await fetch('/api/wallet/add-money', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ amount, paymentMethod })
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to add money to wallet');
+      }
+
+      const data = await response.json();
+
+      // Refresh wallet data
+      const currentUserId = localStorage.getItem('bagami_user_id');
+      const currentUserContact = localStorage.getItem('bagami_user_contact');
+
+      const params = new URLSearchParams();
+      if (currentUserId) params.set('userId', currentUserId);
+      if (currentUserContact) params.set('userContact', encodeURIComponent(currentUserContact));
+
+      const walletResponse = await fetch(`/api/wallet?${params.toString()}`);
+      const walletData = await walletResponse.json();
+
+      if (walletResponse.ok) {
+        setWalletStats(walletData.stats);
+        setTransactions(walletData.transactions);
+      }
+
+      // Show success message
+      alert(t.walletPage('addMoneySuccess').replace('{amount}', formatCurrency(amount, 'XOF')));
+
+    } catch (error: any) {
+      throw new Error(error.message || 'Failed to add money to wallet');
+    }
+  };
+
   if (status === 'loading' || !isAuthenticated) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-orange-50 to-white flex items-center justify-center">
         <div className="text-center">
           <div className="w-8 h-8 border-4 border-orange-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading wallet...</p>
+          <p className="text-gray-600">{t.walletPage('loading')}</p>
         </div>
       </div>
     );
@@ -158,20 +521,25 @@ export default function WalletPage() {
   return (
     <div className="min-h-screen bg-gray-50 pb-24">
       {/* Header */}
-      <div className="bg-white shadow-sm border-b border-gray-100 sticky top-0 z-40">
-        <div className="px-4 sm:px-6">
-          <div className="flex items-center justify-between h-16">
+      <div className="fixed top-0 left-0 right-0 bg-transparent z-50">
+        <div className="px-4 sm:px-6 py-3">
+          <div className="flex items-center justify-between">
             <button
               onClick={() => router.back()}
-              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              className="flex items-center justify-center w-10 h-10 bg-white rounded-full border border-gray-300 text-gray-700 transition-all hover:scale-105 hover:border-gray-400"
             >
-              <ArrowLeft className="w-6 h-6 text-gray-600" />
+              <ArrowLeft className="w-5 h-5" />
             </button>
-            <h1 className="text-xl font-bold text-slate-800">My Wallet</h1>
+            <div className="flex-1 mx-4 flex justify-center">
+              <div className="bg-white px-6 py-2 rounded-full border border-gray-300">
+                <h1 className="text-base font-bold text-slate-800">{t.walletPage('title')}</h1>
+              </div>
+            </div>
             <div className="w-10"></div>
           </div>
         </div>
       </div>
+      <div className="pt-16"></div>
 
       <div className="px-4 sm:px-6 py-4">
         {/* Balance Card */}
@@ -189,14 +557,14 @@ export default function WalletPage() {
                   <Wallet className="w-5 h-5 text-white" />
                 </div>
                 <div>
-                  <p className="text-white/80 text-xs font-medium">Available Balance</p>
-                  <p className="text-xs text-white/60">{walletStats.currency}</p>
+                  <p className="text-white/80 text-xs font-medium">{t.walletPage('availableBalance')}</p>
+                  <p className="text-xs text-white/60">FCFA</p>
                 </div>
               </div>
               <button
                 onClick={() => setIsBalanceHidden(!isBalanceHidden)}
                 className="p-2 hover:bg-white/10 rounded-lg transition-colors"
-                aria-label={isBalanceHidden ? 'Show balance' : 'Hide balance'}
+                aria-label={isBalanceHidden ? t.walletPage('showBalance') : t.walletPage('hideBalance')}
               >
                 {isBalanceHidden ? (
                   <EyeOff className="w-5 h-5 text-white/90" />
@@ -210,7 +578,7 @@ export default function WalletPage() {
               <h2 className="text-4xl font-bold text-white mb-1">
                 {isBalanceHidden 
                   ? '* * * * * *' 
-                  : formatCurrency(walletStats.balance, walletStats.currency)
+                  : `${formatAmount(walletStats.balance)} FCFA`
                 }
               </h2>
               {walletStats.pendingAmount > 0 && (
@@ -218,8 +586,8 @@ export default function WalletPage() {
                   <Clock className="w-3 h-3" />
                   <span>
                     {isBalanceHidden 
-                      ? '* * * * * * pending' 
-                      : `${formatCurrency(walletStats.pendingAmount)} pending`
+                      ? `* * * * * * ${t.walletPage('pending')}` 
+                      : `${formatAmount(walletStats.pendingAmount)} FCFA ${t.walletPage('pending')}`
                     }
                   </span>
                 </p>
@@ -228,13 +596,19 @@ export default function WalletPage() {
 
             {/* Quick Actions */}
             <div className="grid grid-cols-2 gap-2">
-              <button className="bg-white/95 backdrop-blur-sm hover:bg-white text-orange-600 font-semibold py-2.5 px-3 rounded-xl transition-all duration-200 flex items-center justify-center space-x-2 shadow-lg hover:shadow-xl active:scale-95">
+              <button 
+                onClick={() => setIsAddMoneyModalOpen(true)}
+                className="bg-white/95 backdrop-blur-sm hover:bg-white text-orange-600 font-semibold py-2.5 px-3 rounded-xl transition-all duration-200 flex items-center justify-center space-x-2 shadow-lg hover:shadow-xl active:scale-95"
+              >
                 <Plus className="w-4 h-4" />
-                <span className="text-sm">Add Money</span>
+                <span className="text-sm">{t.walletPage('addMoney')}</span>
               </button>
-              <button className="bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white font-semibold py-2.5 px-3 rounded-xl transition-all duration-200 flex items-center justify-center space-x-2 border border-white/30 active:scale-95">
+              <button 
+                onClick={handleWithdrawClick}
+                className="bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white font-semibold py-2.5 px-3 rounded-xl transition-all duration-200 flex items-center justify-center space-x-2 border border-white/30 active:scale-95"
+              >
                 <Download className="w-4 h-4" />
-                <span className="text-sm">Withdraw</span>
+                <span className="text-sm">{t.walletPage('withdraw')}</span>
               </button>
             </div>
           </div>
@@ -247,7 +621,7 @@ export default function WalletPage() {
               <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
                 <ArrowDownLeft className="w-4 h-4 text-green-600" />
               </div>
-              <span className="text-xs text-gray-600 font-medium">Credit</span>
+              <span className="text-xs text-gray-600 font-medium">{t.walletPage('credit')}</span>
             </div>
             <p className="text-xl font-bold text-gray-800">
               {isBalanceHidden ? '* * * * * *' : formatCurrency(walletStats.totalCredit)}
@@ -259,7 +633,7 @@ export default function WalletPage() {
               <div className="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center">
                 <ArrowUpRight className="w-4 h-4 text-red-600" />
               </div>
-              <span className="text-xs text-gray-600 font-medium">Debit</span>
+              <span className="text-xs text-gray-600 font-medium">{t.walletPage('debit')}</span>
             </div>
             <p className="text-xl font-bold text-gray-800">
               {isBalanceHidden ? '* * * * * *' : formatCurrency(walletStats.totalDebit)}
@@ -272,10 +646,7 @@ export default function WalletPage() {
           {/* Transactions Header */}
           <div className="p-4 border-b border-gray-100">
             <div className="flex items-center justify-between mb-3">
-              <h3 className="text-base font-bold text-gray-800">Transactions</h3>
-              <button className="text-xs text-orange-600 hover:text-orange-700 font-semibold">
-                View All
-              </button>
+              <h3 className="text-base font-bold text-gray-800">{t.walletPage('transactions')}</h3>
             </div>
 
             {/* Filter Tabs */}
@@ -288,7 +659,7 @@ export default function WalletPage() {
                     : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                 }`}
               >
-                All
+                {t.walletPage('all')}
               </button>
               <button
                 onClick={() => setFilterType('credit')}
@@ -298,7 +669,7 @@ export default function WalletPage() {
                     : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                 }`}
               >
-                Income
+                {t.walletPage('income')}
               </button>
               <button
                 onClick={() => setFilterType('debit')}
@@ -308,7 +679,7 @@ export default function WalletPage() {
                     : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                 }`}
               >
-                Expenses
+                {t.walletPage('expenses')}
               </button>
             </div>
           </div>
@@ -330,11 +701,21 @@ export default function WalletPage() {
                 </div>
               ))
             ) : filteredTransactions.length > 0 ? (
-              filteredTransactions.map((transaction) => (
-                <div
-                  key={transaction.id}
-                  className="p-4 hover:bg-gray-50 transition-colors cursor-pointer active:bg-gray-100"
-                >
+              filteredTransactions.map((transaction) => {
+                const isHighlighted = highlightedTransactionId === transaction.id;
+                const translated = translateTransaction(transaction.description, transaction.category);
+                
+                return (
+                  <div
+                    key={transaction.id}
+                    ref={(el) => { transactionRefs.current[transaction.id] = el; }}
+                    onClick={() => handleTransactionClick(transaction)}
+                    className={`p-4 hover:bg-gray-50 transition-all cursor-pointer active:bg-gray-100 ${
+                      isHighlighted 
+                        ? 'border-2 border-orange-500 bg-orange-50 rounded-lg' 
+                        : 'border-2 border-transparent'
+                    }`}
+                  >
                   <div className="flex items-center space-x-3">
                     {/* Icon */}
                     <div
@@ -355,19 +736,20 @@ export default function WalletPage() {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center space-x-1 mb-0.5">
                         <h4 className="font-semibold text-sm text-gray-800 truncate">
-                          {transaction.description}
+                          {translated.description}
                         </h4>
                         {getStatusIcon(transaction.status)}
                       </div>
                       <div className="flex items-center space-x-1 text-xs text-gray-500">
-                        <span className="truncate">{transaction.category}</span>
+                        <span className="truncate">{translated.category}</span>
                       </div>
                       <p className="text-xs text-gray-400 mt-0.5">
                         {new Date(transaction.date).toLocaleDateString('en-US', {
                           month: 'short',
                           day: 'numeric',
                           hour: '2-digit',
-                          minute: '2-digit'
+                          minute: '2-digit',
+                          hour12: false
                         })}
                       </p>
                     </div>
@@ -382,19 +764,20 @@ export default function WalletPage() {
                         }`}
                       >
                         {transaction.type === 'credit' ? '+' : '-'}
-                        {formatCurrency(transaction.amount, transaction.currency)}
+                        {formatAmount(transaction.amount)} {transaction.currency === 'XOF' ? 'FCFA' : transaction.currency}
                       </p>
                       <span
                         className={`inline-block px-1.5 py-0.5 rounded text-xs font-medium ${getStatusColor(
                           transaction.status
                         )}`}
                       >
-                        {transaction.status.charAt(0).toUpperCase() + transaction.status.slice(1)}
+                        {t.walletPage(`status.${transaction.status}`)}
                       </span>
                     </div>
                   </div>
                 </div>
-              ))
+              );
+            })
             ) : (
               // Empty state
               <div className="p-8 text-center">
@@ -402,12 +785,14 @@ export default function WalletPage() {
                   <Wallet className="w-6 h-6 text-gray-400" />
                 </div>
                 <h3 className="text-sm font-semibold text-gray-800 mb-1">
-                  No Transactions Found
+                  {t.walletPage('emptyState.title')}
                 </h3>
                 <p className="text-xs text-gray-600">
                   {filterType === 'all'
-                    ? 'Your transaction history will appear here'
-                    : `No ${filterType === 'credit' ? 'income' : 'expense'} transactions found`}
+                    ? t.walletPage('emptyState.allMessage')
+                    : filterType === 'credit' 
+                    ? t.walletPage('emptyState.creditMessage')
+                    : t.walletPage('emptyState.debitMessage')}
                 </p>
               </div>
             )}
@@ -417,10 +802,10 @@ export default function WalletPage() {
         {/* Payment Methods */}
         <div className="mt-4 bg-white rounded-xl p-4 shadow-sm border border-gray-100">
           <div className="flex items-center justify-between mb-3">
-            <h3 className="text-base font-bold text-gray-800">Payment Methods</h3>
+            <h3 className="text-base font-bold text-gray-800">{t.walletPage('paymentMethods')}</h3>
             <button className="text-xs text-orange-600 hover:text-orange-700 font-semibold flex items-center space-x-1">
               <Plus className="w-3 h-3" />
-              <span>Add</span>
+              <span>{t.walletPage('add')}</span>
             </button>
           </div>
 
@@ -430,11 +815,11 @@ export default function WalletPage() {
                 <CreditCard className="w-5 h-5 text-white" />
               </div>
               <div className="flex-1">
-                <p className="font-semibold text-sm text-gray-800">Mobile Money</p>
+                <p className="font-semibold text-sm text-gray-800">{t.walletPage('mobileMoney')}</p>
                 <p className="text-xs text-gray-600">MTN: •••• 1234</p>
               </div>
               <span className="text-xs font-medium text-blue-600 bg-blue-200 px-2 py-1 rounded-full">
-                Primary
+                {t.walletPage('primary')}
               </span>
             </div>
 
@@ -443,13 +828,94 @@ export default function WalletPage() {
                 <CreditCard className="w-5 h-5 text-white" />
               </div>
               <div className="flex-1">
-                <p className="font-semibold text-sm text-gray-800">Orange Money</p>
+                <p className="font-semibold text-sm text-gray-800">{t.walletPage('orangeMoney')}</p>
                 <p className="text-xs text-gray-600">•••• 5678</p>
               </div>
             </div>
           </div>
         </div>
       </div>
+
+      {/* Withdraw Modal */}
+      <WithdrawModal
+        isOpen={isWithdrawModalOpen}
+        onClose={() => setIsWithdrawModalOpen(false)}
+        currentBalance={walletStats.balance}
+        onWithdraw={handleWithdraw}
+      />
+
+      {/* ID Verification Required Modal */}
+      {showVerificationModal && (
+        <div 
+          className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 z-60 animate-in fade-in duration-200"
+          onClick={() => setShowVerificationModal(false)}
+        >
+          <div 
+            className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl animate-in zoom-in-95 duration-200"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="text-center">
+              <div className="w-16 h-16 mx-auto mb-4 bg-orange-100 rounded-3xl flex items-center justify-center">
+                <Shield className="w-8 h-8 text-orange-600" />
+              </div>
+              
+              <h3 className="text-lg font-bold text-slate-800 mb-2">{t.walletPage('verificationModal.title')}</h3>
+              <p className="text-gray-600 text-sm mb-6 leading-relaxed">
+                {t.walletPage('verificationModal.description')}
+              </p>
+              
+              <div className="bg-orange-50 border border-orange-200 rounded-xl p-4 mb-6">
+                <div className="flex items-start space-x-3">
+                  <AlertCircle className="w-5 h-5 text-orange-600 mt-0.5 flex-shrink-0" />
+                  <div className="text-left">
+                    <p className="text-sm font-semibold text-orange-900 mb-1">
+                      {t.walletPage('verificationModal.whatYouNeed')}
+                    </p>
+                    <ul className="text-xs text-orange-800 space-y-1">
+                      <li>• {t.walletPage('verificationModal.requirement1')}</li>
+                      <li>• {t.walletPage('verificationModal.requirement2')}</li>
+                      <li>• {t.walletPage('verificationModal.requirement3')}</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setShowVerificationModal(false)}
+                  className="flex-1 px-4 py-3 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-all font-medium"
+                >
+                  {t.walletPage('verificationModal.cancel')}
+                </button>
+                <button
+                  onClick={() => {
+                    setShowVerificationModal(false);
+                    router.push('/settings');
+                  }}
+                  className="flex-1 px-4 py-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-xl hover:from-orange-600 hover:to-orange-700 transition-all font-medium shadow-lg"
+                >
+                  {t.walletPage('verificationModal.verifyId')}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Add Money Modal */}
+      <AddMoneyModal
+        isOpen={isAddMoneyModalOpen}
+        onClose={() => setIsAddMoneyModalOpen(false)}
+        currentBalance={walletStats.balance}
+        onAddMoney={handleAddMoney}
+      />
+
+      {/* Transaction Details Modal */}
+      <TransactionDetailsModal
+        isOpen={isTransactionDetailsOpen}
+        onClose={() => setIsTransactionDetailsOpen(false)}
+        transaction={selectedTransaction}
+      />
     </div>
   );
 }

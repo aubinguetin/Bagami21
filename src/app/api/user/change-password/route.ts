@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import bcrypt from 'bcryptjs'
+import { getUserLocale, generatePasswordChangeNotification } from '@/lib/notificationTranslations'
 
 // POST /api/user/change-password
 export async function POST(req: Request) {
@@ -58,6 +59,24 @@ export async function POST(req: Request) {
       where: { id: user.id },
       data: { password: hashed },
     })
+
+    // Create notification for password change
+    try {
+      const locale = await getUserLocale(user.id);
+      const { title, message } = generatePasswordChangeNotification(locale);
+      
+      await prisma.notification.create({
+        data: {
+          userId: user.id,
+          type: 'update',
+          title,
+          message,
+          isRead: false
+        }
+      });
+    } catch (error) {
+      console.error('Failed to create password change notification:', error);
+    }
 
     return NextResponse.json({ success: true })
   } catch (err) {

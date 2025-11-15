@@ -12,7 +12,7 @@ function isValidEmail(email: string): boolean {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { contact, countryInfo, userId } = body;
+    const { contact, countryInfo, userId, language = 'en' } = body;
 
     // Validate request
     if (!contact) {
@@ -113,10 +113,11 @@ export async function POST(request: NextRequest) {
     if (isEmail) {
       // Send email OTP
       try {
-        await emailService.sendSignupOTP(contact, otp);
+        await emailService.sendSignupOTP(contact, otp, language);
         
         console.log('✅ Email OTP sent successfully:', {
           email: contact,
+          language,
           timestamp: new Date().toISOString()
         });
 
@@ -140,10 +141,11 @@ export async function POST(request: NextRequest) {
     } else {
       // Send SMS OTP
       try {
-        await SMSService.sendOTP(contact, otp);
+        await SMSService.sendOTP(contact, otp, language);
         
         console.log('✅ SMS OTP sent successfully:', {
           phoneNumber: contact,
+          language,
           countryInfo: countryInfo || 'Not provided',
           timestamp: new Date().toISOString()
         });

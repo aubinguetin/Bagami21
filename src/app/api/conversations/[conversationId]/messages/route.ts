@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { broadcastToConversation } from '@/lib/sse';
+import { requireActiveUser } from '@/lib/checkUserActive';
 
 // GET - Retrieve messages for a specific conversation
 export async function GET(request: NextRequest, { params }: { params: { conversationId: string } }) {
@@ -66,6 +67,16 @@ export async function GET(request: NextRequest, { params }: { params: { conversa
       return NextResponse.json({ error: 'Unauthorized - User not found' }, { status: 401 });
     }
 
+    // Check if user is suspended (real-time check)
+    try {
+      await requireActiveUser(currentUser.id);
+    } catch (error) {
+      return NextResponse.json({ 
+        error: 'Your account has been suspended. Please contact customer service.',
+        code: 'ACCOUNT_SUSPENDED'
+      }, { status: 403 });
+    }
+
     const conversationId = params.conversationId;
 
     // Verify user is part of this conversation
@@ -86,10 +97,44 @@ export async function GET(request: NextRequest, { params }: { params: { conversa
           }
         },
         participant1: {
-          select: { id: true, name: true, email: true, phone: true }
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            phone: true,
+            country: true,
+            countryCode: true,
+            reviewsReceived: {
+              select: {
+                rating: true
+              }
+            },
+            idDocuments: {
+              select: {
+                verificationStatus: true
+              }
+            }
+          }
         },
         participant2: {
-          select: { id: true, name: true, email: true, phone: true }
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            phone: true,
+            country: true,
+            countryCode: true,
+            reviewsReceived: {
+              select: {
+                rating: true
+              }
+            },
+            idDocuments: {
+              select: {
+                verificationStatus: true
+              }
+            }
+          }
         }
       }
     });
@@ -122,13 +167,41 @@ export async function GET(request: NextRequest, { params }: { params: { conversa
       }
     });
 
+    // Determine the other participant
+    const otherParticipant = conversation.participant1Id === currentUser.id 
+      ? conversation.participant2 
+      : conversation.participant1;
+
+    // Calculate average rating for other participant
+    const reviews = otherParticipant.reviewsReceived || [];
+    const averageRating = reviews.length > 0
+      ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length
+      : null;
+
+    // Check if user is verified (has at least one approved ID document)
+    const isVerified = otherParticipant.idDocuments?.some(
+      (doc) => doc.verificationStatus === 'approved'
+    ) || false;
+
     return NextResponse.json({
       success: true,
       conversation: {
-        ...conversation,
-        otherParticipant: conversation.participant1Id === currentUser.id 
-          ? conversation.participant2 
-          : conversation.participant1
+        id: conversation.id,
+        deliveryId: conversation.deliveryId,
+        delivery: conversation.delivery,
+        otherParticipant: {
+          id: otherParticipant.id,
+          name: otherParticipant.name,
+          email: otherParticipant.email,
+          phone: otherParticipant.phone,
+          country: otherParticipant.country,
+          countryCode: otherParticipant.countryCode,
+          averageRating: averageRating ? parseFloat(averageRating.toFixed(1)) : null,
+          reviewCount: reviews.length,
+          isVerified
+        },
+        createdAt: conversation.createdAt,
+        lastMessageAt: conversation.lastMessageAt
       },
       messages
     });
@@ -210,6 +283,16 @@ export async function POST(request: NextRequest, { params }: { params: { convers
       return NextResponse.json({ error: 'Unauthorized - User not found' }, { status: 401 });
     }
 
+    // Check if user is suspended (real-time check)
+    try {
+      await requireActiveUser(currentUser.id);
+    } catch (error) {
+      return NextResponse.json({ 
+        error: 'Your account has been suspended. Please contact customer service.',
+        code: 'ACCOUNT_SUSPENDED'
+      }, { status: 403 });
+    }
+
     // Verify user is part of this conversation
     const conversation = await prisma.conversation.findFirst({
       where: {
@@ -218,11 +301,26 @@ export async function POST(request: NextRequest, { params }: { params: { convers
           { participant1Id: currentUser.id },
           { participant2Id: currentUser.id }
         ]
+      },
+      include: {
+        delivery: {
+          select: {
+            id: true,
+            deletedAt: true
+          }
+        }
       }
     });
 
     if (!conversation) {
       return NextResponse.json({ error: 'Conversation not found or access denied' }, { status: 404 });
+    }
+
+    // Check if the delivery has been deleted
+    if (conversation.delivery.deletedAt) {
+      return NextResponse.json({ 
+        error: 'This delivery has been deleted. You can no longer send messages in this conversation.' 
+      }, { status: 403 });
     }
 
     // Create the message

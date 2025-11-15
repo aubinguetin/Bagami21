@@ -12,7 +12,10 @@ import ForgotPassword from '@/components/ForgotPassword';
 import NewPasswordForm from '@/components/NewPasswordForm';
 import GoogleSignInButton from '@/components/GoogleSignInButton';
 import FacebookSignInButton from '@/components/FacebookSignInButton';
+import LanguageSwitcher from '@/components/LanguageSwitcher';
 import { countryCodes, getDefaultCountry } from '@/data/countryCodes';
+import { useT } from '@/lib/i18n-helpers';
+import { useLocale } from '@/lib/i18n-helpers';
 
 // Phone number regex for Burkina Faso format
 const burkinaPhoneRegex = /^(\+226|00226|226)?[0-9]{8}$/;
@@ -69,7 +72,7 @@ const signupSchema = yup.object({
     otherwise: (schema) => schema.optional(),
   }),
   password: yup.string().min(6, 'Password must be at least 6 characters').required('Password is required'),
-  termsAccepted: yup.boolean().oneOf([true], 'You must agree to the Terms of Service and Privacy Policy').required('Terms acceptance is required'),
+  termsAccepted: yup.boolean().oneOf([true], 'You must agree to Bagami\'s Terms and Policy').required('Terms acceptance is required'),
 });
 
 interface LoginFormData {
@@ -93,11 +96,14 @@ interface SignupFormData {
 export default function AuthPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
+  const t = useT();
+  const locale = useLocale();
   const [isLogin, setIsLogin] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [showOtpVerification, setShowOtpVerification] = useState(false);
   const [phoneForVerification, setPhoneForVerification] = useState('');
+  const [verificationType, setVerificationType] = useState<'phone' | 'email'>('phone');
   const [fullNameForSignup, setFullNameForSignup] = useState('');
   const [passwordForSignup, setPasswordForSignup] = useState('');
   const [showForgotPassword, setShowForgotPassword] = useState(false);
@@ -176,10 +182,10 @@ export default function AuthPage() {
     };
   }, [showCountryDropdown]);
 
-  // Redirect authenticated users to homepage
+  // Redirect authenticated users to deliveries page
   useEffect(() => {
     if (status === 'authenticated') {
-      router.push('/');
+      router.push('/deliveries');
     }
   }, [status, router]);
 
@@ -252,7 +258,8 @@ export default function AuthPage() {
           }
         }, 500);
         
-        router.push('/');
+        // Redirect to deliveries page after login
+        router.push('/deliveries');
       } else {
         throw new Error(result?.error || 'Login failed. Please check your credentials.');
       }
@@ -296,6 +303,7 @@ export default function AuthPage() {
           },
           body: JSON.stringify({
             phoneNumber: fullPhoneNumber,
+            language: locale,
             countryInfo: {
               code: selectedCountry.code,
               name: selectedCountry.name,
@@ -322,6 +330,7 @@ export default function AuthPage() {
         }
 
         setPhoneForVerification(fullPhoneNumber);
+        setVerificationType('phone');
         setFullNameForSignup(data.fullName);
         setPasswordForSignup(data.password);
         setCountryForSignup(selectedCountry);
@@ -335,7 +344,8 @@ export default function AuthPage() {
           },
           body: JSON.stringify({
             phoneNumber: data.email, // API uses 'phoneNumber' param for both phone and email
-            type: 'signup'
+            type: 'signup',
+            language: locale
           }),
         });
 
@@ -357,6 +367,7 @@ export default function AuthPage() {
         }
 
         setPhoneForVerification(data.email);
+        setVerificationType('email');
         setFullNameForSignup(data.fullName);
         setPasswordForSignup(data.password);
         setShowOtpVerification(true);
@@ -548,8 +559,9 @@ export default function AuthPage() {
     setShowForgotPassword(false);
   };
 
-  const handleForgotPasswordOtpSent = (identifier: string) => {
+  const handleForgotPasswordOtpSent = (identifier: string, type: 'phone' | 'email') => {
     setPhoneForVerification(identifier);
+    setVerificationType(type);
     setShowForgotPassword(false);
     setIsForgotPasswordMode(true);
     setShowOtpVerification(true);
@@ -667,7 +679,8 @@ export default function AuthPage() {
   if (showOtpVerification) {
     return (
       <OtpVerification
-        phoneNumber={phoneForVerification}
+        contact={phoneForVerification}
+        verificationType={verificationType}
         onVerify={handleOtpVerify}
         onBack={handleBackFromOtp}
         isLoading={isLoading}
@@ -677,39 +690,26 @@ export default function AuthPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 to-white flex items-center justify-center p-4">
+      {/* Language Switcher - Top Right */}
+      <div className="fixed top-4 right-4 z-50">
+        <LanguageSwitcher />
+      </div>
+
       <div className="w-full max-w-md">
         {/* Logo Section */}
         <div className="text-center mb-8">
           <div className="mx-auto w-32 h-32 mb-4 flex items-center justify-center">
-            <svg width="128" height="128" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
-              {/* Orange figure with briefcase */}
-              <g transform="translate(50, 40)">
-                {/* Head */}
-                <circle cx="50" cy="30" r="20" fill="#FF6B35"/>
-                
-                {/* Body */}
-                <path d="M30 50 Q30 45 35 45 L65 45 Q70 45 70 50 L85 90 Q85 95 80 95 L20 95 Q15 95 15 90 Z" fill="#FF6B35"/>
-                
-                {/* Arms */}
-                <ellipse cx="20" cy="65" rx="12" ry="25" fill="#FF6B35" transform="rotate(-30 20 65)"/>
-                <ellipse cx="80" cy="65" rx="12" ry="25" fill="#FF6B35" transform="rotate(30 80 65)"/>
-                
-                {/* Legs */}
-                <ellipse cx="35" cy="105" rx="12" ry="25" fill="#FF6B35" transform="rotate(-15 35 105)"/>
-                <ellipse cx="65" cy="105" rx="12" ry="25" fill="#FF6B35" transform="rotate(15 65 105)"/>
-                
-                {/* Briefcase */}
-                <rect x="10" y="55" width="20" height="15" rx="2" fill="#FF6B35"/>
-                <rect x="12" y="57" width="16" height="2" fill="white"/>
-                <circle cx="15" cy="62" r="1" fill="white"/>
-              </g>
-            </svg>
+            <img 
+              src="/bagamilogo_transparent2.png" 
+              alt="Bagami Logo" 
+              className="w-full h-full object-contain"
+            />
           </div>
           <h1 className="text-3xl font-bold text-slate-800 mb-2">Bagami</h1>
           <p className="text-gray-600 text-center max-w-md mx-auto">
             {isLogin ? 
-              'Welcome back! Connect with your community for smart, flexible deliveries.' : 
-              'Join Bagami - Transform every trip into an opportunity to connect, share, and support your community.'
+              t.authPage('welcome.login') : 
+              t.authPage('welcome.signup')
             }
           </p>
         </div>
@@ -726,7 +726,7 @@ export default function AuthPage() {
                   : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
               }`}
             >
-              Sign In
+              {t.authPage('tabs.signIn')}
             </button>
             <button
               onClick={switchToSignup}
@@ -736,7 +736,7 @@ export default function AuthPage() {
                   : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
               }`}
             >
-              Sign Up
+              {t.authPage('tabs.signUp')}
             </button>
           </div>
 
@@ -746,7 +746,7 @@ export default function AuthPage() {
               {/* Login Contact Method Tabs */}
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-3">
-                  Sign in with
+                  {t.authPage('labels.signInWith')}
                 </label>
                 
                 {/* Tab Headers */}
@@ -764,7 +764,7 @@ export default function AuthPage() {
                     }`}
                   >
                     <Phone className="w-4 h-4 inline mr-2" />
-                    Phone Number
+                    {t.authPage('labels.phoneNumber')}
                   </button>
                   <button
                     type="button"
@@ -779,7 +779,7 @@ export default function AuthPage() {
                     }`}
                   >
                     <Mail className="w-4 h-4 inline mr-2" />
-                    Email
+                    {t.authPage('labels.email')}
                   </button>
                 </div>
 
@@ -858,7 +858,7 @@ export default function AuthPage() {
                           {...loginForm.register('phone')}
                           type="tel"
                           className="input-field"
-                          placeholder="Enter your phone number"
+                          placeholder={t.authPage('placeholders.phoneNumber')}
                         />
                       </div>
                     </div>
@@ -877,7 +877,7 @@ export default function AuthPage() {
                         {...loginForm.register('email')}
                         type="email"
                         className="input-field pl-11"
-                        placeholder="your.email@example.com"
+                        placeholder={t.authPage('placeholders.email')}
                       />
                     </div>
                     {loginForm.formState.errors.email && (
@@ -889,7 +889,7 @@ export default function AuthPage() {
 
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-2">
-                  Password
+                  {t.authPage('labels.password')}
                 </label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 w-5 h-5" />
@@ -897,7 +897,7 @@ export default function AuthPage() {
                     {...loginForm.register('password')}
                     type={showPassword ? 'text' : 'password'}
                     className="input-field pl-11 pr-11"
-                    placeholder="Enter your password"
+                    placeholder={t.authPage('placeholders.password')}
                   />
                   <button
                     type="button"
@@ -915,14 +915,14 @@ export default function AuthPage() {
               <div className="flex items-center justify-between">
                 <label className="flex items-center">
                   <input type="checkbox" className="rounded border-gray-300 text-orange-500 focus:ring-orange-500" />
-                  <span className="ml-2 text-sm text-gray-600">Remember me</span>
+                  <span className="ml-2 text-sm text-gray-600">{t.authPage('labels.rememberMe')}</span>
                 </label>
                 <button 
                   type="button" 
                   onClick={handleForgotPassword}
                   className="text-sm text-orange-500 hover:text-orange-600"
                 >
-                  Forgot password?
+                  {t.authPage('buttons.forgotPassword')}
                 </button>
               </div>
 
@@ -931,29 +931,9 @@ export default function AuthPage() {
                 disabled={isLoading}
                 className="btn-primary w-full"
               >
-                {isLoading ? 'Signing In...' : 'Sign In'}
+                {isLoading ? t.authPage('buttons.signingIn') : t.authPage('buttons.signIn')}
               </button>
             </form>
-          )}
-
-          {/* Test Account Access - Only show in login mode */}
-          {isLogin && (
-            <div className="mt-4 text-center space-y-2">
-              <button
-                onClick={() => handleTestAccountAccess(1)}
-                disabled={isLoading}
-                className="block w-full text-sm text-blue-600 hover:text-blue-800 underline font-medium"
-              >
-                🧪 Test User 1 (+226 77889900) - Quick Access
-              </button>
-              <button
-                onClick={() => handleTestAccountAccess(2)}
-                disabled={isLoading}
-                className="block w-full text-sm text-green-600 hover:text-green-800 underline font-medium"
-              >
-                🧪 Test User 2 (+33 7783928899) - Quick Access
-              </button>
-            </div>
           )}
 
           {/* Signup Form */}
@@ -961,7 +941,7 @@ export default function AuthPage() {
             <form onSubmit={signupForm.handleSubmit(onSignupSubmit)} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-2">
-                  Full Name
+                  {t.authPage('labels.fullName')}
                 </label>
                 <div className="relative">
                   <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 w-5 h-5" />
@@ -969,7 +949,7 @@ export default function AuthPage() {
                     {...signupForm.register('fullName')}
                     type="text"
                     className="input-field pl-11"
-                    placeholder="Enter your full name"
+                    placeholder={t.authPage('placeholders.fullName')}
                   />
                 </div>
                 {signupForm.formState.errors.fullName && (
@@ -980,7 +960,7 @@ export default function AuthPage() {
               {/* Contact Method Tabs */}
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-3">
-                  Contact Information
+                  {t.authPage('labels.contactInfo')}
                 </label>
                 
                 {/* Tab Headers */}
@@ -998,7 +978,7 @@ export default function AuthPage() {
                     }`}
                   >
                     <Phone className="w-4 h-4 inline mr-2" />
-                    Phone Number
+                    {t.authPage('labels.phoneNumber')}
                   </button>
                   <button
                     type="button"
@@ -1013,7 +993,7 @@ export default function AuthPage() {
                     }`}
                   >
                     <Mail className="w-4 h-4 inline mr-2" />
-                    Email
+                    {t.authPage('labels.email')}
                   </button>
                 </div>
 
@@ -1083,7 +1063,7 @@ export default function AuthPage() {
                                 ))
                               ) : (
                                 <div className="px-4 py-3 text-sm text-gray-500 text-center">
-                                  No countries found
+                                  {t.authPage('hints.noCountriesFound')}
                                 </div>
                               )}
                             </div>
@@ -1097,14 +1077,13 @@ export default function AuthPage() {
                           {...signupForm.register('phone')}
                           type="tel"
                           className="input-field"
-                          placeholder="Enter your phone number"
+                          placeholder={t.authPage('placeholders.phoneNumber')}
                         />
                       </div>
                     </div>
                     {signupForm.formState.errors.phone && (
                       <p className="text-red-500 text-sm mt-1">{signupForm.formState.errors.phone.message}</p>
                     )}
-                    <p className="text-xs text-gray-500 mt-1">This will be used for OTP verification</p>
                   </div>
                 )}
 
@@ -1141,7 +1120,7 @@ export default function AuthPage() {
 
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-2">
-                  Password
+                  {t.authPage('labels.password')}
                 </label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 w-5 h-5" />
@@ -1149,7 +1128,7 @@ export default function AuthPage() {
                     {...signupForm.register('password')}
                     type={showPassword ? 'text' : 'password'}
                     className="input-field pl-11 pr-11"
-                    placeholder="Create a password (min. 6 characters)"
+                    placeholder={t.authPage('placeholders.password')}
                   />
                   <button
                     type="button"
@@ -1172,14 +1151,13 @@ export default function AuthPage() {
                     className="rounded border-gray-300 text-orange-500 focus:ring-orange-500"
                   />
                   <span className="ml-2 text-sm text-gray-600">
-                    I agree to the{' '}
-                    <button type="button" className="text-orange-500 hover:text-orange-600">
-                      Terms of Service
-                    </button>
-                    {' '}and{' '}
-                    <button type="button" className="text-orange-500 hover:text-orange-600">
-                      Privacy Policy
-                    </button>
+                    {t.authPage('terms.agreeText')}{' '}
+                    <a 
+                      href="/terms-and-policy"
+                      className="text-orange-500 hover:text-orange-600 underline"
+                    >
+                      {t.authPage('terms.terms')} {t.authPage('terms.and')} {t.authPage('terms.policy')}
+                    </a>
                   </span>
                 </div>
                 {signupForm.formState.errors.termsAccepted && (
@@ -1192,7 +1170,7 @@ export default function AuthPage() {
                 disabled={isLoading}
                 className="btn-primary w-full"
               >
-                {isLoading ? 'Creating Account...' : 'Create Account'}
+                {isLoading ? t.authPage('buttons.creatingAccount') : t.authPage('buttons.signUp')}
               </button>
             </form>
           )}
@@ -1200,14 +1178,14 @@ export default function AuthPage() {
           {/* Divider */}
           <div className="my-6 flex items-center">
             <div className="flex-1 border-t border-gray-300"></div>
-            <span className="px-4 text-bagami-dark-gray text-sm">or</span>
+            <span className="px-4 text-bagami-dark-gray text-sm">{t.authPage('or')}</span>
             <div className="flex-1 border-t border-gray-300"></div>
           </div>
 
           {/* Social Sign-In */}
           <div className="space-y-3">
-            <GoogleSignInButton text={isLogin ? "Sign in with Google" : "Sign up with Google"} />
-            <FacebookSignInButton text={isLogin ? "Sign in with Facebook" : "Sign up with Facebook"} />
+            <GoogleSignInButton isSignUp={!isLogin} />
+            <FacebookSignInButton isSignUp={!isLogin} />
           </div>
 
           {/* Links */}
@@ -1225,7 +1203,7 @@ export default function AuthPage() {
 
         {/* Footer */}
         <div className="text-center mt-6 text-sm text-gray-500">
-          © 2025 Bagami - Smart Community-Powered Deliveries. All rights reserved.
+          {t.authPage('footer')}
         </div>
       </div>
     </div>

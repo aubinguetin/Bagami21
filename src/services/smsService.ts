@@ -62,12 +62,14 @@ export class SMSService {
   /**
    * Send OTP SMS to a phone number
    */
-  static async sendOTP(phoneNumber: string, otp: string): Promise<SMSResponse> {
+  static async sendOTP(phoneNumber: string, otp: string, language: string = 'en'): Promise<SMSResponse> {
     // Clean phone number (remove spaces, ensure + prefix)
     const cleanPhone = phoneNumber.replace(/\s+/g, '');
     const formattedPhone = cleanPhone.startsWith('+') ? cleanPhone : `+${cleanPhone}`;
 
-    const message = `Your Bagami verification code is: ${otp}. This code will expire in 10 minutes. Don't share it with anyone.`;
+    const message = language === 'fr'
+      ? `Votre code de vérification Bagami est : ${otp}. Ce code expirera dans 10 minutes. Ne le partagez avec personne.`
+      : `Your Bagami verification code is: ${otp}. This code will expire in 10 minutes. Don't share it with anyone.`;
 
     return this.sendSMS({
       from: this.FROM_NAME,
@@ -79,11 +81,13 @@ export class SMSService {
   /**
    * Send password reset SMS to a phone number
    */
-  static async sendPasswordResetOTP(phoneNumber: string, otp: string): Promise<SMSResponse> {
+  static async sendPasswordResetOTP(phoneNumber: string, otp: string, language: string = 'en'): Promise<SMSResponse> {
     const cleanPhone = phoneNumber.replace(/\s+/g, '');
     const formattedPhone = cleanPhone.startsWith('+') ? cleanPhone : `+${cleanPhone}`;
 
-    const message = `Your Bagami password reset code is: ${otp}. This code will expire in 10 minutes. Don't share it with anyone.`;
+    const message = language === 'fr'
+      ? `Votre code de réinitialisation de mot de passe Bagami est : ${otp}. Ce code expirera dans 10 minutes. Ne le partagez avec personne.`
+      : `Your Bagami password reset code is: ${otp}. This code will expire in 10 minutes. Don't share it with anyone.`;
 
     return this.sendSMS({
       from: this.FROM_NAME,

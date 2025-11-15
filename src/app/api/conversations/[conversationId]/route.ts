@@ -35,7 +35,19 @@ export async function GET(
             id: true,
             name: true,
             email: true,
-            phone: true
+            phone: true,
+            country: true,
+            countryCode: true,
+            reviewsReceived: {
+              select: {
+                rating: true
+              }
+            },
+            idDocuments: {
+              select: {
+                verificationStatus: true
+              }
+            }
           }
         },
         participant2: {
@@ -43,7 +55,19 @@ export async function GET(
             id: true,
             name: true,
             email: true,
-            phone: true
+            phone: true,
+            country: true,
+            countryCode: true,
+            reviewsReceived: {
+              select: {
+                rating: true
+              }
+            },
+            idDocuments: {
+              select: {
+                verificationStatus: true
+              }
+            }
           }
         }
       }
@@ -61,8 +85,27 @@ export async function GET(
       ? conversation.participant2
       : conversation.participant1;
 
+    // Calculate average rating for other participant
+    const reviews = otherParticipant.reviewsReceived || [];
+    const averageRating = reviews.length > 0
+      ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length
+      : null;
+
+    // Check if user is verified (has at least one approved ID document)
+    const isVerified = otherParticipant.idDocuments?.some(
+      (doc) => doc.verificationStatus === 'approved'
+    ) || false;
+
+    console.log('Other participant verification:', {
+      participantId: otherParticipant.id,
+      participantName: otherParticipant.name,
+      idDocuments: otherParticipant.idDocuments,
+      isVerified
+    });
+
     return NextResponse.json({
       id: conversation.id,
+      deliveryId: conversation.deliveryId,
       delivery: {
         id: conversation.delivery.id,
         title: conversation.delivery.title,
@@ -81,7 +124,17 @@ export async function GET(
         senderId: conversation.delivery.senderId,
         receiverId: conversation.delivery.receiverId
       },
-      otherParticipant,
+      otherParticipant: {
+        id: otherParticipant.id,
+        name: otherParticipant.name,
+        email: otherParticipant.email,
+        phone: otherParticipant.phone,
+        country: otherParticipant.country,
+        countryCode: otherParticipant.countryCode,
+        averageRating: averageRating ? parseFloat(averageRating.toFixed(1)) : null,
+        reviewCount: reviews.length,
+        isVerified
+      },
       createdAt: conversation.createdAt,
       lastMessageAt: conversation.lastMessageAt
     });

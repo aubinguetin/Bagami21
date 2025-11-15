@@ -5,6 +5,7 @@ import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { ArrowLeft, Lock, Eye, EyeOff, CheckCircle } from 'lucide-react';
+import { useT } from '@/lib/i18n-helpers';
 
 // Validation schema for new password
 const newPasswordSchema = yup.object({
@@ -30,6 +31,7 @@ interface NewPasswordFormProps {
 }
 
 export default function NewPasswordForm({ phoneNumber, onPasswordReset, onBack, isLoading = false }: NewPasswordFormProps) {
+  const t = useT();
   const [showPassword, setShowPassword] = useState(false);
 
   const form = useForm<NewPasswordFormData>({
@@ -78,16 +80,16 @@ export default function NewPasswordForm({ phoneNumber, onPasswordReset, onBack, 
             className="flex items-center text-gray-600 hover:text-gray-800 mb-6"
           >
             <ArrowLeft className="w-5 h-5 mr-2" />
-            Back
+            {t.authPage('newPassword.back')}
           </button>
           
           <div className="mx-auto w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mb-4">
             <Lock className="w-10 h-10 text-green-500" />
           </div>
           
-          <h1 className="text-2xl font-bold text-slate-800 mb-2">Set New Password</h1>
+          <h1 className="text-2xl font-bold text-slate-800 mb-2">{t.authPage('newPassword.title')}</h1>
           <p className="text-gray-600 text-center">
-            Enter your new password for <br/>
+            {t.authPage('newPassword.subtitle')} <br/>
             <span className="font-semibold">{formatPhoneNumber(phoneNumber)}</span>
           </p>
         </div>
@@ -97,7 +99,7 @@ export default function NewPasswordForm({ phoneNumber, onPasswordReset, onBack, 
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-2">
-                New Password
+                {t.authPage('newPassword.newPasswordLabel')}
               </label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 w-5 h-5" />
@@ -105,7 +107,7 @@ export default function NewPasswordForm({ phoneNumber, onPasswordReset, onBack, 
                   {...form.register('password')}
                   type={showPassword ? 'text' : 'password'}
                   className="input-field pl-11 pr-11"
-                  placeholder="Enter your new password"
+                  placeholder={t.authPage('newPassword.newPasswordPlaceholder')}
                 />
                 <button
                   type="button"
@@ -141,10 +143,10 @@ export default function NewPasswordForm({ phoneNumber, onPasswordReset, onBack, 
                       score === 4 ? 'text-orange-600' :
                       'text-green-600'
                     }`}>
-                      {score < 2 ? 'Weak' :
-                       score < 4 ? 'Fair' :
-                       score === 4 ? 'Good' :
-                       'Strong'}
+                      {score < 2 ? t.authPage('newPassword.strengthWeak') :
+                       score < 4 ? t.authPage('newPassword.strengthFair') :
+                       score === 4 ? t.authPage('newPassword.strengthGood') :
+                       t.authPage('newPassword.strengthStrong')}
                     </span>
                   </div>
                   
@@ -153,11 +155,11 @@ export default function NewPasswordForm({ phoneNumber, onPasswordReset, onBack, 
                       <div key={key} className={`flex items-center text-xs ${passed ? 'text-green-600' : 'text-gray-500'}`}>
                         <CheckCircle className={`w-3 h-3 mr-2 ${passed ? 'text-green-500' : 'text-gray-300'}`} />
                         <span>
-                          {key === 'length' && '8+ characters'}
-                          {key === 'uppercase' && 'Uppercase letter'}
-                          {key === 'lowercase' && 'Lowercase letter'}
-                          {key === 'number' && 'Number'}
-                          {key === 'special' && 'Special character'}
+                          {key === 'length' && t.authPage('newPassword.requirement8Chars')}
+                          {key === 'uppercase' && t.authPage('newPassword.requirementUppercase')}
+                          {key === 'lowercase' && t.authPage('newPassword.requirementLowercase')}
+                          {key === 'number' && t.authPage('newPassword.requirementNumber')}
+                          {key === 'special' && t.authPage('newPassword.requirementSpecial')}
                         </span>
                       </div>
                     ))}
@@ -171,14 +173,14 @@ export default function NewPasswordForm({ phoneNumber, onPasswordReset, onBack, 
               disabled={isLoading || !form.formState.isValid}
               className="btn-primary w-full disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isLoading ? 'Updating Password...' : 'Update Password'}
+              {isLoading ? t.authPage('newPassword.updatingPassword') : t.authPage('newPassword.updatePassword')}
             </button>
           </form>
         </div>
 
         {/* Footer */}
         <div className="text-center mt-6 text-sm text-gray-500">
-          © 2025 Bagami - Smart Community-Powered Deliveries. All rights reserved.
+          {t.authPage('footer')}
         </div>
       </div>
     </div>

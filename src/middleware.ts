@@ -1,31 +1,14 @@
-import { withAuth } from "next-auth/middleware"
+import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
 
-export default withAuth(
-  function middleware(req) {
-    // This function will only be called if the user is authenticated
-  },
-  {
-    callbacks: {
-      authorized: ({ token, req }) => {
-        // Allow access to auth page for unauthenticated users
-        if (req.nextUrl.pathname === '/auth') {
-          return true;
-        }
-        
-        // Require authentication for protected routes
-        if (req.nextUrl.pathname.startsWith('/profile') || 
-            req.nextUrl.pathname.startsWith('/messages') ||
-            req.nextUrl.pathname.startsWith('/deliveries')) {
-          return !!token;
-        }
-        
-        // Allow access to all other pages
-        return true;
-      },
-    },
-  }
-)
+export function middleware(request: NextRequest) {
+  // Just pass through - we handle locale on the client side
+  return NextResponse.next();
+}
 
 export const config = {
-  matcher: ['/profile/:path*', '/messages/:path*', '/deliveries/:path*', '/auth']
-}
+  // Match all pathnames except for
+  // - … if they start with `/api`, `/_next` or `/_vercel`
+  // - … the ones containing a dot (e.g. `favicon.ico`)
+  matcher: ['/((?!api|_next|_vercel|.*\\..*).*)']
+};

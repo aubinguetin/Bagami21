@@ -1,16 +1,20 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
-import { ArrowLeft, Phone, RefreshCw } from 'lucide-react';
+import React, { useState, useRef, useEffect, FormEvent, ClipboardEvent, KeyboardEvent } from 'react';
+import { Phone, Mail, ArrowLeft, RefreshCw } from 'lucide-react';
+import { useT, useLocale } from '@/lib/i18n-helpers';
 
 interface OtpVerificationProps {
-  phoneNumber: string;
+  contact: string; // Email or phone number
+  verificationType: 'phone' | 'email';
   onVerify: (otp: string) => void;
   onBack: () => void;
   isLoading?: boolean;
 }
 
-export default function OtpVerification({ phoneNumber, onVerify, onBack, isLoading = false }: OtpVerificationProps) {
+export default function OtpVerification({ contact, verificationType, onVerify, onBack, isLoading = false }: OtpVerificationProps) {
+  const t = useT();
+  const locale = useLocale();
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
   const [countdown, setCountdown] = useState(0); // Start at 0 - allow immediate resend
   const [canResend, setCanResend] = useState(true); // Allow resend immediately
@@ -74,24 +78,25 @@ export default function OtpVerification({ phoneNumber, onVerify, onBack, isLoadi
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          phoneNumber: phoneNumber,
-          type: 'signup'
+          phoneNumber: contact, // API uses 'phoneNumber' param for both
+          type: 'signup',
+          language: locale
         }),
       });
 
       const result = await response.json();
       
       if (response.ok) {
-        alert('New verification code sent successfully!');
+        alert(t.authPage('otpVerification.resendSuccess'));
         setCountdown(10); // Short 10-second cooldown after resend
         setCanResend(false);
         setOtp(['', '', '', '', '', '']);
       } else {
-        alert(result.message || 'Failed to resend verification code');
+        alert(result.message || t.authPage('otpVerification.resendFailed'));
       }
     } catch (error) {
       console.error('Resend OTP error:', error);
-      alert('Failed to resend verification code. Please try again.');
+      alert(t.authPage('otpVerification.resendFailed'));
     } finally {
       setIsResending(false);
     }
@@ -116,22 +121,28 @@ export default function OtpVerification({ phoneNumber, onVerify, onBack, isLoadi
             className="flex items-center text-gray-600 hover:text-gray-800 mb-6"
           >
             <ArrowLeft className="w-5 h-5 mr-2" />
-            Back
+            {t.authPage('otpVerification.back')}
           </button>
           
           <div className="mx-auto w-20 h-20 bg-orange-100 rounded-full flex items-center justify-center mb-4">
-            <Phone className="w-10 h-10 text-orange-500" />
+            {verificationType === 'phone' ? (
+              <Phone className="w-10 h-10 text-orange-500" />
+            ) : (
+              <Mail className="w-10 h-10 text-orange-500" />
+            )}
           </div>
           
-          <h1 className="text-2xl font-bold text-slate-800 mb-2">Verify Phone Number</h1>
+          <h1 className="text-2xl font-bold text-slate-800 mb-2">
+            {verificationType === 'phone' ? t.authPage('otpVerification.titlePhone') : t.authPage('otpVerification.titleEmail')}
+          </h1>
           <p className="text-gray-600 text-center">
-            We've sent a 6-digit verification code to
+            {t.authPage('otpVerification.subtitleSent')}
           </p>
           <p className="font-semibold text-slate-800">
-            {formatPhoneNumber(phoneNumber)}
+            {verificationType === 'phone' ? formatPhoneNumber(contact) : contact}
           </p>
           <p className="text-xs text-gray-500 text-center mt-2">
-            You can request a new code if needed
+            {t.authPage('otpVerification.hintRequest')}
           </p>
         </div>
 
@@ -139,7 +150,7 @@ export default function OtpVerification({ phoneNumber, onVerify, onBack, isLoadi
         <div className="bg-white rounded-xl shadow-xl p-8">
           <div className="mb-6">
             <label className="block text-sm font-medium text-slate-700 mb-4 text-center">
-              Enter verification code
+              {t.authPage('otpVerification.enterCode')}
             </label>
             
             <div className="flex justify-center space-x-2" onPaste={handlePaste}>
@@ -173,11 +184,11 @@ export default function OtpVerification({ phoneNumber, onVerify, onBack, isLoadi
                 ) : (
                   <RefreshCw className="w-4 h-4 mr-2" />
                 )}
-                {isResending ? 'Sending New Code...' : 'Send New Code'}
+                {isResending ? t.authPage('otpVerification.sendingNewCode') : t.authPage('otpVerification.sendNewCode')}
               </button>
             ) : (
               <p className="text-gray-500 text-sm">
-                Request new code in {countdown}s
+                {t.authPage('otpVerification.requestNewCodeIn').replace('{seconds}', countdown.toString())}
               </p>
             )}
           </div>
@@ -188,18 +199,18 @@ export default function OtpVerification({ phoneNumber, onVerify, onBack, isLoadi
             disabled={otp.join('').length !== 6 || isLoading}
             className="btn-primary w-full disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {isLoading ? 'Verifying...' : 'Verify Code'}
+            {isLoading ? t.authPage('otpVerification.verifying') : t.authPage('otpVerification.verifyCode')}
           </button>
 
           {/* Help Text */}
           <div className="mt-6 text-center">
             <p className="text-sm text-gray-500">
-              Didn't receive the code?{' '}
+              {t.authPage('otpVerification.didNotReceive')}{' '}
               <button 
                 onClick={onBack}
                 className="text-orange-500 hover:text-orange-600 font-medium"
               >
-                Change phone number
+                {verificationType === 'phone' ? t.authPage('otpVerification.changePhone') : t.authPage('otpVerification.changeEmail')}
               </button>
             </p>
           </div>
@@ -207,7 +218,7 @@ export default function OtpVerification({ phoneNumber, onVerify, onBack, isLoadi
 
         {/* Footer */}
         <div className="text-center mt-6 text-sm text-gray-500">
-          © 2025 Bagami - Smart Community-Powered Deliveries. All rights reserved.
+          {t.authPage('footer')}
         </div>
       </div>
     </div>

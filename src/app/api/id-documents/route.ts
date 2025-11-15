@@ -4,6 +4,7 @@ import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
 import { writeFile, mkdir, unlink } from 'fs/promises';
 import { join } from 'path';
+import { emailService } from '@/lib/email';
 
 export async function POST(request: NextRequest) {
   try {
@@ -102,6 +103,36 @@ export async function POST(request: NextRequest) {
       }
     });
 
+    // Get user details for email notification
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: {
+        name: true,
+        email: true,
+        phone: true,
+      },
+    });
+
+    // Send admin notification email (non-blocking)
+    if (user && user.email) {
+      const documentUrl = `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}${frontImagePath}`;
+      emailService.sendIdVerificationNotification({
+        userId: session.user.id,
+        name: user.name || 'Unknown User',
+        email: user.email,
+        phone: user.phone || 'Not provided',
+        documentType: documentType === 'national_id' ? 'National ID Card' : 'Passport',
+        documentUrl,
+        submittedAt: new Date().toLocaleString('en-US', {
+          dateStyle: 'medium',
+          timeStyle: 'short',
+          timeZone: 'Africa/Douala',
+        }),
+      }).catch(error => {
+        console.error('Failed to send ID verification notification email:', error);
+      });
+    }
+
     return NextResponse.json({
       success: true,
       message: 'Document uploaded successfully',
@@ -142,6 +173,7 @@ export async function GET(request: NextRequest) {
         documentType: true,
         frontImagePath: true,
         backImagePath: true,
+        verificationStatus: true,
         uploadedAt: true
       },
       orderBy: {

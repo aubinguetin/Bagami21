@@ -81,7 +81,11 @@ export async function POST(request: NextRequest) {
         data: {
           conversationId: message.conversationId,
           senderId: session.user.id,
-          content: `Offer accepted! The agreed price is ${offerData.price} ${offerData.currency}.`,
+          content: JSON.stringify({
+            type: 'offerAccepted',
+            price: offerData.price,
+            currency: offerData.currency
+          }),
           messageType: 'system',
         },
       });
@@ -90,7 +94,11 @@ export async function POST(request: NextRequest) {
         data: {
           conversationId: message.conversationId,
           senderId: session.user.id,
-          content: `Offer of ${offerData.price} ${offerData.currency} was declined.`,
+          content: JSON.stringify({
+            type: 'offerDeclined',
+            price: offerData.price,
+            currency: offerData.currency
+          }),
           messageType: 'system',
         },
       });

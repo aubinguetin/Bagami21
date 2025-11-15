@@ -1,7 +1,7 @@
  'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { 
   ArrowLeft,
@@ -21,10 +21,15 @@ import {
   Trash2
 } from 'lucide-react';
 import ChangePasswordModal from '@/components/ChangePasswordModal';
+import LanguageSwitcher from '@/components/LanguageSwitcher';
+import { useT, useLocale } from '@/lib/i18n-helpers';
 
 export default function SettingsPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { data: session } = useSession();
+  const { settings } = useT();
+  const locale = useLocale();
   
   // Modal state
   const [showVerifyModal, setShowVerifyModal] = useState(false);
@@ -44,6 +49,7 @@ export default function SettingsPage() {
     documentType: 'national_id' | 'passport' | string;
     frontImagePath: string | null;
     backImagePath: string | null;
+    verificationStatus: string;
     uploadedAt: string;
   }>>([]);
   const [loadingDocs, setLoadingDocs] = useState(false);
@@ -72,6 +78,14 @@ export default function SettingsPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [showVerifyModal, session?.user?.id]);
 
+  // Load documents on initial mount to show status
+  useEffect(() => {
+    if (session?.user?.id) {
+      loadDocuments();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [session?.user?.id]);
+
   const frontInputRef = useRef<HTMLInputElement>(null);
   const backInputRef = useRef<HTMLInputElement>(null);
   const passportInputRef = useRef<HTMLInputElement>(null);
@@ -80,13 +94,13 @@ export default function SettingsPage() {
     // Simple client-side validation
     const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg']
     if (!allowedTypes.includes(file.type)) {
-      alert('Please select a valid image file (JPEG, PNG, JPG)')
+      alert(settings('verifyIDModal.errors.invalidFileType'))
       return
     }
 
     const maxSize = 5 * 1024 * 1024 // 5MB
     if (file.size > maxSize) {
-      alert('File size must be less than 5MB')
+      alert(settings('verifyIDModal.errors.fileSizeTooLarge'))
       return
     }
 
@@ -106,7 +120,7 @@ export default function SettingsPage() {
     const missingFiles = requiredFiles.filter(file => !uploadedFiles[file as keyof typeof uploadedFiles])
     
     if (missingFiles.length > 0) {
-      alert('Please upload all required documents')
+      alert(settings('verifyIDModal.errors.missingDocuments'))
       return
     }
 
@@ -129,8 +143,20 @@ export default function SettingsPage() {
       })
 
       if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.error || 'Upload failed')
+        let errorMessage = settings('verifyIDModal.errors.uploadFailed')
+        try {
+          const contentType = response.headers.get('content-type')
+          if (contentType && contentType.includes('application/json')) {
+            const errorData = await response.json()
+            errorMessage = errorData.error || errorMessage
+          } else {
+            // Response is not JSON (likely HTML error page)
+            errorMessage = `Server error (${response.status})`
+          }
+        } catch (parseError) {
+          console.error('Failed to parse error response:', parseError)
+        }
+        throw new Error(errorMessage)
       }
 
       const result = await response.json()
@@ -148,7 +174,7 @@ export default function SettingsPage() {
       }, 2000)
     } catch (error) {
       console.error('Upload failed:', error)
-      alert(`Upload failed: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      alert(`${settings('verifyIDModal.errors.uploadFailed')}: ${error instanceof Error ? error.message : settings('verifyIDModal.errors.unknownError')}`)
     } finally {
       setUploading(false)
     }
@@ -157,85 +183,129 @@ export default function SettingsPage() {
   return (
     <div className="min-h-screen bg-gray-50 pb-20">
       {/* Header */}
-      <div className="bg-white shadow-sm border-b border-gray-100 sticky top-0 z-10">
-        <div className="flex items-center justify-between px-4 py-4">
-          <button
-            onClick={() => router.back()}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-          >
-            <ArrowLeft className="w-5 h-5 text-gray-600" />
-          </button>
-          <h1 className="text-lg font-semibold text-gray-900">Settings</h1>
-          <div className="w-9 h-9"></div> {/* Spacer for centering */}
+      <div className="fixed top-0 left-0 right-0 bg-transparent z-50">
+        <div className="px-4 py-3">
+          <div className="flex items-center justify-between">
+            <button
+              onClick={() => {
+                const returnUrl = searchParams.get('returnUrl');
+                if (returnUrl) {
+                  router.push(returnUrl);
+                } else {
+                  router.push('/profile');
+                }
+              }}
+              className="flex items-center justify-center w-10 h-10 bg-white rounded-full border border-gray-300 text-gray-700 transition-all hover:scale-105 hover:border-gray-400"
+            >
+              <ArrowLeft className="w-5 h-5" />
+            </button>
+            <div className="flex-1 mx-4 flex justify-center">
+              <div className="bg-white px-6 py-2 rounded-full border border-gray-300">
+                <h1 className="text-base font-semibold text-gray-900">{settings('title')}</h1>
+              </div>
+            </div>
+            <div className="w-10"></div>
+          </div>
         </div>
       </div>
+      <div className="pt-16"></div>
 
       {/* Settings Content */}
       <div className="px-4 py-4 space-y-3 max-w-md mx-auto">
         
         {/* Account Settings Section */}
-        <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
-          <div className="space-y-1">
-            <button 
-              onClick={() => router.push('/settings/my-information')}
-              className="w-full flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-orange-50 transition-all duration-200 group"
-            >
-              <div className="flex items-center space-x-3">
-                <User className="w-4 h-4 text-gray-600 group-hover:text-orange-600 transition-colors" />
-                <span className="font-medium text-gray-700 group-hover:text-orange-700">My Information</span>
-              </div>
-              <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-orange-600 transition-colors" />
-            </button>
+        <div className="space-y-1">
+          <button 
+            onClick={() => router.push('/settings/my-information')}
+            className="w-full flex items-center justify-between p-3 bg-white rounded-lg border border-gray-100 shadow-sm"
+          >
+            <div className="flex items-center space-x-3">
+              <User className="w-4 h-4 text-gray-600" />
+              <span className="font-medium text-gray-700">{settings('accountSettings.myInformation')}</span>
+            </div>
+            <ChevronRight className="w-4 h-4 text-gray-400" />
+          </button>
 
-            <button 
-              onClick={() => setShowVerifyModal(true)}
-              className="w-full flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-orange-50 transition-all duration-200 group"
-            >
-              <div className="flex items-center space-x-3">
-                <Shield className="w-4 h-4 text-gray-600 group-hover:text-orange-600 transition-colors" />
-                <span className="font-medium text-gray-700 group-hover:text-orange-700">Verify my ID</span>
+          <button 
+            onClick={() => setShowVerifyModal(true)}
+            className="w-full flex items-center justify-between p-3 bg-white rounded-lg border border-gray-100 shadow-sm"
+          >
+            <div className="flex items-center space-x-3">
+              <Shield className="w-4 h-4 text-gray-600" />
+              <div className="flex items-center gap-2">
+                <span className="font-medium text-gray-700">{settings('accountSettings.verifyMyID')}</span>
+                {documents.length > 0 && (
+                  <span className={`px-2 py-0.5 text-xs font-semibold rounded-full ${
+                    documents[0].verificationStatus === 'approved'
+                      ? 'bg-green-100 text-green-800'
+                      : documents[0].verificationStatus === 'rejected'
+                      ? 'bg-red-100 text-red-800'
+                      : 'bg-yellow-100 text-yellow-800'
+                  }`}>
+                    {documents[0].verificationStatus === 'approved'
+                      ? settings('accountSettings.verified')
+                      : documents[0].verificationStatus === 'rejected'
+                      ? settings('accountSettings.rejected')
+                      : settings('accountSettings.pending')}
+                  </span>
+                )}
+                {documents.length === 0 && (
+                  <span className="px-2 py-0.5 text-xs font-semibold rounded-full bg-gray-100 text-gray-800">
+                    {settings('accountSettings.notVerified')}
+                  </span>
+                )}
               </div>
-              <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-orange-600 transition-colors" />
-            </button>
+            </div>
+            <ChevronRight className="w-4 h-4 text-gray-400" />
+          </button>
 
-            <button 
-              onClick={() => setShowPasswordModal(true)}
-              className="w-full flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-orange-50 transition-all duration-200 group"
-            >
-              <div className="flex items-center space-x-3">
-                <Lock className="w-4 h-4 text-gray-600 group-hover:text-orange-600 transition-colors" />
-                <span className="font-medium text-gray-700 group-hover:text-orange-700">Password</span>
-              </div>
-              <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-orange-600 transition-colors" />
-            </button>
-          </div>
+          <button 
+            onClick={() => setShowPasswordModal(true)}
+            className="w-full flex items-center justify-between p-3 bg-white rounded-lg border border-gray-100 shadow-sm"
+          >
+            <div className="flex items-center space-x-3">
+              <Lock className="w-4 h-4 text-gray-600" />
+              <span className="font-medium text-gray-700">{settings('accountSettings.password')}</span>
+            </div>
+            <ChevronRight className="w-4 h-4 text-gray-400" />
+          </button>
         </div>
 
         {/* Preferences Section */}
-        <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
-          <div className="space-y-1">
-            <button className="w-full flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-orange-50 transition-all duration-200 group">
-              <div className="flex items-center space-x-3">
-                <Globe className="w-4 h-4 text-gray-600 group-hover:text-orange-600 transition-colors" />
-                <div className="flex-1 flex items-center justify-between">
-                  <span className="font-medium text-gray-700 group-hover:text-orange-700">Language</span>
-                  <span className="text-sm text-gray-500">English</span>
-                </div>
-              </div>
-              <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-orange-600 transition-colors" />
-            </button>
-
-            <button className="w-full flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-orange-50 transition-all duration-200 group">
-              <div className="flex items-center space-x-3">
-                <DollarSign className="w-4 h-4 text-gray-600 group-hover:text-orange-600 transition-colors" />
-                <div className="flex-1 flex items-center justify-between">
-                  <span className="font-medium text-gray-700 group-hover:text-orange-700">Currency</span>
-                  <span className="text-sm text-gray-500">EUR (€)</span>
-                </div>
-              </div>
-              <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-orange-600 transition-colors" />
-            </button>
+        <div className="space-y-1">
+          {/* Language Switcher */}
+          <div className="w-full flex items-center justify-between p-3 bg-white rounded-lg border border-gray-100 shadow-sm">
+            <div className="flex items-center space-x-3">
+              <Globe className="w-4 h-4 text-gray-600" />
+              <span className="font-medium text-gray-700">{settings('preferences.language')}</span>
+            </div>
+            <LanguageSwitcher />
           </div>
+
+          <button 
+            onClick={() => alert(locale === 'fr' ? 'Plus de devises seront bientôt disponibles.' : 'More currencies coming soon.')}
+            className="w-full flex items-center justify-between p-3 bg-white rounded-lg border border-gray-100 shadow-sm"
+          >
+            <div className="flex items-center space-x-3">
+              <DollarSign className="w-4 h-4 text-gray-600" />
+              <span className="font-medium text-gray-700">{settings('preferences.currency')}</span>
+            </div>
+            <span className="text-sm text-gray-500">FCFA (XOF)</span>
+          </button>
+        </div>
+
+        {/* Terms and Policy Section */}
+        <div className="space-y-1">
+          <a 
+            href="/terms-and-policy"
+            className="w-full flex items-center justify-between p-3 bg-white rounded-lg border border-gray-100 shadow-sm"
+          >
+            <div className="flex items-center space-x-3">
+              <FileText className="w-4 h-4 text-gray-600" />
+              <span className="font-medium text-gray-700">{settings('termsAndPolicy')}</span>
+            </div>
+            <ChevronRight className="w-4 h-4 text-gray-400" />
+          </a>
         </div>
 
       </div>
@@ -246,7 +316,7 @@ export default function SettingsPage() {
           <div className="bg-white rounded-2xl shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
             {/* Modal Header */}
             <div className="flex items-center justify-between p-6 border-b border-gray-100">
-              <h2 className="text-xl font-semibold text-gray-800">Verify my ID</h2>
+              <h2 className="text-xl font-semibold text-gray-800">{settings('verifyIDModal.title')}</h2>
               <button
                 onClick={() => {
                   setShowVerifyModal(false)
@@ -264,7 +334,7 @@ export default function SettingsPage() {
             <div className="p-6 space-y-6">
               {!session ? (
                 <div className="text-center py-8">
-                  <p className="text-gray-600 mb-4">Please sign in to verify your ID</p>
+                  <p className="text-gray-600 mb-4">{settings('verifyIDModal.signInPrompt')}</p>
                   <button 
                     onClick={() => {
                       setShowVerifyModal(false)
@@ -272,22 +342,22 @@ export default function SettingsPage() {
                     }}
                     className="bg-orange-500 text-white px-6 py-2 rounded-lg hover:bg-orange-600 transition-colors"
                   >
-                    Sign In
+                    {settings('verifyIDModal.signInButton')}
                   </button>
                 </div>
               ) : uploadSuccess ? (
                 <div className="text-center py-8">
                   <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
-                  <h3 className="text-xl font-bold text-gray-800 mb-2">Upload Successful!</h3>
-                  <p className="text-gray-600">Your documents have been uploaded successfully.</p>
+                  <h3 className="text-xl font-bold text-gray-800 mb-2">{settings('verifyIDModal.successMessage')}</h3>
+                  <p className="text-gray-600">{settings('verifyIDModal.successMessage')}</p>
                 </div>
               ) : (
                 <>
                   {/* Existing Documents Section */}
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
-                      <h3 className="text-lg font-semibold text-gray-800">Your uploaded IDs</h3>
-                      {loadingDocs && <span className="text-xs text-gray-500">Loading…</span>}
+                      <h3 className="text-lg font-semibold text-gray-800">{settings('verifyIDModal.existingDocuments')}</h3>
+                      {loadingDocs && <span className="text-xs text-gray-500">{settings('verifyIDModal.loading')}</span>}
                     </div>
                     {docsError && (
                       <div className="text-xs text-red-600 bg-red-50 border border-red-200 p-2 rounded-lg">{docsError}</div>
@@ -296,76 +366,97 @@ export default function SettingsPage() {
                       <div className="space-y-3">
                         {documents.map((doc) => (
                           <div key={doc.id} className="border border-gray-200 rounded-xl p-3">
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center gap-3">
-                                {doc.documentType === 'passport' ? (
-                                  <FileText className="w-6 h-6 text-blue-500" />
-                                ) : (
-                                  <CreditCard className="w-6 h-6 text-orange-500" />
-                                )}
-                                <div>
-                                  <div className="text-sm font-medium text-gray-800 capitalize">{doc.documentType.replace('_', ' ')}</div>
-                                  <div className="text-xs text-gray-500">Uploaded {new Date(doc.uploadedAt).toLocaleString()}</div>
+                            <div className="flex items-start gap-3">
+                              {doc.documentType === 'passport' ? (
+                                <FileText className="w-6 h-6 text-blue-500" />
+                              ) : (
+                                <CreditCard className="w-6 h-6 text-orange-500" />
+                              )}
+                              <div className="flex-1">
+                                <div className="flex items-center gap-2">
+                                  <div className="text-sm font-medium text-gray-800 capitalize">
+                                    {settings(`verifyIDModal.documentType.${doc.documentType}`)}
+                                  </div>
+                                  <span className={`px-2 py-0.5 text-xs font-semibold rounded-full ${
+                                    doc.verificationStatus === 'approved'
+                                      ? 'bg-green-100 text-green-800'
+                                      : doc.verificationStatus === 'rejected'
+                                      ? 'bg-red-100 text-red-800'
+                                      : 'bg-yellow-100 text-yellow-800'
+                                  }`}>
+                                    {doc.verificationStatus === 'approved'
+                                      ? settings('verifyIDModal.status.approved')
+                                      : doc.verificationStatus === 'rejected'
+                                      ? settings('verifyIDModal.status.rejected')
+                                      : settings('verifyIDModal.status.pending')}
+                                  </span>
+                                </div>
+                                <div className="text-xs text-gray-500 mb-3">
+                                  {settings('verifyIDModal.uploadedOn')} {new Date(doc.uploadedAt).toLocaleString()}
+                                </div>
+                                
+                                {/* Action Buttons - Now below upload time */}
+                                <div className="flex items-center gap-2 mb-3">
+                                  <button
+                                    onClick={() => {
+                                      if (doc.frontImagePath) window.open(doc.frontImagePath, '_blank')
+                                      if (doc.backImagePath) window.open(doc.backImagePath, '_blank')
+                                    }}
+                                    className="text-gray-700 hover:text-orange-600 text-xs px-2 py-1 rounded-md border border-gray-200 flex items-center gap-1"
+                                  >
+                                    <Eye className="w-3 h-3" /> {settings('verifyIDModal.viewDocument')}
+                                  </button>
+                                  <button
+                                    onClick={() => setSelectedType(doc.documentType as any)}
+                                    className="text-gray-700 hover:text-orange-600 text-xs px-2 py-1 rounded-md border border-gray-200"
+                                  >
+                                    {settings('verifyIDModal.replace')}
+                                  </button>
+                                  <button
+                                    onClick={async () => {
+                                      if (!confirm(settings('verifyIDModal.deleteConfirm'))) return;
+                                      try {
+                                        const res = await fetch('/api/id-documents', {
+                                          method: 'DELETE',
+                                          headers: { 'Content-Type': 'application/json' },
+                                          body: JSON.stringify({ id: doc.id })
+                                        })
+                                        const data = await res.json()
+                                        if (!res.ok) throw new Error(data.error || settings('verifyIDModal.errors.deleteFailed'))
+                                        await loadDocuments()
+                                      } catch (e) {
+                                        alert(e instanceof Error ? e.message : settings('verifyIDModal.errors.deleteFailed'))
+                                      }
+                                    }}
+                                    className="text-red-600 hover:text-red-700 text-xs px-2 py-1 rounded-md border border-red-200 flex items-center gap-1"
+                                  >
+                                    <Trash2 className="w-3 h-3" /> {settings('verifyIDModal.deleteDocument')}
+                                  </button>
+                                </div>
+                                
+                                {/* Document Images */}
+                                <div className="flex gap-2">
+                                  {doc.frontImagePath && (
+                                    <img src={doc.frontImagePath} alt="Front" className="w-20 h-14 object-cover rounded-lg border" />
+                                  )}
+                                  {doc.backImagePath && (
+                                    <img src={doc.backImagePath} alt="Back" className="w-20 h-14 object-cover rounded-lg border" />
+                                  )}
                                 </div>
                               </div>
-                              <div className="flex items-center gap-2">
-                                <button
-                                  onClick={() => {
-                                    if (doc.frontImagePath) window.open(doc.frontImagePath, '_blank')
-                                    if (doc.backImagePath) window.open(doc.backImagePath, '_blank')
-                                  }}
-                                  className="text-gray-700 hover:text-orange-600 text-xs px-2 py-1 rounded-md border border-gray-200 flex items-center gap-1"
-                                >
-                                  <Eye className="w-3 h-3" /> View
-                                </button>
-                                <button
-                                  onClick={() => setSelectedType(doc.documentType as any)}
-                                  className="text-gray-700 hover:text-orange-600 text-xs px-2 py-1 rounded-md border border-gray-200"
-                                >
-                                  Replace
-                                </button>
-                                <button
-                                  onClick={async () => {
-                                    if (!confirm('Delete this document?')) return;
-                                    try {
-                                      const res = await fetch('/api/id-documents', {
-                                        method: 'DELETE',
-                                        headers: { 'Content-Type': 'application/json' },
-                                        body: JSON.stringify({ id: doc.id })
-                                      })
-                                      const data = await res.json()
-                                      if (!res.ok) throw new Error(data.error || 'Failed to delete document')
-                                      await loadDocuments()
-                                    } catch (e) {
-                                      alert(e instanceof Error ? e.message : 'Failed to delete document')
-                                    }
-                                  }}
-                                  className="text-red-600 hover:text-red-700 text-xs px-2 py-1 rounded-md border border-red-200 flex items-center gap-1"
-                                >
-                                  <Trash2 className="w-3 h-3" /> Delete
-                                </button>
-                              </div>
-                            </div>
-                            <div className="mt-3 flex gap-2">
-                              {doc.frontImagePath && (
-                                <img src={doc.frontImagePath} alt="Front" className="w-20 h-14 object-cover rounded-lg border" />
-                              )}
-                              {doc.backImagePath && (
-                                <img src={doc.backImagePath} alt="Back" className="w-20 h-14 object-cover rounded-lg border" />
-                              )}
                             </div>
                           </div>
                         ))}
                       </div>
                     ) : (
-                      <div className="text-xs text-gray-500">No IDs uploaded yet.</div>
+                      <div className="text-xs text-gray-500">{settings('verifyIDModal.noDocuments')}</div>
                     )}
                   </div>
 
                   {/* Document Type Selection */}
                   {!selectedType && (
                     <div className="space-y-4">
-                      <h3 className="text-lg font-semibold text-gray-800 mb-4">Select Document Type</h3>
+                      <h3 className="text-lg font-semibold text-gray-800 mb-4">{settings('verifyIDModal.selectDocumentType')}</h3>
                       
                       <button
                         onClick={() => setSelectedType('national_id')}
@@ -374,8 +465,8 @@ export default function SettingsPage() {
                         <div className="flex items-center space-x-3">
                           <CreditCard className="w-8 h-8 text-orange-500" />
                           <div>
-                            <h4 className="font-medium text-gray-800">National ID</h4>
-                            <p className="text-sm text-gray-500">Upload front and back of your national ID</p>
+                            <h4 className="font-medium text-gray-800">{settings('verifyIDModal.nationalID')}</h4>
+                            <p className="text-sm text-gray-500">{settings('verifyIDModal.nationalIDDescription')}</p>
                           </div>
                         </div>
                       </button>
@@ -387,8 +478,8 @@ export default function SettingsPage() {
                         <div className="flex items-center space-x-3">
                           <FileText className="w-8 h-8 text-blue-500" />
                           <div>
-                            <h4 className="font-medium text-gray-800">Passport</h4>
-                            <p className="text-sm text-gray-500">Upload your passport information page</p>
+                            <h4 className="font-medium text-gray-800">{settings('verifyIDModal.passport')}</h4>
+                            <p className="text-sm text-gray-500">{settings('verifyIDModal.passportDescription')}</p>
                           </div>
                         </div>
                       </button>
@@ -400,7 +491,7 @@ export default function SettingsPage() {
                     <div className="space-y-4">
                       <div className="flex items-center justify-between">
                         <h3 className="text-lg font-semibold text-gray-800">
-                          Upload {selectedType === 'national_id' ? 'National ID' : 'Passport'}
+                          {settings('verifyIDModal.uploadTitle')} {selectedType === 'national_id' ? settings('verifyIDModal.nationalID') : settings('verifyIDModal.passport')}
                         </h3>
                         <button
                           onClick={() => {
@@ -409,7 +500,7 @@ export default function SettingsPage() {
                           }}
                           className="text-sm text-gray-500 hover:text-gray-700 underline"
                         >
-                          Change type
+                          {settings('verifyIDModal.changeType')}
                         </button>
                       </div>
 
@@ -417,7 +508,7 @@ export default function SettingsPage() {
                         <>
                           {/* Front Side */}
                           <div className="space-y-2">
-                            <label className="block text-sm font-medium text-gray-700">Front Side</label>
+                            <label className="block text-sm font-medium text-gray-700">{settings('verifyIDModal.uploadFront')}</label>
                             <div className="border-2 border-dashed border-gray-300 rounded-xl p-4 text-center hover:border-orange-300 transition-colors">
                               {uploadedFiles.front ? (
                                 <div className="text-green-600">
@@ -427,14 +518,14 @@ export default function SettingsPage() {
                               ) : (
                                 <div className="text-gray-500">
                                   <Upload className="w-6 h-6 mx-auto mb-2" />
-                                  <p className="text-xs mb-2">Upload or take photo of front side</p>
+                                  <p className="text-xs mb-2">{settings('verifyIDModal.frontSidePrompt')}</p>
                                   <div className="flex gap-2 justify-center">
                                     <button
                                       onClick={() => frontInputRef.current?.click()}
                                       className="flex items-center gap-1 text-orange-500 hover:text-orange-600 font-medium text-xs bg-orange-50 hover:bg-orange-100 px-2 py-1 rounded-lg transition-colors"
                                     >
                                       <Upload className="w-3 h-3" />
-                                      Browse
+                                      {settings('verifyIDModal.browse')}
                                     </button>
                                     <button
                                       onClick={() => {
@@ -451,7 +542,7 @@ export default function SettingsPage() {
                                       className="flex items-center gap-1 text-blue-500 hover:text-blue-600 font-medium text-xs bg-blue-50 hover:bg-blue-100 px-2 py-1 rounded-lg transition-colors"
                                     >
                                       <Camera className="w-3 h-3" />
-                                      Camera
+                                      {settings('verifyIDModal.takePhoto')}
                                     </button>
                                   </div>
                                 </div>
@@ -471,7 +562,7 @@ export default function SettingsPage() {
 
                           {/* Back Side */}
                           <div className="space-y-2">
-                            <label className="block text-sm font-medium text-gray-700">Back Side</label>
+                            <label className="block text-sm font-medium text-gray-700">{settings('verifyIDModal.uploadBack')}</label>
                             <div className="border-2 border-dashed border-gray-300 rounded-xl p-4 text-center hover:border-orange-300 transition-colors">
                               {uploadedFiles.back ? (
                                 <div className="text-green-600">
@@ -481,14 +572,14 @@ export default function SettingsPage() {
                               ) : (
                                 <div className="text-gray-500">
                                   <Upload className="w-6 h-6 mx-auto mb-2" />
-                                  <p className="text-xs mb-2">Upload or take photo of back side</p>
+                                  <p className="text-xs mb-2">{settings('verifyIDModal.backSidePrompt')}</p>
                                   <div className="flex gap-2 justify-center">
                                     <button
                                       onClick={() => backInputRef.current?.click()}
                                       className="flex items-center gap-1 text-orange-500 hover:text-orange-600 font-medium text-xs bg-orange-50 hover:bg-orange-100 px-2 py-1 rounded-lg transition-colors"
                                     >
                                       <Upload className="w-3 h-3" />
-                                      Browse
+                                      {settings('verifyIDModal.browse')}
                                     </button>
                                     <button
                                       onClick={() => {
@@ -505,7 +596,7 @@ export default function SettingsPage() {
                                       className="flex items-center gap-1 text-blue-500 hover:text-blue-600 font-medium text-xs bg-blue-50 hover:bg-blue-100 px-2 py-1 rounded-lg transition-colors"
                                     >
                                       <Camera className="w-3 h-3" />
-                                      Camera
+                                      {settings('verifyIDModal.takePhoto')}
                                     </button>
                                   </div>
                                 </div>
@@ -527,7 +618,7 @@ export default function SettingsPage() {
 
                       {selectedType === 'passport' && (
                         <div className="space-y-2">
-                          <label className="block text-sm font-medium text-gray-700">Information Page</label>
+                          <label className="block text-sm font-medium text-gray-700">{settings('verifyIDModal.uploadPassport')}</label>
                           <div className="border-2 border-dashed border-gray-300 rounded-xl p-4 text-center hover:border-orange-300 transition-colors">
                             {uploadedFiles.passport ? (
                               <div className="text-green-600">
@@ -537,14 +628,14 @@ export default function SettingsPage() {
                             ) : (
                               <div className="text-gray-500">
                                 <Upload className="w-6 h-6 mx-auto mb-2" />
-                                <p className="text-xs mb-2">Upload or take photo of passport info page</p>
+                                <p className="text-xs mb-2">{settings('verifyIDModal.passportPrompt')}</p>
                                 <div className="flex gap-2 justify-center">
                                   <button
                                     onClick={() => passportInputRef.current?.click()}
                                     className="flex items-center gap-1 text-orange-500 hover:text-orange-600 font-medium text-xs bg-orange-50 hover:bg-orange-100 px-2 py-1 rounded-lg transition-colors"
                                   >
                                     <Upload className="w-3 h-3" />
-                                    Browse
+                                    {settings('verifyIDModal.browse')}
                                   </button>
                                   <button
                                     onClick={() => {
@@ -561,7 +652,7 @@ export default function SettingsPage() {
                                     className="flex items-center gap-1 text-blue-500 hover:text-blue-600 font-medium text-xs bg-blue-50 hover:bg-blue-100 px-2 py-1 rounded-lg transition-colors"
                                   >
                                     <Camera className="w-3 h-3" />
-                                    Camera
+                                    {settings('verifyIDModal.takePhoto')}
                                   </button>
                                 </div>
                               </div>
@@ -590,7 +681,7 @@ export default function SettingsPage() {
                         )}
                         className="w-full bg-orange-500 text-white py-3 px-4 rounded-xl hover:bg-orange-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors font-medium"
                       >
-                        {uploading ? 'Uploading...' : 'Upload Documents'}
+                        {uploading ? settings('verifyIDModal.uploading') : settings('verifyIDModal.uploadDocuments')}
                       </button>
                     </div>
                   )}
@@ -598,7 +689,7 @@ export default function SettingsPage() {
                   {/* Info Note */}
                   <div className="bg-blue-50 border border-blue-200 rounded-xl p-3">
                     <p className="text-xs text-blue-800">
-                      <strong>Note:</strong> Your documents will be stored securely. Supported formats: JPEG, PNG, JPG. Maximum file size: 5MB per file.
+                      <strong>{settings('verifyIDModal.noteTitle')}</strong> {settings('verifyIDModal.noteText')}
                     </p>
                   </div>
                 </>

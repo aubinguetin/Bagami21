@@ -12,7 +12,7 @@ function isValidEmail(email: string): boolean {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { phoneNumber, type = 'signup', countryInfo } = body;
+    const { phoneNumber, type = 'signup', countryInfo, language = 'en' } = body;
 
     // Validate request
     if (!phoneNumber) {
@@ -188,36 +188,79 @@ export async function POST(request: NextRequest) {
             where: { email: phoneNumber }
           });
         } else {
-          // For phone numbers, handle both formats like in signup validation
+          // For phone numbers, we need to handle the split storage format
+          // Phone numbers are stored as: countryCode (e.g., +226) + phone (e.g., 77889900)
+          const normalizedPhone = phoneNumber.replace(/[\s\-\(\)]/g, '');
+          
+          console.log('🔍 Password reset - searching for user with phone:', normalizedPhone);
+          
+          // First, try to find by full phone number (legacy format)
           existingUser = await prisma.user.findFirst({
-            where: { phone: phoneNumber }
+            where: { 
+              OR: [
+                { phone: normalizedPhone },
+                { phone: normalizedPhone.replace(/^\+/, '') },
+                { phone: normalizedPhone.startsWith('+') ? normalizedPhone : `+${normalizedPhone}` }
+              ]
+            }
           });
           
-          // If not found and we have country info, try separated format
-          if (!existingUser && countryInfo && phoneNumber.startsWith(countryInfo.dialCode)) {
-            const localPhone = phoneNumber.substring(countryInfo.dialCode.length);
-            console.log('🔍 Password reset - checking separated phone format:', { 
-              fullPhone: phoneNumber, 
-              countryCode: countryInfo.dialCode, 
-              localPhone 
-            });
+          // If not found, try the split format (countryCode + phone)
+          if (!existingUser) {
+            // Parse the phone number to extract country code
+            const { countryCodes } = await import('@/data/countryCodes');
+            const sortedCountryCodes = [...countryCodes].sort((a, b) => b.dialCode.length - a.dialCode.length);
             
-            const result = await prisma.$queryRaw`
-              SELECT * FROM User 
-              WHERE countryCode = ${countryInfo.dialCode} AND phone = ${localPhone}
-              LIMIT 1
-            `;
-            
-            if (Array.isArray(result) && result.length > 0) {
-              existingUser = result[0] as any;
+            for (const country of sortedCountryCodes) {
+              if (normalizedPhone.startsWith(country.dialCode)) {
+                const localPhone = normalizedPhone.substring(country.dialCode.length);
+                console.log('🔍 Trying split format:', { countryCode: country.dialCode, localPhone });
+                
+                existingUser = await prisma.user.findFirst({
+                  where: {
+                    countryCode: country.dialCode,
+                    phone: localPhone
+                  }
+                });
+                
+                if (existingUser) {
+                  console.log('✅ Found user with split format!');
+                  break;
+                }
+              }
             }
+          }
+          
+          // Final fallback: try the countryInfo if provided
+          if (!existingUser && countryInfo && normalizedPhone.startsWith(countryInfo.dialCode)) {
+            const localPhone = normalizedPhone.substring(countryInfo.dialCode.length);
+            console.log('🔍 Trying countryInfo format:', { countryCode: countryInfo.dialCode, localPhone });
+            
+            existingUser = await prisma.user.findFirst({
+              where: {
+                countryCode: countryInfo.dialCode,
+                phone: localPhone
+              }
+            });
           }
         }
 
         if (!existingUser) {
+          // Debug: Show what formats exist in the database
+          const sampleUsers = await prisma.user.findMany({
+            select: { id: true, phone: true, countryCode: true, email: true },
+            take: 5,
+            orderBy: { createdAt: 'desc' }
+          });
           console.log('💰 Preventing password reset OTP - user does not exist:', { 
             contact: phoneNumber, 
-            type: isEmail ? 'email' : 'phone'
+            type: isEmail ? 'email' : 'phone',
+            sampleFormatsInDB: sampleUsers.map(u => ({ 
+              phone: u.phone, 
+              countryCode: u.countryCode,
+              fullPhone: u.countryCode && u.phone ? `${u.countryCode}${u.phone}` : u.phone,
+              email: u.email 
+            }))
           });
           return NextResponse.json(
             { 
@@ -232,7 +275,9 @@ export async function POST(request: NextRequest) {
         console.log('✅ User found - proceeding with password reset OTP:', { 
           contact: phoneNumber, 
           type: isEmail ? 'email' : 'phone',
-          userId: existingUser.id
+          userId: existingUser.id,
+          userPhone: existingUser.phone,
+          userCountryCode: existingUser.countryCode
         });
         
       } catch (dbError) {
@@ -255,12 +300,12 @@ export async function POST(request: NextRequest) {
     
     if (isEmail) {
       // Send OTP via email
-      console.log(`📧 Sending ${type} OTP email to:`, phoneNumber);
+      console.log(`📧 Sending ${type} OTP email to:`, phoneNumber, `in language:`, language);
       
       if (type === 'password-reset') {
-        sendResponse.success = await emailService.sendPasswordResetOTP(phoneNumber, otp);
+        sendResponse.success = await emailService.sendPasswordResetOTP(phoneNumber, otp, language);
       } else {
-        sendResponse.success = await emailService.sendSignupOTP(phoneNumber, otp);
+        sendResponse.success = await emailService.sendSignupOTP(phoneNumber, otp, language);
       }
       
       if (!sendResponse.success) {
@@ -270,12 +315,12 @@ export async function POST(request: NextRequest) {
       }
     } else {
       // Send OTP via SMS
-      console.log(`📱 Sending ${type} OTP SMS to:`, phoneNumber);
+      console.log(`📱 Sending ${type} OTP SMS to:`, phoneNumber, `in language:`, language);
       
       if (type === 'password-reset') {
-        sendResponse = await SMSService.sendPasswordResetOTP(phoneNumber, otp);
+        sendResponse = await SMSService.sendPasswordResetOTP(phoneNumber, otp, language);
       } else {
-        sendResponse = await SMSService.sendOTP(phoneNumber, otp);
+        sendResponse = await SMSService.sendOTP(phoneNumber, otp, language);
       }
     }
 

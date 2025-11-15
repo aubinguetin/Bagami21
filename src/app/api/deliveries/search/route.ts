@@ -86,6 +86,7 @@ export async function GET(request: NextRequest) {
     const departureCountry = searchParams.get('departureCountry') || '';
     const destinationCountry = searchParams.get('destinationCountry') || '';
     const mineOnly = searchParams.get('mineOnly') === 'true';
+    const includeExpired = searchParams.get('includeExpired') === 'true';
     
     // Pagination parameters
     const page = parseInt(searchParams.get('page') || '1');
@@ -96,7 +97,8 @@ export async function GET(request: NextRequest) {
     const fallbackUserId = searchParams.get('currentUserId');
     const fallbackUserContact = searchParams.get('currentUserContact');
 
-    console.log('🔍 Search API called with mineOnly:', mineOnly);
+    console.log('🔍 Search API called with mineOnly:', mineOnly, 'includeExpired:', includeExpired);
+    console.log('🔎 BACKEND: Received search query:', searchQuery ? `"${searchQuery}"` : '(empty)');
 
     // Get current user ID consistently for both filtering and ownership
     const currentUserId = await getCurrentUserId(fallbackUserId || undefined, fallbackUserContact || undefined);
@@ -142,8 +144,8 @@ export async function GET(request: NextRequest) {
       console.log('🔍 Filtering deliveries for user:', currentUserId);
     }
 
-    // For non-mine view, exclude expired posts (past departure date or arrival date)
-    if (!mineOnly) {
+    // For non-mine view or when includeExpired is false, exclude expired posts
+    if (!includeExpired) {
       const now = new Date();
       
       // Build expiration conditions based on the type filter
@@ -184,21 +186,54 @@ export async function GET(request: NextRequest) {
       
       console.log('🌍 Enhanced search found cities:', cityNames.slice(0, 5), `(${cityNames.length} total)`);
       
-      // Create base search conditions for title, description, and direct query matches
-      const baseSearchConditions = [
-        { title: { contains: searchQuery } },
-        { description: { contains: searchQuery } },
-        { fromCity: { contains: searchQuery } },
-        { toCity: { contains: searchQuery } }
-      ];
+      // Split search query into individual terms for better matching
+      // This allows "cadeaux gifts" to match deliveries containing either "cadeaux" OR "gifts"
+      const searchTerms = searchQuery.trim().split(/\s+/);
+      console.log('🔤 Search terms:', searchTerms);
+      
+      // For SQLite, we need to handle case-insensitive search differently
+      // We'll use Prisma's 'contains' which uses LIKE in SQLite (case-insensitive for ASCII)
+      const baseSearchConditions: any[] = [];
+      
+      // Add searches for EACH individual term in title and description
+      searchTerms.forEach(term => {
+        if (term.length >= 2) { // Minimum 2 characters
+          baseSearchConditions.push(
+            { title: { contains: term } },
+            { description: { contains: term } }
+          );
+        }
+      });
+      
+      // Add city searches for each term
+      searchTerms.forEach(term => {
+        if (term.length >= 2) {
+          baseSearchConditions.push(
+            { fromCity: { contains: term } },
+            { toCity: { contains: term } }
+          );
+        }
+      });
+      
+      // Add country searches - search in both fromCountry and toCountry fields
+      // This handles country codes (e.g., "FR", "US") and country names
+      searchTerms.forEach(term => {
+        if (term.length >= 2) { // Minimum 2 characters for country code/name
+          baseSearchConditions.push(
+            { fromCountry: { contains: term } },
+            { toCountry: { contains: term } }
+          );
+        }
+      });
       
       // Add city-specific searches 
       if (cityNames.length > 0) {
         console.log('🏙️ Searching for deliveries in cities:', cityNames.slice(0, 5));
         console.log('🔍 Total cities to search:', cityNames.length);
         
-        // Use all cities returned by the enhanced search (they are already prioritized)
-        cityNames.forEach(cityName => {
+        // Limit city searches to prevent query from being too large
+        const limitedCities = cityNames.slice(0, 50); // Limit to first 50 cities
+        limitedCities.forEach(cityName => {
           baseSearchConditions.push(
             { fromCity: { contains: cityName } },
             { toCity: { contains: cityName } }
@@ -206,18 +241,27 @@ export async function GET(request: NextRequest) {
         });
       }
       
+      console.log('📊 Total search conditions:', baseSearchConditions.length);
+      
       // If there's already an OR condition (for expiration), we need to combine them properly
       if (where.OR) {
         // Combine search conditions with existing OR conditions using AND
         where.AND = [
           { OR: where.OR }, // Existing expiration conditions
-          { OR: baseSearchConditions } // Enhanced search conditions
+          { OR: baseSearchConditions }, // Enhanced search conditions
+          { deletedAt: null } // Exclude soft-deleted deliveries
         ];
         delete where.OR; // Remove the original OR to avoid conflicts
       } else {
         // No existing OR conditions, just add enhanced search conditions
-        where.OR = baseSearchConditions;
+        where.AND = [
+          { OR: baseSearchConditions },
+          { deletedAt: null } // Exclude soft-deleted deliveries
+        ];
       }
+    } else {
+      // No search query - just filter out deleted deliveries
+      where.deletedAt = null;
     }
 
     console.log('📋 Where clause:', JSON.stringify(where, null, 2));
@@ -233,7 +277,17 @@ export async function GET(request: NextRequest) {
           select: {
             id: true,
             name: true,
-            email: true
+            email: true,
+            reviewsReceived: {
+              select: {
+                rating: true
+              }
+            },
+            idDocuments: {
+              select: {
+                verificationStatus: true
+              }
+            }
           }
         }
       },
@@ -263,6 +317,18 @@ export async function GET(request: NextRequest) {
 
       const isOwned = delivery.senderId === currentUserId;
 
+      // Calculate average rating for the sender
+      const reviews = delivery.sender.reviewsReceived || [];
+      const averageRating = reviews.length > 0
+        ? reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length
+        : null;
+      const reviewCount = reviews.length;
+
+      // Check if user has at least one approved ID document
+      const isVerified = delivery.sender.idDocuments?.some(
+        (doc) => doc.verificationStatus === 'approved'
+      ) || false;
+
       return {
         id: delivery.id,
         type: deliveryType,
@@ -278,7 +344,12 @@ export async function GET(request: NextRequest) {
         departureDate: delivery.departureDate,
         arrivalDate: delivery.arrivalDate,
         status: delivery.status,
-        sender: delivery.sender,
+        sender: {
+          ...delivery.sender,
+          averageRating: averageRating ? parseFloat(averageRating.toFixed(1)) : null,
+          reviewCount,
+          isVerified
+        },
         createdAt: delivery.createdAt,
         route: `${delivery.fromCity} → ${delivery.toCity}`,
         isOwnedByCurrentUser: isOwned,

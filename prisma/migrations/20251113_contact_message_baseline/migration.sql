@@ -1,0 +1,3 @@
+-- This is a baseline migration for ContactMessage table
+-- The table was already created manually, so this migration is empty
+-- to sync the migration history with the actual database state

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { OTPStorage } from '@/services/smsService';
 import { prisma } from '@/lib/prisma';
+import { getUserLocale, generateProfileUpdateNotification } from '@/lib/notificationTranslations';
 
 // Email validation function
 function isValidEmail(email: string): boolean {
@@ -100,6 +101,26 @@ export async function POST(request: NextRequest) {
           timestamp: new Date().toISOString()
         });
 
+        // Create notification for email update
+        try {
+          const locale = await getUserLocale(userId);
+          const { title, message } = generateProfileUpdateNotification(['email'], locale);
+          
+          await prisma.notification.create({
+            data: {
+              userId: userId,
+              type: 'update',
+              title,
+              message,
+              isRead: false
+            }
+          });
+          console.log('✅ Email update notification created');
+        } catch (notifError) {
+          console.error('⚠️ Failed to create email update notification:', notifError);
+          // Don't fail the request if notification creation fails
+        }
+
         return NextResponse.json({
           success: true,
           message: 'Email verified and updated successfully',
@@ -180,6 +201,26 @@ export async function POST(request: NextRequest) {
           localPhone: phoneNumber,
           timestamp: new Date().toISOString()
         });
+
+        // Create notification for phone update
+        try {
+          const locale = await getUserLocale(userId);
+          const { title, message } = generateProfileUpdateNotification(['phone'], locale);
+          
+          await prisma.notification.create({
+            data: {
+              userId: userId,
+              type: 'update',
+              title,
+              message,
+              isRead: false
+            }
+          });
+          console.log('✅ Phone update notification created');
+        } catch (notifError) {
+          console.error('⚠️ Failed to create phone update notification:', notifError);
+          // Don't fail the request if notification creation fails
+        }
 
         return NextResponse.json({
           success: true,

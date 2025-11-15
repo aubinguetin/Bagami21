@@ -43,6 +43,8 @@ model User {
   phoneVerified               DateTime?
   countryCode                 String?
   password                    String?
+  role                        String         @default("user") // user, admin, superadmin
+  language                    String         @default("en") // user's preferred language (en, fr)
   createdAt                   DateTime       @default(now())
   updatedAt                   DateTime       @updatedAt
   country                     String?
@@ -61,17 +63,23 @@ model User {
   sessions                    Session[]
   wallet                      Wallet?
   transactions                Transaction[]
+  adminActions                AdminAction[]
+  alerts                      Alert[]
+  notifications               Notification[]
+  createdSubadmins            Subadmin[]
+  contactMessages             ContactMessage[]
 }
 
 model IdDocument {
   id             String   @id @default(cuid())
-  userId         String
-  documentType   String
-  frontImagePath String?
-  backImagePath  String?
-  uploadedAt     DateTime @default(now())
-  updatedAt      DateTime @updatedAt
-  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId             String
+  documentType       String
+  frontImagePath     String?
+  backImagePath      String?
+  verificationStatus String   @default("pending") // pending, approved, rejected
+  uploadedAt         DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
 }
@@ -101,6 +109,7 @@ model Delivery {
   status        String         @default("PENDING")
   senderId      String
   receiverId    String?
+  deletedAt     DateTime?
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
   conversations Conversation[]
@@ -188,6 +197,116 @@ model Transaction {
 
   @@index([userId])
   @@index([type])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model AdminAction {
+  id          String   @id @default(cuid())
+  adminId     String
+  action      String // login, user_suspend, delivery_delete, etc.
+  targetType  String? // User, Delivery, Transaction, etc.
+  targetId    String?
+  details     String? // JSON string with action details
+  ipAddress   String?
+  userAgent   String?
+  createdAt   DateTime @default(now())
+  admin       User     @relation(fields: [adminId], references: [id], onDelete: Cascade)
+
+  @@index([adminId])
+  @@index([action])
+  @@index([createdAt])
+  @@index([targetType, targetId])
+}
+
+model TermsPolicy {
+  id        String   @id @default("default")
+  content   String
+  createdBy String
+  updatedBy String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Alert {
+  id                 String   @id @default(cuid())
+  userId             String
+  name               String
+  departureCountry   String?
+  departureCity      String?
+  destinationCountry String?
+  destinationCity    String?
+  alertType          String   @default("all") // all, requests, offers
+  emailNotifications Boolean  @default(true)
+  isActive           Boolean  @default(true)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([isActive])
+  @@index([alertType])
+}
+
+model PlatformSettings {
+  id               String   @id @default(cuid())
+  key              String   @unique
+  value            String
+  description      String?
+  updatedBy        String?  // User ID who last updated
+  updatedAt        DateTime @updatedAt
+  createdAt        DateTime @default(now())
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  type      String   // alert_match, message, delivery_update, payment, review, etc.
+  title     String
+  message   String
+  relatedId String?  // ID of related delivery, message, etc.
+  isRead    Boolean  @default(false)
+  readAt    DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([isRead])
+  @@index([createdAt])
+  @@index([type])
+}
+
+model Subadmin {
+  id          String   @id @default(cuid())
+  email       String   @unique
+  password    String
+  name        String?
+  roleTitle   String   @default("Subadmin")
+  isActive    Boolean  @default(true)
+  permissions String   @default("[]") // JSON array of permission IDs
+  createdById String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  createdBy   User     @relation(fields: [createdById], references: [id], onDelete: Cascade)
+
+  @@index([createdById])
+}
+
+model ContactMessage {
+  id        String   @id @default(cuid())
+  name      String
+  email     String
+  subject   String
+  message   String
+  userId    String?
+  status    String   @default("pending") // pending, replied, resolved
+  adminNote String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
   @@index([status])
   @@index([createdAt])
 }

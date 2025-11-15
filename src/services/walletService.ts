@@ -1,4 +1,5 @@
 import { prisma } from '@/lib/prisma';
+import { getUserLocale, generateTransactionNotification } from '@/lib/notificationTranslations';
 
 export interface TransactionData {
   userId: string;
@@ -25,7 +26,7 @@ export async function getOrCreateWallet(userId: string) {
       data: {
         userId,
         balance: 0,
-        currency: 'XAF'
+        currency: 'XOF'
       }
     });
   }
@@ -41,7 +42,7 @@ export async function createTransaction(data: TransactionData) {
     userId,
     type,
     amount,
-    currency = 'XAF',
+    currency = 'XOF',
     status = 'completed',
     description,
     category,
@@ -82,6 +83,33 @@ export async function createTransaction(data: TransactionData) {
       data: { balance: newBalance }
     })
   ]);
+
+  // Create notification for the transaction (non-blocking)
+  try {
+    const locale = await getUserLocale(userId);
+    const { title, message } = generateTransactionNotification(
+      type,
+      category,
+      amount,
+      currency,
+      description,
+      locale
+    );
+    
+    await prisma.notification.create({
+      data: {
+        userId,
+        type: 'transaction',
+        title,
+        message,
+        relatedId: transaction.id,
+        isRead: false
+      }
+    });
+  } catch (error) {
+    // Don't fail the transaction if notification creation fails
+    console.error('Failed to create transaction notification:', error);
+  }
 
   return { transaction, wallet: updatedWallet };
 }

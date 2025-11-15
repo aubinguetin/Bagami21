@@ -6,6 +6,8 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { ArrowLeft, Phone, Mail, Key, ChevronDown, Search } from 'lucide-react';
 import { countryCodes, getDefaultCountry } from '@/data/countryCodes';
+import { useT } from '@/lib/i18n-helpers';
+import { useLocale } from '@/lib/i18n-helpers';
 
 // Phone number regex for Burkina Faso format
 const burkinaPhoneRegex = /^(\+226|00226|226)?[0-9]{8}$/;
@@ -45,10 +47,12 @@ interface ForgotPasswordFormData {
 
 interface ForgotPasswordProps {
   onBack: () => void;
-  onOtpSent: (identifier: string) => void;
+  onOtpSent: (identifier: string, type: 'phone' | 'email') => void;
 }
 
 export default function ForgotPassword({ onBack, onOtpSent }: ForgotPasswordProps) {
+  const t = useT();
+  const locale = useLocale();
   const [isLoading, setIsLoading] = useState(false);
   const [step, setStep] = useState<'input' | 'sent'>('input');
   const [contactMethod, setContactMethod] = useState<'phone' | 'email'>('phone');
@@ -80,6 +84,7 @@ export default function ForgotPassword({ onBack, onOtpSent }: ForgotPasswordProp
           body: JSON.stringify({
             phoneNumber: fullPhoneNumber,
             type: 'password-reset',
+            language: locale,
             countryInfo: {
               code: selectedCountry.code,
               name: selectedCountry.name,
@@ -93,7 +98,9 @@ export default function ForgotPassword({ onBack, onOtpSent }: ForgotPasswordProp
         if (!response.ok) {
           // Handle specific error cases for password reset
           if (response.status === 404 && result.code === 'USER_NOT_FOUND') {
-            alert(`⚠️ ${result.message}\n\nPlease check your phone number or create a new account if you don't have one.`);
+            alert(t.authPage('forgotPassword.userNotFoundAlert')
+              .replace('{message}', result.message)
+              .replace('{contactType}', t.authPage('forgotPassword.phoneNumber')));
             return;
           }
           throw new Error(result.error || result.message || 'Failed to send verification code');
@@ -102,7 +109,7 @@ export default function ForgotPassword({ onBack, onOtpSent }: ForgotPasswordProp
         setStep('sent');
         // Redirect to OTP verification after showing success message
         setTimeout(() => {
-          onOtpSent(fullPhoneNumber);
+          onOtpSent(fullPhoneNumber, 'phone');
         }, 2000);
       } else if (data.contactMethod === 'email' && data.email) {
         // Send OTP for password reset via email
@@ -113,7 +120,8 @@ export default function ForgotPassword({ onBack, onOtpSent }: ForgotPasswordProp
           },
           body: JSON.stringify({
             phoneNumber: data.email, // API uses 'phoneNumber' param for both phone and email
-            type: 'password-reset'
+            type: 'password-reset',
+            language: locale
           }),
         });
 
@@ -122,7 +130,9 @@ export default function ForgotPassword({ onBack, onOtpSent }: ForgotPasswordProp
         if (!response.ok) {
           // Handle specific error cases for password reset
           if (response.status === 404 && result.code === 'USER_NOT_FOUND') {
-            alert(`⚠️ ${result.message}\n\nPlease check your email address or create a new account if you don't have one.`);
+            alert(t.authPage('forgotPassword.userNotFoundAlert')
+              .replace('{message}', result.message)
+              .replace('{contactType}', t.authPage('forgotPassword.emailAddress')));
             return;
           }
           throw new Error(result.error || result.message || 'Failed to send verification email');
@@ -132,7 +142,7 @@ export default function ForgotPassword({ onBack, onOtpSent }: ForgotPasswordProp
         // Redirect to OTP verification after showing success message
         setTimeout(() => {
           if (data.email) {
-            onOtpSent(data.email);
+            onOtpSent(data.email, 'email');
           }
         }, 2000);
       }
@@ -225,7 +235,7 @@ export default function ForgotPassword({ onBack, onOtpSent }: ForgotPasswordProp
               className="flex items-center text-gray-600 hover:text-gray-800 mb-6"
             >
               <ArrowLeft className="w-5 h-5 mr-2" />
-              Back to login
+              {t.authPage('forgotPassword.backToLogin')}
             </button>
             
             <div className="mx-auto w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mb-4">
@@ -237,17 +247,17 @@ export default function ForgotPassword({ onBack, onOtpSent }: ForgotPasswordProp
             </div>
             
             <h1 className="text-2xl font-bold text-slate-800 mb-2">
-              {isPhoneNumber ? 'SMS Sent!' : 'Email Sent!'}
+              {isPhoneNumber ? t.authPage('forgotPassword.smsSent') : t.authPage('forgotPassword.emailSent')}
             </h1>
             <p className="text-gray-600 text-center">
               {isPhoneNumber ? (
                 <>
-                  We've sent a verification code to <br/>
+                  {t.authPage('forgotPassword.smsSentMessage')} <br/>
                   <span className="font-semibold">{formatIdentifier(identifier)}</span>
                 </>
               ) : (
                 <>
-                  We've sent password reset instructions to <br/>
+                  {t.authPage('forgotPassword.emailSentMessage')} <br/>
                   <span className="font-semibold">{formatIdentifier(identifier)}</span>
                 </>
               )}
@@ -257,15 +267,15 @@ export default function ForgotPassword({ onBack, onOtpSent }: ForgotPasswordProp
           <div className="bg-white rounded-xl shadow-xl p-8 text-center">
             {isPhoneNumber ? (
               <p className="text-gray-600 mb-4">
-                You'll be redirected to enter the verification code in a moment...
+                {t.authPage('forgotPassword.redirectMessage')}
               </p>
             ) : (
               <>
                 <p className="text-gray-600 mb-4">
-                  Please check your email and follow the instructions to reset your password.
+                  {t.authPage('forgotPassword.checkEmail')}
                 </p>
                 <p className="text-sm text-gray-500 mb-6">
-                  Don't forget to check your spam folder if you don't see the email.
+                  {t.authPage('forgotPassword.checkSpam')}
                 </p>
               </>
             )}
@@ -274,7 +284,7 @@ export default function ForgotPassword({ onBack, onOtpSent }: ForgotPasswordProp
               onClick={onBack}
               className="btn-secondary w-full"
             >
-              Back to Login
+              {t.authPage('forgotPassword.backToLoginButton')}
             </button>
           </div>
         </div>
@@ -292,16 +302,16 @@ export default function ForgotPassword({ onBack, onOtpSent }: ForgotPasswordProp
             className="flex items-center text-gray-600 hover:text-gray-800 mb-6"
           >
             <ArrowLeft className="w-5 h-5 mr-2" />
-            Back to login
+            {t.authPage('forgotPassword.backToLogin')}
           </button>
           
           <div className="mx-auto w-20 h-20 bg-orange-100 rounded-full flex items-center justify-center mb-4">
             <Key className="w-10 h-10 text-orange-500" />
           </div>
           
-          <h1 className="text-2xl font-bold text-slate-800 mb-2">Forgot Password</h1>
+          <h1 className="text-2xl font-bold text-slate-800 mb-2">{t.authPage('forgotPassword.title')}</h1>
           <p className="text-gray-600 text-center">
-            Enter your phone number or email address and we'll help you reset your password.
+            {t.authPage('forgotPassword.subtitle')}
           </p>
         </div>
 
@@ -311,7 +321,7 @@ export default function ForgotPassword({ onBack, onOtpSent }: ForgotPasswordProp
             {/* Contact Method Tabs */}
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-3">
-                Reset password via
+                {t.authPage('forgotPassword.resetVia')}
               </label>
               
               {/* Tab Headers */}
@@ -329,7 +339,7 @@ export default function ForgotPassword({ onBack, onOtpSent }: ForgotPasswordProp
                   }`}
                 >
                   <Phone className="w-4 h-4 inline mr-2" />
-                  Phone Number
+                  {t.authPage('forgotPassword.tabPhone')}
                 </button>
                 <button
                   type="button"
@@ -344,7 +354,7 @@ export default function ForgotPassword({ onBack, onOtpSent }: ForgotPasswordProp
                   }`}
                 >
                   <Mail className="w-4 h-4 inline mr-2" />
-                  Email
+                  {t.authPage('forgotPassword.tabEmail')}
                 </button>
               </div>
 
@@ -375,7 +385,7 @@ export default function ForgotPassword({ onBack, onOtpSent }: ForgotPasswordProp
                               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                               <input
                                 type="text"
-                                placeholder="Search countries..."
+                                placeholder={t.authPage('forgotPassword.searchCountries')}
                                 value={countrySearch}
                                 onChange={(e) => setCountrySearch(e.target.value)}
                                 onClick={(e) => e.stopPropagation()}
@@ -416,7 +426,7 @@ export default function ForgotPassword({ onBack, onOtpSent }: ForgotPasswordProp
                         {...form.register('phone')}
                         type="tel"
                         className="input-field"
-                        placeholder="Enter your phone number"
+                        placeholder={t.authPage('forgotPassword.enterPhonePlaceholder')}
                       />
                     </div>
                   </div>
@@ -435,7 +445,7 @@ export default function ForgotPassword({ onBack, onOtpSent }: ForgotPasswordProp
                       {...form.register('email')}
                       type="email"
                       className="input-field pl-11"
-                      placeholder="your.email@example.com"
+                      placeholder={t.authPage('forgotPassword.enterEmailPlaceholder')}
                     />
                   </div>
                   {form.formState.errors.email && (
@@ -450,18 +460,18 @@ export default function ForgotPassword({ onBack, onOtpSent }: ForgotPasswordProp
               disabled={isLoading}
               className="btn-primary w-full"
             >
-              {isLoading ? 'Sending...' : 'Receive code'}
+              {isLoading ? t.authPage('forgotPassword.sending') : t.authPage('forgotPassword.receiveCode')}
             </button>
           </form>
 
           <div className="mt-6 text-center">
             <p className="text-sm text-gray-500">
-              Remember your password?{' '}
+              {t.authPage('forgotPassword.rememberPassword')}{' '}
               <button 
                 onClick={onBack}
                 className="text-orange-500 hover:text-orange-600 font-medium"
               >
-                Sign in instead
+                {t.authPage('forgotPassword.signInInstead')}
               </button>
             </p>
           </div>
@@ -469,7 +479,7 @@ export default function ForgotPassword({ onBack, onOtpSent }: ForgotPasswordProp
 
         {/* Footer */}
         <div className="text-center mt-6 text-sm text-gray-500">
-          © 2025 Bagami - Smart Community-Powered Deliveries. All rights reserved.
+          {t.authPage('footer')}
         </div>
       </div>
     </div>

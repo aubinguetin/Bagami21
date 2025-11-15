@@ -2,23 +2,25 @@
 
 import { signIn } from 'next-auth/react';
 import { useState } from 'react';
+import { useT } from '@/lib/i18n-helpers';
 
 interface GoogleSignInButtonProps {
-  text?: string;
+  isSignUp?: boolean;
   className?: string;
 }
 
 export default function GoogleSignInButton({ 
-  text = "Continue with Google", 
+  isSignUp = false,
   className = "" 
 }: GoogleSignInButtonProps) {
   const [isLoading, setIsLoading] = useState(false);
+  const t = useT();
 
   const handleGoogleSignIn = async () => {
     try {
       setIsLoading(true);
       await signIn('google', {
-        callbackUrl: '/', // Redirect to homepage after sign-in
+        callbackUrl: '/deliveries', // Redirect to deliveries page after sign-in
         redirect: true,
       });
     } catch (error) {
@@ -27,6 +29,9 @@ export default function GoogleSignInButton({
       setIsLoading(false);
     }
   };
+
+  const text = isSignUp ? t.authPage('socialSignIn.google.signUp') : t.authPage('socialSignIn.google.signIn');
+  const loadingText = t.authPage('socialSignIn.google.signingIn');
 
   return (
     <button
@@ -59,7 +64,7 @@ export default function GoogleSignInButton({
       </svg>
       
       <span className="text-sm font-medium text-gray-700">
-        {isLoading ? 'Signing in...' : text}
+        {isLoading ? loadingText : text}
       </span>
     </button>
   );

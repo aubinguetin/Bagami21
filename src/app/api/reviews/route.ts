@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import { getUserLocale, generateReviewNotification } from '@/lib/notificationTranslations';
 
 export async function POST(request: NextRequest) {
   try {
@@ -79,6 +82,68 @@ export async function POST(request: NextRequest) {
         }
       }
     });
+
+    // Delete all rating reminder notifications for this reviewer about this delivery
+    try {
+      const conversation = await prisma.conversation.findFirst({
+        where: {
+          deliveryId: deliveryId,
+          OR: [
+            { participant1Id: currentReviewerId, participant2Id: revieweeId },
+            { participant1Id: revieweeId, participant2Id: currentReviewerId },
+          ],
+        },
+        select: {
+          id: true,
+        },
+      });
+
+      const relatedIds = [deliveryId];
+      if (conversation?.id) {
+        relatedIds.push(conversation.id);
+      }
+
+      const deletedReminders = await prisma.notification.deleteMany({
+        where: {
+          userId: currentReviewerId,
+          type: 'rating_reminder',
+          relatedId: {
+            in: relatedIds,
+          },
+        },
+      });
+
+      console.log(`🗑️ Deleted ${deletedReminders.count} rating reminder notifications for reviewer ${currentReviewerId}`);
+    } catch (deleteError) {
+      console.error('⚠️ Failed to delete rating reminders:', deleteError);
+      // Don't fail the review creation if deletion fails
+    }
+
+    // Create notification for the reviewee
+    try {
+      const locale = await getUserLocale(revieweeId);
+      const { title, message } = generateReviewNotification(
+        rating,
+        review.reviewer.name || 'Someone',
+        comment,
+        locale
+      );
+
+      await prisma.notification.create({
+        data: {
+          userId: revieweeId,
+          type: 'review',
+          title,
+          message,
+          relatedId: review.id,
+          isRead: false
+        }
+      });
+      console.log('✅ Review notification created for user:', revieweeId);
+    } catch (notifError) {
+      console.error('⚠️ Failed to create review notification:', notifError);
+      // Don't fail the review creation if notification fails
+    }
 
     return NextResponse.json({
       success: true,

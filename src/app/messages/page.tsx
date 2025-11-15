@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { 
   MessageCircle,
@@ -15,7 +15,10 @@ import {
   Search,
   Filter,
   X,
-  DollarSign
+  DollarSign,
+  Bell,
+  Plus,
+  ArrowLeft
 } from 'lucide-react';
 import { 
   useConversations, 
@@ -25,6 +28,8 @@ import {
 } from '@/hooks/useQueries';
 import { useSSEMessages } from '@/hooks/useSSEMessages';
 import { useRealtimeMessageSender } from '@/hooks/useRealtimeSocket';
+import { PostTypeSelectionModal } from '@/components/PostTypeSelectionModal';
+import { useT } from '@/lib/i18n-helpers';
 
 // Helper function to get country flag emoji from country code or name
 function getCountryFlag(countryCodeOrName: string): string {
@@ -64,10 +69,10 @@ function getCountryFlag(countryCodeOrName: string): string {
 }
 
 // Helper function to format card messages for display
-function formatCardMessage(content: string, messageType: string): string {
+function formatCardMessage(content: string, messageType: string, t: any): string {
   // If it's a system message, return as is
   if (messageType === 'system') {
-    return 'System message';
+    return t('cardMessages.systemMessage');
   }
 
   // Try to parse as JSON to detect card messages
@@ -78,18 +83,18 @@ function formatCardMessage(content: string, messageType: string): string {
     if (parsed.type) {
       switch (parsed.type) {
         case 'offer':
-          return '💰 Sent an offer';
+          return t('cardMessages.sentOffer');
         case 'offerAccepted':
-          return '✅ Offer accepted';
+          return t('cardMessages.offerAccepted');
         case 'offerRejected':
-          return '❌ Offer rejected';
+          return t('cardMessages.offerRejected');
         case 'payment':
         case 'paymentConfirmation':
-          return '💳 Payment confirmation';
+          return t('cardMessages.paymentConfirmation');
         case 'deliveryConfirmation':
-          return '📦 Delivery confirmed';
+          return t('cardMessages.deliveryConfirmed');
         default:
-          return '📋 Sent a card';
+          return t('cardMessages.sentCard');
       }
     }
   } catch (e) {
@@ -102,7 +107,12 @@ function formatCardMessage(content: string, messageType: string): string {
 
 export default function MessagesPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { data: session, status } = useSession();
+  const { messages: t } = useT();
+  
+  // Check if user came from profile page
+  const fromProfile = searchParams.get('from') === 'profile';
   
   const [selectedConversation, setSelectedConversation] = useState<any>(null);
   const [newMessage, setNewMessage] = useState('');
@@ -123,6 +133,8 @@ export default function MessagesPage() {
   
   // Navigation state
   const [unreadMessageCount, setUnreadMessageCount] = useState(0);
+  const [unreadNotificationCount, setUnreadNotificationCount] = useState(0);
+  const [showPostTypeModal, setShowPostTypeModal] = useState(false);
   
   // Track other participant's online status
   const [participantStatus, setParticipantStatus] = useState<{ [userId: string]: boolean }>({});
@@ -154,19 +166,40 @@ export default function MessagesPage() {
     }
   };
 
+  // Function to fetch unread notification count
+  const fetchUnreadNotificationCount = async () => {
+    try {
+      const { userId } = getCurrentUserInfo();
+      if (!userId) return;
+      
+      const response = await fetch(`/api/notifications/unread-count?userId=${userId}`);
+      const result = await response.json();
+
+      if (response.ok && result.success) {
+        setUnreadNotificationCount(result.unreadCount || 0);
+      }
+    } catch (error) {
+      console.error('Error fetching notification count:', error);
+    }
+  };
+
   // Enhanced polling with smart intervals and visibility detection
   useEffect(() => {
     const { userId, userContact } = getCurrentUserInfo();
     if (!userId && !userContact) return;
 
     fetchUnreadCount();
+    fetchUnreadNotificationCount();
     
     // Smart polling: faster when active, slower when background
     const getPollingInterval = () => {
       return document.hidden ? 30000 : 5000; // 30s background, 5s active
     };
 
-    let interval = setInterval(fetchUnreadCount, getPollingInterval());
+    let interval = setInterval(() => {
+      fetchUnreadCount();
+      fetchUnreadNotificationCount();
+    }, getPollingInterval());
 
     // Handle visibility change for immediate updates
     const handleVisibilityChange = () => {
@@ -175,15 +208,20 @@ export default function MessagesPage() {
       if (!document.hidden) {
         // Immediate refresh when returning to tab
         fetchUnreadCount();
+        fetchUnreadNotificationCount();
       }
       
       // Restart with appropriate interval
-      interval = setInterval(fetchUnreadCount, getPollingInterval());
+      interval = setInterval(() => {
+        fetchUnreadCount();
+        fetchUnreadNotificationCount();
+      }, getPollingInterval());
     };
 
     // Listen for focus events for even faster response
     const handleFocus = () => {
       fetchUnreadCount();
+      fetchUnreadNotificationCount();
     };
 
     document.addEventListener('visibilitychange', handleVisibilityChange);
@@ -461,29 +499,51 @@ export default function MessagesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 pb-24">
       {/* Header */}
-      <div className="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-30">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-center h-16">
-            <h1 className="text-2xl font-bold text-slate-800">Messages</h1>
+      <div className="fixed top-0 left-0 right-0 bg-transparent z-50">
+        <div className="px-4 sm:px-6 py-3">
+          <div className="flex items-center justify-between">
+            {fromProfile ? (
+              <button
+                onClick={() => router.push('/profile')}
+                className="flex items-center justify-center w-10 h-10 bg-white rounded-full border border-gray-300 text-gray-700 transition-all hover:scale-105 hover:border-gray-400"
+                aria-label="Back to profile"
+              >
+                <ArrowLeft className="w-5 h-5" />
+              </button>
+            ) : (
+              <button
+                onClick={() => router.back()}
+                className="flex items-center justify-center w-10 h-10 bg-white rounded-full border border-gray-300 text-gray-700 transition-all hover:scale-105 hover:border-gray-400"
+              >
+                <ArrowLeft className="w-5 h-5" />
+              </button>
+            )}
+            <div className="flex-1 mx-4 flex justify-center">
+              <div className="bg-white px-6 py-2 rounded-full border border-gray-300">
+                <h1 className="text-base font-bold text-slate-800">{t('title')}</h1>
+              </div>
+            </div>
+            <div className="w-10"></div>
           </div>
         </div>
       </div>
+      <div className="pt-16"></div>
 
       {/* Messages Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-20">
+      <div className="px-4 sm:px-6 py-4">
         {/* Search and Filters Bar */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 mb-4 p-4">
-          <div className="flex flex-col sm:flex-row gap-3">
+          <div className="flex gap-3 items-center">
             {/* Search Bar */}
-            <div className="flex-1 relative">
+            <div className="flex-1 min-w-0 relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search conversations, cities, names..."
+                placeholder={t('search.placeholder')}
                 className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent text-sm"
               />
               {searchQuery && (
@@ -499,14 +559,14 @@ export default function MessagesPage() {
             {/* Filter Button */}
             <button
               onClick={() => setShowFilters(!showFilters)}
-              className={`flex items-center gap-2 px-4 py-2.5 rounded-lg border transition-colors ${
+              className={`flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg border transition-colors flex-shrink-0 ${
                 getActiveFilterCount() > 0 || showFilters
                   ? 'bg-orange-50 border-orange-300 text-orange-700'
                   : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
               }`}
+              title="Filters"
             >
               <Filter className="w-5 h-5" />
-              <span className="font-medium">Filters</span>
               {getActiveFilterCount() > 0 && (
                 <span className="bg-orange-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
                   {getActiveFilterCount()}
@@ -726,7 +786,8 @@ export default function MessagesPage() {
                             <p className="text-sm text-gray-500 truncate">
                               {formatCardMessage(
                                 conversation.lastMessage.content,
-                                conversation.lastMessage.messageType
+                                conversation.lastMessage.messageType,
+                                t
                               )}
                             </p>
                           )}
@@ -735,7 +796,15 @@ export default function MessagesPage() {
                           {(conversation as any).hasDeliveryConfirmation && (
                             <div className="flex items-center gap-1 mt-1">
                               <CheckCheck className="w-3 h-3 text-green-600" />
-                              <span className="text-xs font-semibold text-green-600">Delivered</span>
+                              <span className="text-xs font-semibold text-green-600">{t('status.delivered')}</span>
+                            </div>
+                          )}
+                          
+                          {/* Deleted Delivery Status */}
+                          {conversation.delivery.deletedAt && (
+                            <div className="flex items-center gap-1 mt-1">
+                              <X className="w-3 h-3 text-red-600" />
+                              <span className="text-xs font-semibold text-red-600">{t('status.deliveryDeleted')}</span>
                             </div>
                           )}
                         </div>
@@ -834,7 +903,8 @@ export default function MessagesPage() {
                             <p className="text-sm text-gray-500 truncate">
                               {formatCardMessage(
                                 conversation.lastMessage.content,
-                                conversation.lastMessage.messageType
+                                conversation.lastMessage.messageType,
+                                t
                               )}
                             </p>
                           )}
@@ -843,7 +913,15 @@ export default function MessagesPage() {
                           {(conversation as any).hasDeliveryConfirmation && (
                             <div className="flex items-center gap-1 mt-1">
                               <CheckCheck className="w-3 h-3 text-green-600" />
-                              <span className="text-xs font-semibold text-green-600">Delivered</span>
+                              <span className="text-xs font-semibold text-green-600">{t('status.delivered')}</span>
+                            </div>
+                          )}
+                          
+                          {/* Deleted Delivery Status */}
+                          {conversation.delivery.deletedAt && (
+                            <div className="flex items-center gap-1 mt-1">
+                              <X className="w-3 h-3 text-red-600" />
+                              <span className="text-xs font-semibold text-red-600">{t('status.deliveryDeleted')}</span>
                             </div>
                           )}
                         </div>
@@ -890,30 +968,17 @@ export default function MessagesPage() {
 
       {/* Enhanced Bottom Navigation - Native App Style */}
       <nav className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-lg border-t border-gray-200/50 z-50 safe-bottom shadow-[0_-4px_16px_rgba(0,0,0,0.08)]">
-        <div className="grid grid-cols-4 h-16 max-w-screen-xl mx-auto">
-          {/* Home */}
-          <button
-            onClick={() => router.push('/')}
-            className="flex flex-col items-center justify-center gap-1 text-gray-600 hover:text-gray-900 active:scale-95 transition-all duration-200 group relative"
-          >
-            <div className="relative">
-              <Home className="w-6 h-6 transition-transform group-hover:scale-110" />
-            </div>
-            <span className="text-[10px] font-semibold tracking-wide">Home</span>
-          </button>
-
-          {/* Deliveries */}
+        <div className="grid grid-cols-5 h-16 max-w-screen-xl mx-auto">
+          {/* Search */}
           <button
             onClick={() => router.push('/deliveries')}
-            className="flex flex-col items-center justify-center gap-1 text-gray-600 hover:text-gray-900 active:scale-95 transition-all duration-200 group relative"
+            className="group flex flex-col items-center justify-center space-y-1 text-gray-600 hover:text-gray-900 transition-all duration-200 active:scale-95"
           >
-            <div className="relative">
-              <Package className="w-6 h-6 transition-transform group-hover:scale-110" />
-            </div>
-            <span className="text-[10px] font-semibold tracking-wide">Deliveries</span>
+            <Search className="w-6 h-6 transition-transform group-hover:scale-110" />
+            <span className="text-[10px] font-semibold tracking-wide">{t('bottomNav.search')}</span>
           </button>
 
-          {/* Messages - Active State with Modern Design */}
+          {/* Messages - Active State */}
           <button
             onClick={() => {/* Already on messages page */}}
             className="flex flex-col items-center justify-center gap-1 relative active:scale-95 transition-all duration-200 group"
@@ -933,21 +998,60 @@ export default function MessagesPage() {
                 </span>
               )}
             </div>
-            <span className="text-[10px] font-bold tracking-wide bg-gradient-to-r from-orange-600 to-orange-700 bg-clip-text text-transparent">Messages</span>
+            <span className="text-[10px] font-bold tracking-wide bg-gradient-to-r from-orange-600 to-orange-700 bg-clip-text text-transparent">{t('title')}</span>
+          </button>
+
+          {/* Post Button - Center */}
+          <button
+            onClick={() => setShowPostTypeModal(true)}
+            className="relative flex flex-col items-center justify-center space-y-1 transition-all duration-200 active:scale-95"
+          >
+            {/* Icon container with white background and orange border */}
+            <div className="relative">
+              {/* Glow effect */}
+              <div className="absolute inset-0 bg-gradient-to-br from-orange-500 to-orange-600 rounded-md blur-md opacity-40" />
+              
+              {/* Icon container */}
+              <div className="relative bg-white border-2 border-orange-500 p-1 rounded-md shadow-lg">
+                <Plus className="w-3 h-3 text-orange-500" />
+              </div>
+            </div>
+            
+            <span className="text-[10px] font-semibold text-orange-600 tracking-wide">{t('bottomNav.post')}</span>
+          </button>
+
+          {/* Notifications */}
+          <button
+            onClick={() => router.push('/notifications')}
+            className="group relative flex flex-col items-center justify-center space-y-1 text-gray-600 hover:text-gray-900 transition-all duration-200 active:scale-95"
+          >
+            <div className="relative">
+              <Bell className="w-6 h-6 transition-transform group-hover:scale-110" />
+              {unreadNotificationCount > 0 && (
+                <span className="absolute -top-1 -right-1 bg-gradient-to-br from-red-500 to-red-600 text-white text-[10px] rounded-full h-5 w-5 flex items-center justify-center font-bold border-2 border-white shadow-lg">
+                  {unreadNotificationCount > 99 ? '99+' : unreadNotificationCount}
+                </span>
+              )}
+            </div>
+            <span className="text-[10px] font-semibold tracking-wide">{t('bottomNav.notifications')}</span>
           </button>
 
           {/* Profile */}
           <button
             onClick={() => router.push('/profile')}
-            className="flex flex-col items-center justify-center gap-1 text-gray-600 hover:text-gray-900 active:scale-95 transition-all duration-200 group relative"
+            className="group flex flex-col items-center justify-center space-y-1 text-gray-600 hover:text-gray-900 transition-all duration-200 active:scale-95"
           >
-            <div className="relative">
-              <User className="w-6 h-6 transition-transform group-hover:scale-110" />
-            </div>
-            <span className="text-[10px] font-semibold tracking-wide">Profile</span>
+            <User className="w-6 h-6 transition-transform group-hover:scale-110" />
+            <span className="text-[10px] font-semibold tracking-wide">{t('bottomNav.profile')}</span>
           </button>
         </div>
       </nav>
+
+      {/* Post Type Selection Modal */}
+      <PostTypeSelectionModal 
+        isOpen={showPostTypeModal}
+        onClose={() => setShowPostTypeModal(false)}
+      />
     </div>
   );
 }

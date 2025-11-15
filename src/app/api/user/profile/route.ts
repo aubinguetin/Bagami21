@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
+import { getUserLocale, generateProfileUpdateNotification } from '@/lib/notificationTranslations';
 
 export async function GET(request: NextRequest) {
   try {
@@ -14,9 +15,18 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Get user profile with all fields including countryCode
+    // Get user profile with all fields including countryCode and idDocuments
     const user = await prisma.user.findUnique({
-      where: { id: session.user.id }
+      where: { id: session.user.id },
+      include: {
+        idDocuments: {
+          select: {
+            id: true,
+            verificationStatus: true,
+            documentType: true
+          }
+        }
+      }
     }) as any;
 
     if (user) {
@@ -37,7 +47,8 @@ export async function GET(request: NextRequest) {
           gender: userProfile.gender,
           dateOfBirth: userProfile.dateOfBirth,
           image: userProfile.image,
-          createdAt: userProfile.createdAt
+          createdAt: userProfile.createdAt,
+          idDocuments: userProfile.idDocuments
         }
       });
     }
@@ -151,6 +162,30 @@ export async function PATCH(request: NextRequest) {
       where: { id: session.user.id },
       data: updateData
     }) as any;
+
+    // Create notification for profile updates (only for important fields)
+    try {
+      const updatedFields = Object.keys(updateData);
+      const importantFields = ['name', 'email', 'phone'];
+      const updatedImportantFields = updatedFields.filter(field => importantFields.includes(field));
+
+      if (updatedImportantFields.length > 0) {
+        const locale = await getUserLocale(session.user.id);
+        const { title, message } = generateProfileUpdateNotification(updatedImportantFields, locale);
+
+        await prisma.notification.create({
+          data: {
+            userId: session.user.id,
+            type: 'update',
+            title,
+            message,
+            isRead: false
+          }
+        });
+      }
+    } catch (error) {
+      console.error('Failed to create profile update notification:', error);
+    }
 
     // Extract only the fields we want to return (excluding sensitive data)
     const { password, ...userProfile } = updatedUser;

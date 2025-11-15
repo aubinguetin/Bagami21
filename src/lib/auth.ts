@@ -3,9 +3,22 @@ import GoogleProvider from 'next-auth/providers/google';
 import FacebookProvider from 'next-auth/providers/facebook';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import { PrismaAdapter } from '@auth/prisma-adapter';
-import { prisma } from './prisma';
+import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 import { countryCodes } from '@/data/countryCodes';
+
+// Initialize Prisma Client with singleton pattern
+const globalForPrisma = globalThis as unknown as {
+  prisma: PrismaClient | undefined
+}
+
+const prisma = globalForPrisma.prisma ?? new PrismaClient({
+  log: ['query'],
+});
+
+if (process.env.NODE_ENV !== 'production') {
+  globalForPrisma.prisma = prisma;
+}
 
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma),
@@ -24,6 +37,70 @@ export const authOptions: NextAuthOptions = {
     FacebookProvider({
       clientId: process.env.FACEBOOK_CLIENT_ID!,
       clientSecret: process.env.FACEBOOK_CLIENT_SECRET!,
+    }),
+    CredentialsProvider({
+      id: "backoffice",
+      name: "Backoffice",
+      credentials: {
+        email: { label: "Email", type: "email" },
+        password: { label: "Password", type: "password" }
+      },
+      async authorize(credentials) {
+        console.log('🔐 Backoffice login attempt:', credentials?.email);
+        
+        if (!credentials?.email || !credentials?.password) {
+          console.log('❌ Missing email or password');
+          return null;
+        }
+
+        try {
+          const user = await prisma.user.findUnique({
+            where: { email: credentials.email }
+          });
+
+          if (!user) {
+            console.log('❌ User not found');
+            return null;
+          }
+
+          if (!user.password) {
+            console.log('❌ User has no password set');
+            return null;
+          }
+
+          const isPasswordValid = await bcrypt.compare(credentials.password, user.password);
+          
+          if (!isPasswordValid) {
+            console.log('❌ Invalid password');
+            return null;
+          }
+
+          // Check if user account is suspended
+          if (!user.isActive) {
+            console.log('❌ User account is suspended');
+            throw new Error('ACCOUNT_SUSPENDED');
+          }
+
+          // Check if user has admin or superadmin role
+          if (user.role !== 'admin' && user.role !== 'superadmin') {
+            console.log('❌ User is not an admin. Role:', user.role);
+            return null;
+          }
+
+          console.log('✅ Backoffice login success for admin:', user.email);
+          
+          return {
+            id: user.id,
+            email: user.email,
+            name: user.name,
+            image: user.image,
+            role: user.role
+          };
+        } catch (error) {
+          console.error('🚨 Backoffice auth error:', error);
+          return null;
+        }
+      }
     }),
     CredentialsProvider({
       id: "phone-email",
@@ -100,6 +177,12 @@ export const authOptions: NextAuthOptions = {
             return null;
           }
 
+          // Check if user account is suspended
+          if (!user.isActive) {
+            console.log('❌ User account is suspended');
+            throw new Error('ACCOUNT_SUSPENDED');
+          }
+
           // Check if this is OTP verification (signup flow) or password login
           if (credentials.verified === "true" && !credentials.password) {
             // OTP verification flow - check if contact method is verified
@@ -115,7 +198,8 @@ export const authOptions: NextAuthOptions = {
                 email: user.email,
                 name: user.name,
                 image: user.image,
-                phone: user.phone
+                phone: user.phone,
+                role: user.role || 'user'
               };
               console.log('🎯 OTP verification success - Returning authenticated user:', authUser);
               return authUser;
@@ -144,7 +228,8 @@ export const authOptions: NextAuthOptions = {
                   email: user.email,
                   name: user.name,
                   image: user.image,
-                  phone: user.phone
+                  phone: user.phone,
+                  role: user.role || 'user'
                 };
                 console.log('🎯 Password login success - Returning authenticated user:', authUser);
                 return authUser;
@@ -179,7 +264,21 @@ export const authOptions: NextAuthOptions = {
         token.user = user;
         // Store user ID for future database queries
         token.sub = user.id;
+        token.role = (user as any).role || 'user';
       }
+
+      // Refresh role from database on each request (for admin role changes)
+      if (token.sub) {
+        const dbUser = await prisma.user.findUnique({
+          where: { id: token.sub },
+          select: { role: true, isActive: true },
+        });
+        if (dbUser) {
+          token.role = dbUser.role;
+          token.isActive = dbUser.isActive;
+        }
+      }
+
       return token;
     },
     async session({ session, token }) {
@@ -189,6 +288,8 @@ export const authOptions: NextAuthOptions = {
       }
       session.accessToken = token.accessToken as string;
       session.provider = token.provider as string;
+      session.user.role = token.role as string;
+      session.user.isActive = token.isActive as boolean;
       return session;
     },
     async signIn({ user, account, profile }) {
@@ -225,10 +326,15 @@ export const authOptions: NextAuthOptions = {
       return true;
     },
     async redirect({ url, baseUrl }) {
-      // Redirect to homepage after successful sign-in
+      // Handle backoffice redirects
+      if (url.includes('/backoffice')) {
+        return url;
+      }
+      // Redirect OAuth sign-ins to deliveries page
+      // Redirect to homepage for signup, deliveries for login
       if (url.startsWith('/')) return `${baseUrl}${url}`;
       else if (new URL(url).origin === baseUrl) return url;
-      return `${baseUrl}/`;
+      return `${baseUrl}/deliveries`;
     }
   },
   session: {

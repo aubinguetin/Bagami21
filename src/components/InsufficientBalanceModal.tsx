@@ -1,5 +1,7 @@
 import { useRouter } from 'next/navigation';
 import { X, Wallet, AlertCircle } from 'lucide-react';
+import { useT } from '@/lib/i18n-helpers';
+import { formatAmount } from '@/utils/currencyFormatter';
 
 interface InsufficientBalanceModalProps {
   isOpen: boolean;
@@ -19,6 +21,7 @@ export function InsufficientBalanceModal({
   onPayDirectly
 }: InsufficientBalanceModalProps) {
   const router = useRouter();
+  const { insufficientBalance } = useT();
 
   if (!isOpen) return null;
 
@@ -47,8 +50,8 @@ export function InsufficientBalanceModal({
                 <AlertCircle className="w-6 h-6" />
               </div>
               <div>
-                <h2 className="text-xl font-bold">Insufficient Balance</h2>
-                <p className="text-white/90 text-sm">Not enough funds in wallet</p>
+                <h2 className="text-xl font-bold">{insufficientBalance('title')}</h2>
+                <p className="text-white/90 text-sm">{insufficientBalance('subtitle')}</p>
               </div>
             </div>
             <button
@@ -65,22 +68,22 @@ export function InsufficientBalanceModal({
           {/* Balance Info */}
           <div className="bg-red-50 rounded-2xl p-4 space-y-3">
             <div className="flex items-center justify-between">
-              <span className="text-sm font-medium text-gray-700">Required Amount:</span>
+              <span className="text-sm font-medium text-gray-700">{insufficientBalance('requiredAmount')}</span>
               <span className="text-lg font-bold text-gray-900">
-                {requiredAmount.toLocaleString()} {currency}
+                {formatAmount(requiredAmount)} {currency}
               </span>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-sm font-medium text-gray-700">Current Balance:</span>
+              <span className="text-sm font-medium text-gray-700">{insufficientBalance('currentBalance')}</span>
               <span className="text-lg font-semibold text-red-600">
-                {currentBalance.toLocaleString()} {currency}
+                {formatAmount(currentBalance)} {currency}
               </span>
             </div>
             <div className="border-t border-red-200 pt-3">
               <div className="flex items-center justify-between">
-                <span className="text-sm font-medium text-gray-700">Shortfall:</span>
+                <span className="text-sm font-medium text-gray-700">{insufficientBalance('shortfall')}</span>
                 <span className="text-xl font-bold text-red-600">
-                  -{shortfall.toLocaleString()} {currency}
+                  -{formatAmount(shortfall)} {currency}
                 </span>
               </div>
             </div>
@@ -91,10 +94,12 @@ export function InsufficientBalanceModal({
             <div className="flex items-start space-x-3">
               <Wallet className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
               <div className="text-sm">
-                <p className="font-medium text-blue-900 mb-1">What can you do?</p>
-                <p className="text-blue-700 text-xs leading-relaxed">
-                  You can top up your wallet first or proceed with direct payment using other payment methods.
-                </p>
+                <p className="font-medium text-blue-900 mb-1">{insufficientBalance('howItWorks.title')}</p>
+                <ul className="text-blue-700 text-xs leading-relaxed space-y-1 list-disc list-inside">
+                  <li>{insufficientBalance('howItWorks.step1').replace('{balance}', formatAmount(currentBalance)).replace('{currency}', currency)}</li>
+                  <li>{insufficientBalance('howItWorks.step2').replace('{shortfall}', formatAmount(shortfall)).replace('{currency}', currency)}</li>
+                  <li>{insufficientBalance('howItWorks.step3')}</li>
+                </ul>
               </div>
             </div>
           </div>
@@ -105,14 +110,14 @@ export function InsufficientBalanceModal({
               onClick={handlePayDirectly}
               className="px-4 py-3 border-2 border-orange-500 text-orange-600 rounded-xl hover:bg-orange-50 transition-all font-medium flex items-center justify-center space-x-2"
             >
-              <span>Pay Directly</span>
+              <span>{insufficientBalance('buttons.payDirectly')}</span>
             </button>
             <button
               onClick={handleGoToWallet}
               className="px-4 py-3 bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-xl font-medium transition-all hover:shadow-lg shadow-orange-200 flex items-center justify-center space-x-2"
             >
               <Wallet className="w-4 h-4" />
-              <span>Go to Wallet</span>
+              <span>{insufficientBalance('buttons.goToWallet')}</span>
             </button>
           </div>
         </div>

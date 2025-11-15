@@ -1,0 +1,1763 @@
+{
+  "_comment": "FICHIER DE TRADUCTION BAGAMI - FRANÇAIS",
+  "_structure": "Organisé par namespace/page. Chaque section correspond à une page ou un composant spécifique.",
+  
+  "common": {
+    "_comment": "Utilisé sur toutes les pages - Navigation, actions, labels de statut, temps, éléments UI communs",
+    "app": {
+      "name": "Bagami",
+      "tagline": "Livraisons Intelligentes Propulsées par la Communauté"
+    },
+    "navigation": {
+      "home": "Rechercher",
+      "dashboard": "Tableau de bord",
+      "deliveries": "Livraisons",
+      "myDeliveries": "Mes Livraisons",
+      "messages": "Messages",
+      "notifications": "Notifications",
+      "wallet": "Portefeuille",
+      "profile": "Profil",
+      "settings": "Paramètres",
+      "alerts": "Notifications",
+      "reviews": "Mes Avis",
+      "backoffice": "Administration"
+    },
+    "actions": {
+      "save": "Enregistrer",
+      "cancel": "Annuler",
+      "delete": "Supprimer",
+      "edit": "Modifier",
+      "confirm": "Confirmer",
+      "back": "Retour",
+      "next": "Suivant",
+      "submit": "Publier",
+      "close": "Fermer",
+      "view": "Voir",
+      "search": "Rechercher",
+      "filter": "Filtrer",
+      "clear": "Effacer",
+      "upload": "Télécharger",
+      "download": "Télécharger",
+      "send": "Envoyer",
+      "reply": "Répondre",
+      "refresh": "Actualiser",
+      "login": "Se connecter",
+      "signup": "S'inscrire",
+      "logout": "Se déconnecter"
+    },
+    "status": {
+      "pending": "En attente",
+      "confirmed": "Confirmé",
+      "completed": "Terminé",
+      "cancelled": "Annulé",
+      "active": "Actif",
+      "inactive": "Inactif",
+      "approved": "Approuvé",
+      "rejected": "Rejeté",
+      "verified": "Vérifié",
+      "notVerified": "Non vérifié"
+    },
+    "time": {
+      "now": "Maintenant",
+      "today": "Aujourd'hui",
+      "yesterday": "Hier",
+      "tomorrow": "Demain",
+      "minute": "minute",
+      "minutes": "minutes",
+      "hour": "heure",
+      "hours": "heures",
+      "day": "jour",
+      "days": "jours",
+      "week": "semaine",
+      "weeks": "semaines",
+      "month": "mois",
+      "months": "mois",
+      "year": "an",
+      "years": "ans",
+      "ago": "il y a"
+    },
+    "common": {
+      "loading": "Chargement...",
+      "error": "Erreur",
+      "success": "Succès",
+      "warning": "Avertissement",
+      "info": "Information",
+      "noData": "Aucune donnée disponible",
+      "noResults": "Aucun résultat trouvé",
+      "all": "Tout",
+      "none": "Aucun",
+      "select": "Sélectionner",
+      "selected": "Sélectionné",
+      "required": "Obligatoire",
+      "optional": "Facultatif",
+      "yes": "Oui",
+      "no": "Non",
+      "or": "ou",
+      "and": "et"
+    }
+  },
+  
+  "auth": {
+    "_comment": "PAGE: Pages d'authentification - Connexion, Inscription, Vérification, Réinitialisation du mot de passe",
+    "login": {
+      "title": "Bienvenue sur Bagami",
+      "subtitle": "Connectez-vous pour continuer",
+      "email": "Email",
+      "phone": "Téléphone",
+      "password": "Mot de passe",
+      "forgotPassword": "Mot de passe oublié?",
+      "noAccount": "Vous n'avez pas de compte?",
+      "signUpLink": "S'inscrire",
+      "contactMethod": "Méthode de contact",
+      "countryCode": "Code pays",
+      "enterPhone": "Entrez le numéro de téléphone",
+      "enterEmail": "Entrez l'adresse email",
+      "enterPassword": "Entrez le mot de passe"
+    },
+    "signup": {
+      "title": "Rejoignez Bagami",
+      "subtitle": "Créez votre compte",
+      "fullName": "Nom complet",
+      "enterFullName": "Entrez votre nom complet",
+      "termsAgree": "J'accepte les",
+      "termsLink": "Conditions d'utilisation",
+      "haveAccount": "Vous avez déjà un compte?",
+      "loginLink": "Se connecter"
+    },
+    "verification": {
+      "title": "Vérifiez votre compte",
+      "subtitle": "Entrez le code envoyé à",
+      "enterCode": "Entrez le code de vérification",
+      "resendCode": "Renvoyer le code",
+      "verify": "Vérifier",
+      "didNotReceive": "Vous n'avez pas reçu le code?"
+    },
+    "forgotPassword": {
+      "title": "Réinitialiser le mot de passe",
+      "subtitle": "Entrez votre email ou téléphone pour réinitialiser",
+      "sendCode": "Envoyer le code",
+      "backToLogin": "Retour à la connexion"
+    },
+    "newPassword": {
+      "title": "Créer un nouveau mot de passe",
+      "subtitle": "Entrez votre nouveau mot de passe",
+      "newPassword": "Nouveau mot de passe",
+      "confirmPassword": "Confirmer le mot de passe",
+      "resetPassword": "Réinitialiser le mot de passe"
+    },
+    "oauth": {
+      "continueWithGoogle": "Continuer avec Google",
+      "continueWithFacebook": "Continuer avec Facebook",
+      "orContinueWith": "Ou continuer avec"
+    }
+  },
+  
+  "validation": {
+    "_comment": "GLOBAL: Messages de validation de formulaire utilisés dans tous les formulaires",
+    "required": "Ce champ est obligatoire",
+    "email": {
+      "invalid": "Adresse email invalide",
+      "required": "L'email est obligatoire"
+    },
+    "phone": {
+      "invalid": "Veuillez entrer un numéro de téléphone valide",
+      "required": "Le numéro de téléphone est obligatoire"
+    },
+    "password": {
+      "required": "Le mot de passe est obligatoire",
+      "minLength": "Le mot de passe doit contenir au moins {count} caractères",
+      "mismatch": "Les mots de passe ne correspondent pas"
+    },
+    "name": {
+      "required": "Le nom est obligatoire"
+    },
+    "countryCode": {
+      "required": "Le code pays est obligatoire"
+    },
+    "terms": {
+      "required": "Vous devez accepter les conditions d'utilisation de Bagami"
+    }
+  },
+  
+  "settings": {
+    "_comment": "PAGE: /settings - Page des paramètres avec configuration du compte, préférences et déconnexion",
+    "title": "Paramètres",
+    "accountSettings": {
+      "myInformation": "Mes Informations",
+      "verifyMyID": "Vérifier mon identité",
+      "password": "Mot de passe",
+      "verified": "Vérifié",
+      "pending": "En attente",
+      "rejected": "Rejeté",
+      "notVerified": "Non vérifié"
+    },
+    "preferences": {
+      "title": "Préférences",
+      "language": "Langue",
+      "currency": "Devise"
+    },
+    "termsAndPolicy": "Conditions d'utilisation",
+    "verifyIDModal": {
+      "title": "Vérifier mon identité",
+      "signInPrompt": "Veuillez vous connecter pour vérifier votre identité",
+      "signInButton": "Se connecter",
+      "existingDocuments": "Vos Documents",
+      "noDocuments": "Aucune pièce d'identité téléchargée.",
+      "selectDocumentType": "Sélectionnez le type de document",
+      "nationalID": "Carte d'identité nationale",
+      "nationalIDDescription": "Téléchargez le recto et le verso de votre carte d'identité",
+      "passport": "Passeport",
+      "passportDescription": "Téléchargez la page d'information de votre passeport",
+      "uploadFront": "Recto",
+      "uploadBack": "Verso",
+      "uploadPassport": "Page d'information",
+      "uploadTitle": "Télécharger",
+      "changeType": "Changer de type",
+      "frontSidePrompt": "Téléchargez ou prenez une photo du recto",
+      "backSidePrompt": "Téléchargez ou prenez une photo du verso",
+      "passportPrompt": "Téléchargez ou prenez une photo de la page d'information",
+      "browse": "Parcourir",
+      "takePhoto": "Prendre une photo",
+      "clickToUpload": "Cliquez pour télécharger",
+      "changeFile": "Changer le fichier",
+      "removeFile": "Supprimer le fichier",
+      "submitForVerification": "Soumettre pour vérification",
+      "uploading": "Téléchargement...",
+      "uploadDocuments": "Télécharger les documents",
+      "successTitle": "Téléchargement réussi !",
+      "successMessage": "Documents téléchargés avec succès ! Notre équipe les examinera bientôt.",
+      "backToSettings": "Retour aux paramètres",
+      "viewDocument": "Voir",
+      "deleteDocument": "Supprimer",
+      "replace": "Remplacer",
+      "deleteConfirm": "Supprimer ce document ?",
+      "noteTitle": "Remarque :",
+      "noteText": "Formats pris en charge : JPEG, PNG, JPG. Taille maximale : 5 Mo par fichier.",
+      "errors": {
+        "invalidFileType": "Veuillez sélectionner un fichier image valide (JPEG, PNG, JPG)",
+        "fileSizeTooLarge": "La taille du fichier doit être inférieure à 5 Mo",
+        "missingDocuments": "Veuillez télécharger tous les documents requis",
+        "uploadFailed": "Échec du téléchargement",
+        "deleteFailed": "Échec de la suppression du document",
+        "unknownError": "Erreur inconnue"
+      },
+      "status": {
+        "approved": "Vérifié",
+        "pending": "En cours de vérification",
+        "rejected": "Rejeté"
+      },
+      "documentType": {
+        "national_id": "Carte d'identité",
+        "passport": "Passeport"
+      },
+      "uploadedOn": "Téléchargé le",
+      "loading": "Chargement des documents...",
+      "error": "Échec du chargement des documents"
+    },
+    "myInformation": {
+      "title": "Mes informations",
+      "fullName": {
+        "label": "Nom complet",
+        "placeholder": "Entrez votre nom complet",
+        "save": "Enregistrer",
+        "saved": "Enregistré",
+        "saving": "Enregistrement...",
+        "error": "Veuillez entrer un nom valide",
+        "success": "Nom mis à jour avec succès !",
+        "failed": "Échec de la mise à jour du nom. Veuillez réessayer."
+      },
+      "email": {
+        "label": "Email",
+        "placeholder": "Entrez votre adresse email",
+        "verify": "Vérifier",
+        "verified": "Vérifié",
+        "verifying": "Vérification...",
+        "errorEmpty": "Veuillez entrer une adresse email",
+        "alreadyVerified": "Cet email est déjà vérifié pour votre compte",
+        "verificationFailed": "Échec de l'envoi de l'email de vérification. Veuillez réessayer.",
+        "success": "Email vérifié et mis à jour avec succès !"
+      },
+      "phone": {
+        "label": "Numéro de téléphone",
+        "placeholder": "Entrez le numéro de téléphone",
+        "verify": "Vérifier",
+        "verified": "Vérifié",
+        "verifying": "Vérification...",
+        "errorEmpty": "Veuillez entrer un numéro de téléphone",
+        "alreadyVerified": "Ce numéro de téléphone est déjà vérifié pour votre compte",
+        "verificationFailed": "Échec de l'envoi du SMS de vérification. Veuillez réessayer.",
+        "success": "Numéro de téléphone vérifié et mis à jour avec succès !",
+        "searchCountry": "Rechercher un pays..."
+      },
+      "verification": {
+        "invalidOTP": "Invalid OTP. Please try again.",
+        "verificationFailed": "Verification failed. Please try again.",
+        "emailAddress": "adresse email",
+        "phoneNumber": "numéro de téléphone",
+        "alreadyInUse": "Ce {contactType} est déjà utilisé par un autre compte. Veuillez utiliser un autre {contactType}."
+      },
+      "security": {
+        "title": "Sécurité de l'information",
+        "description": "Vos informations personnelles sont cryptées et stockées en toute sécurité. Nous ne partagerons jamais vos données avec des tiers sans votre consentement."
+      }
+    },
+    "otpModal": {
+      "verifyEmail": "Vérifiez votre e-mail",
+      "verifyPhone": "Vérifiez votre numéro de téléphone",
+      "codeSentTo": "Nous avons envoyé un code de vérification à 6 chiffres à",
+      "resendIn": "Renvoyer le code dans",
+      "sending": "Envoi en cours...",
+      "resendCode": "Renvoyer le code de vérification",
+      "verifying": "Vérification...",
+      "verifyButton": "Vérifier le code",
+      "resendFailed": "Échec du renvoi du code de vérification. Veuillez réessayer."
+    },
+    "changePassword": {
+      "title": "Changer le mot de passe",
+      "currentPassword": {
+        "label": "Mot de passe actuel",
+        "placeholder": "Entrez le mot de passe actuel",
+        "hint": "Si vous vous êtes inscrit avec Google ou Facebook et n'avez jamais défini de mot de passe, laissez ce champ vide."
+      },
+      "newPassword": {
+        "label": "Nouveau mot de passe",
+        "placeholder": "Entrez le nouveau mot de passe"
+      },
+      "confirmPassword": {
+        "label": "Confirmer le nouveau mot de passe",
+        "placeholder": "Confirmez le nouveau mot de passe"
+      },
+      "requirements": {
+        "newPasswordRequired": "Le nouveau mot de passe est requis",
+        "minLength": "Le mot de passe doit contenir au moins 8 caractères",
+        "uppercase": "Inclure au moins une lettre majuscule",
+        "lowercase": "Inclure au moins une lettre minuscule",
+        "number": "Inclure au moins un chiffre",
+        "special": "Inclure au moins un caractère spécial",
+        "confirmRequired": "Veuillez confirmer votre nouveau mot de passe",
+        "passwordsMatch": "Les mots de passe ne correspondent pas",
+        "lengthLabel": "8+ caractères",
+        "uppercaseLabel": "Lettre majuscule",
+        "lowercaseLabel": "Lettre minuscule",
+        "numberLabel": "Chiffre",
+        "specialLabel": "Caractère spécial"
+      },
+      "submit": "Mettre à jour le mot de passe",
+      "submitting": "Mise à jour...",
+      "success": "Mot de passe mis à jour avec succès",
+      "error": "Échec du changement de mot de passe"
+    }
+  },
+  
+  "termsAndPolicy": {
+    "_comment": "PAGE: /terms-and-policy - Page des termes et politiques",
+    "title": "Termes et politiques",
+    "noContent": "Aucun terme et politique n'a encore été défini.",
+    "lastUpdated": "Dernière mise à jour"
+  },
+  
+  "profile": {
+    "_comment": "PAGE: /profile - Page de profil utilisateur avec portefeuille, liens de navigation et actions du compte",
+    "title": "Profil",
+    "walletBalance": "Solde du portefeuille",
+    "settings": "Paramètres",
+    "myDeliveries": "Mes livraisons",
+    "myAlerts": "Mes alertes",
+    "messages": "Messages",
+    "myWallet": "Mon portefeuille",
+    "reviews": "Mes avis",
+    "contactBagami": "Contacter Bagami",
+    "rateBagami": "Évaluer Bagami",
+    "shareBagami": "Partager Bagami",
+    "logOut": "Se déconnecter",
+    "deleteAccount": "Supprimer mon compte",
+    "verificationStatus": {
+      "verified": "Vérifié",
+      "pending": "En attente",
+      "rejected": "Rejeté",
+      "notVerified": "Non vérifié"
+    },
+    "logOutModal": {
+      "title": "Se déconnecter",
+      "message": "Êtes-vous sûr de vouloir vous déconnecter ? Vous devrez vous reconnecter pour accéder à votre compte.",
+      "cancel": "Annuler",
+      "confirm": "Se déconnecter"
+    },
+    "deleteAccountModal": {
+      "title": "Supprimer le compte",
+      "message": "Cette action est irréversible. Cela supprimera définitivement votre compte, toutes vos livraisons, messages et données associées.",
+      "warning": "⚠️ Attention : Ceci est irréversible. Assurez-vous de vouloir continuer.",
+      "cancel": "Conserver le compte",
+      "confirm": "Supprimer définitivement"
+    },
+    "bottomNav": {
+      "search": "Rechercher",
+      "messages": "Messages",
+      "post": "Publier",
+      "notifications": "Notifications",
+      "profile": "Profil"
+    },
+    "auth": {
+      "signInRequired": "Veuillez vous connecter",
+      "authMessage": "Vous devez être authentifié pour voir cette page."
+    }
+  },
+  
+  "myDeliveries": {
+    "_comment": "PAGE: /my-deliveries - Page des livraisons personnelles de l'utilisateur avec recherche, filtres et cartes de livraison",
+    "title": "Mes livraisons",
+    "loading": "Chargement...",
+    "search": {
+      "placeholder": "Rechercher par noms de livraison et villes",
+      "noResults": "Aucune livraison trouvée",
+      "tryAdjusting": "Essayez d'ajuster vos filtres",
+      "noDeliveriesYet": "Vous n'avez pas encore créé de livraisons",
+      "browseDeliveries": "Parcourir les livraisons"
+    },
+    "filters": {
+      "type": "Type",
+      "all": "Tout",
+      "requests": "Demandes",
+      "offers": "Offres",
+      "status": "Statut",
+      "active": "Actif",
+      "expired": "Expiré"
+    },
+    "stats": {
+      "total": "Total",
+      "active": "Actif",
+      "expired": "Expiré"
+    },
+    "card": {
+      "weightTBD": "Poids à déterminer",
+      "by": "Avant le",
+      "tbd": "À déterminer",
+      "edit": "Modifier",
+      "expired": "Expiré"
+    }
+  },
+  
+  "newRequest": {
+    "_comment": "PAGE: /deliveries/new-request - Page de création d'une nouvelle demande de livraison",
+    "title": "Demander une livraison",
+    "loading": "Chargement...",
+    "itemDetails": {
+      "title": "Détails de l'article",
+      "itemType": "Type d'article",
+      "itemTypePlaceholder": "Sélectionner le type",
+      "itemTypes": {
+        "documents": "Documents",
+        "electronics": "Électronique",
+        "clothing": "Vêtements",
+        "food": "Nourriture/Consommables",
+        "gifts": "Cadeaux",
+        "other": "Autre"
+      },
+      "weight": "Poids (kg)",
+      "weightPlaceholder": "2.5",
+      "description": "Description",
+      "descriptionPlaceholder": "Décrivez ce que vous souhaitez envoyer..."
+    },
+    "route": {
+      "title": "Itinéraire",
+      "fromCountry": "Pays de départ",
+      "fromCountryPlaceholder": "Entrez le pays",
+      "fromCity": "Ville de départ",
+      "fromCityPlaceholder": "Entrez la ville",
+      "toCountry": "Pays de destination",
+      "toCountryPlaceholder": "Entrez le pays",
+      "toCity": "Ville de destination",
+      "toCityPlaceholder": "Entrez la ville"
+    },
+    "timeline": {
+      "title": "Délai et récompense",
+      "neededBy": "Arrivée à destination avant le",
+      "reward": "Récompense de la livraison (FCFA)",
+      "rewardPlaceholder": "2000"
+    },
+    "notes": {
+      "title": "Notes supplémentaires (Optionnel)",
+      "placeholder": "Instructions ou exigences particulières..."
+    },
+    "actions": {
+      "cancel": "Annuler",
+      "submit": "Publier",
+      "submitting": "Publication..."
+    },
+    "errors": {
+      "createFailed": "Échec de la création de la demande de livraison",
+      "unexpectedError": "Une erreur s'est produite. Veuillez réessayer."
+    }
+  },
+  
+  "newOffer": {
+    "_comment": "PAGE: /deliveries/new-offer - Page de création d'une nouvelle offre d'espace",
+    "title": "Offrir de l'espace de voyage",
+    "loading": "Chargement...",
+    "route": {
+      "title": "Itinéraire de voyage",
+      "fromCountry": "Pays de départ",
+      "fromCountryPlaceholder": "Entrez le pays",
+      "fromCity": "Ville de départ",
+      "fromCityPlaceholder": "Entrez la ville",
+      "toCountry": "Pays de destination",
+      "toCountryPlaceholder": "Entrez le pays",
+      "toCity": "Ville de destination",
+      "toCityPlaceholder": "Entrez la ville"
+    },
+    "travelDetails": {
+      "title": "Détails du voyage",
+      "travelDate": "Date du voyage",
+      "availableWeight": "Poids disponible (kg)",
+      "weightPlaceholder": "5"
+    },
+    "pricing": {
+      "title": "Tarification",
+      "pricePerKg": "Prix",
+      "pricePerKgPlaceholder": "1000",
+      "rateDescription": "Définissez votre tarif pour le transport d'articles"
+    },
+    "notes": {
+      "title": "Notes supplémentaires (Optionnel)",
+      "placeholder": "Restrictions ou préférences (ex : pas d'objets fragiles, horaires de collecte, etc.)..."
+    },
+    "actions": {
+      "cancel": "Annuler",
+      "submit": "Publier l'offre",
+      "submitting": "Publication..."
+    },
+    "errors": {
+      "createFailed": "Échec de la création de l'offre de voyage",
+      "unexpectedError": "Une erreur s'est produite. Veuillez réessayer."
+    }
+  },
+  "postModal": {
+    "delivery": {
+      "title": "Demander une livraison",
+      "editTitle": "Modifier la demande",
+      "subtitle": "Trouvez quelqu'un pour livrer vos articles",
+      "postButton": "🚚 Publier la demande"
+    },
+    "travel": {
+      "title": "Offrir un espace",
+      "editTitle": "Modifier l'offre",
+      "subtitle": "Aidez les autres en transportant leurs articles",
+      "postButton": "✈️ Offrir l'espace"
+    },
+    "postType": {
+      "needDelivery": "Besoin de livraison",
+      "sendItems": "Envoyer des articles",
+      "offerSpace": "Offrir un espace",
+      "carryItems": "Transporter des articles"
+    },
+    "itemDetails": {
+      "title": "Quoi & Où",
+      "itemType": "Type d'article",
+      "itemTypePlaceholder": "Sélectionner le type",
+      "itemTypes": {
+        "documents": "Documents",
+        "electronics": "Électronique",
+        "clothing": "Vêtements",
+        "food": "Nourriture/Consommables",
+        "gifts": "Cadeaux",
+        "other": "Autre"
+      },
+      "weight": "Poids (kg)",
+      "weightPlaceholder": "2.5",
+      "description": "Description",
+      "descriptionPlaceholder": "Décrivez ce que vous souhaitez envoyer..."
+    },
+    "route": {
+      "title": "Itinéraire",
+      "fromCountry": "Pays de départ",
+      "fromCountryPlaceholder": "Pays de départ",
+      "fromCity": "Ville de départ",
+      "fromCityPlaceholder": "Ville de départ",
+      "toCountry": "Pays de destination",
+      "toCountryPlaceholder": "Pays de destination",
+      "toCity": "Ville de destination",
+      "toCityPlaceholder": "Ville de destination"
+    },
+    "travelRoute": {
+      "title": "Itinéraire de voyage"
+    },
+    "timeline": {
+      "title": "Délai et récompense",
+      "neededBy": "Arrivée à destination avant le",
+      "reward": "Récompense (FCFA)",
+      "rewardPlaceholder": "2000"
+    },
+    "travelDetails": {
+      "title": "Détails du voyage",
+      "departureDate": "Date de départ",
+      "availableSpace": "Espace disponible (kg)",
+      "availableSpacePlaceholder": "5.0",
+      "rate": "Tarif (FCFA par kg)",
+      "ratePlaceholder": "500"
+    },
+    "notes": {
+      "title": "Notes supplémentaires (Optionnel)",
+      "placeholder": "Instructions ou exigences particulières..."
+    },
+    "actions": {
+      "cancel": "Annuler",
+      "posting": "Publication...",
+      "updating": "Mise à jour...",
+      "update": "✓ Mettre à jour"
+    },
+    "search": {
+      "searching": "Recherche...",
+      "startTyping": "Commencez à taper le nom de la ville...",
+      "instantSearch": "Recherche instantanée en tapant",
+      "citiesFound": "{count} villes trouvées",
+      "noCitiesFound": "Aucune ville trouvée pour \"{term}\"",
+      "tryDifferent": "Essayez une autre orthographe ou un terme plus court"
+    },
+    "messages": {
+      "posted": "Publié avec succès !",
+      "updated": "Mis à jour avec succès !",
+      "error": "Erreur : {message}",
+      "networkError": "Erreur réseau. Veuillez réessayer."
+    }
+  },
+  
+  "deliveries": {
+    "_comment": "PAGE: /deliveries - Page principale de navigation des livraisons avec recherche, filtres et listes de livraisons",
+    "title": "Parcourir les livraisons",
+    "search": {
+      "placeholder": "Rechercher des livraisons, villes, articles...",
+      "fromCountry": "Pays de départ",
+      "destinationCountry": "Pays de destination",
+      "swapLocations": "Échanger les emplacements"
+    },
+    "filters": {
+      "show": "Afficher les filtres",
+      "hide": "Masquer les filtres",
+      "postType": "Type de publication",
+      "allPosts": "Toutes les publications",
+      "requests": "Demandes",
+      "offers": "Offres",
+      "viewOptions": "Options d'affichage",
+      "myPostsOnly": "Mes publications uniquement",
+      "newestFirst": "Plus récent d'abord",
+      "oldestFirst": "Plus ancien d'abord",
+      "clearAll": "Tout effacer"
+    },
+    "buttons": {
+      "createAlert": "Créer une alerte",
+      "loadMore": "Charger plus",
+      "loading": "Chargement..."
+    },
+    "card": {
+      "weightTBD": "Poids à déterminer",
+      "by": "Avant le",
+      "tbd": "À déterminer",
+      "createdByYou": "Créé par vous",
+      "anonymous": "Anonyme",
+      "verified": "Vérifié",
+      "noReviews": "Aucun avis",
+      "expired": "Expiré",
+      "deliveryRequest": "Demande de livraison",
+      "spaceOffer": "Offre d'espace",
+      "request": "Demande",
+      "offer": "Offre",
+      "to": "à"
+    },
+    "empty": {
+      "title": "Aucune livraison trouvée",
+      "message": "Essayez d'ajuster vos filtres de recherche ou créez une nouvelle demande de livraison."
+    },
+    "bottomNav": {
+      "search": "Rechercher",
+      "messages": "Messages",
+      "post": "Publier",
+      "notifications": "Notifications",
+      "profile": "Profil"
+    },
+    "detailsModal": {
+      "itemDetails": "Détails de l'article",
+      "serviceDetails": "Détails du service",
+      "route": "Itinéraire",
+      "timeline": "Calendrier",
+      "departure": "Départ",
+      "arrival": "Arrivée",
+      "sender": "Expéditeur",
+      "traveler": "Voyageur",
+      "contactSeller": "Contacter le vendeur"
+    }
+  },
+  
+  "alertModal": {
+    "_comment": "COMPOSANT: AlertModal - Modal de création d'alerte de livraison (utilisé sur la page /deliveries)",
+    "title": "Créer une alerte",
+    "subtitle": "Soyez notifié des livraisons correspondantes",
+    "route": "Itinéraire",
+    "fromCountry": "Pays de départ",
+    "fromCity": "Ville (Optionnel)",
+    "toCountry": "Pays de destination",
+    "toCity": "Ville (Optionnel)",
+    "anyCountry": "Entrez un pays",
+    "anyCity": "Entrez une ville",
+    "searchPlaceholder": "Rechercher {label}...",
+    "searching": "Recherche en cours...",
+    "startTyping": "Commencez à taper le nom de la ville...",
+    "instantSearch": "Recherche instantanée au fur et à mesure de la saisie",
+    "citiesFound": "{count} villes trouvées",
+    "noCitiesFound": "Aucune ville trouvée pour \"{term}\"",
+    "tryDifferent": "Essayez une orthographe différente ou un terme plus court",
+    "alertType": "Type d'alerte",
+    "allDeliveries": "Toutes les livraisons",
+    "requestsOnly": "Demandes de livraison uniquement",
+    "offersOnly": "Offres d'espace uniquement",
+    "requestsExplain": "Demandes de livraison uniquement : Soyez notifié lorsque quelqu'un a besoin d'envoyer des marchandises vers votre destination. Parfait pour les voyageurs qui ont de l'espace disponible dans leurs bagages.",
+    "offersExplain": "Offres d'espace uniquement : Soyez notifié lorsque des voyageurs se rendent à votre destination et ont de l'espace disponible. Parfait lorsque vous souhaitez envoyer des marchandises quelque part.",
+    "allExplain": "Toutes les livraisons : Soyez notifié des demandes de livraison et des offres d'espace pour votre itinéraire sélectionné.",
+    "cancel": "Annuler",
+    "creating": "Création en cours...",
+    "createButton": "Créer une alerte",
+    "successTitle": "Alerte créée !",
+    "successMessage": "Vous serez notifié lorsque des livraisons correspondantes seront trouvées.",
+    "goToAlerts": "Aller à mes alertes",
+    "backToDeliveries": "Retour aux livraisons",
+    "close": "Fermer",
+    "error": "Erreur : {message}",
+    "networkError": "Erreur réseau. Veuillez réessayer."
+  },
+  
+  "postTypeModal": {
+    "_comment": "COMPOSANT: PostTypeModal - Modal de choix du type de publication (demande vs offre)",
+    "title": "Créer une publication",
+    "subtitle": "Que souhaitez-vous faire ?",
+    "requestTitle": "Demander une livraison",
+    "requestSubtitle": "J'ai besoin que quelqu'un livre mes articles",
+    "offerTitle": "Offrir un espace de voyage",
+    "offerSubtitle": "Je voyage et peux transporter des articles"
+  },
+  
+  "editRequest": {
+    "_comment": "PAGE: /deliveries/edit-request/[id] - Page de modification d'une demande de livraison existante",
+    "title": "Modifier la demande de livraison",
+    "loading": "Chargement...",
+    "itemDetails": "Détails de l'article",
+    "itemType": "Type d'article",
+    "itemTypePlaceholder": "Sélectionner le type",
+    "itemTypes": {
+      "documents": "Documents",
+      "electronics": "Électronique",
+      "clothing": "Vêtements",
+      "food": "Nourriture/Consommables",
+      "gifts": "Cadeaux",
+      "other": "Autre"
+    },
+    "weight": "Poids (kg)",
+    "weightPlaceholder": "2.5",
+    "description": "Description",
+    "descriptionPlaceholder": "Décrivez ce que vous voulez envoyer...",
+    "route": "Itinéraire",
+    "fromCountry": "Pays de départ",
+    "fromCountryPlaceholder": "Pays de départ",
+    "fromCity": "Ville de départ",
+    "fromCityPlaceholder": "Ville de départ",
+    "toCountry": "Pays de destination",
+    "toCountryPlaceholder": "Pays de destination",
+    "toCity": "Ville de destination",
+    "toCityPlaceholder": "Ville de destination",
+    "timelineReward": "Échéancier et récompense",
+    "neededBy": "Arrivée à destination avant le",
+    "reward": "Récompense (FCFA)",
+    "rewardPlaceholder": "2000",
+    "additionalNotes": "Notes supplémentaires (optionnel)",
+    "notesPlaceholder": "Instructions ou exigences particulières...",
+    "deletionRestricted": "Suppression restreinte",
+    "deleteButton": "Supprimer",
+    "saveButton": "Enregistrer les modifications",
+    "saving": "Enregistrement...",
+    "confirmDelete": "Êtes-vous sûr de vouloir supprimer cette livraison ? Cette action ne peut pas être annulée.",
+    "deleteSuccess": "Livraison supprimée avec succès !",
+    "updateSuccess": "Demande de livraison mise à jour avec succès !",
+    "updateError": "Échec de la mise à jour de la demande de livraison",
+    "deleteError": "Échec de la suppression de la livraison",
+    "loadError": "Échec du chargement de la livraison",
+    "ownershipError": "Vous ne pouvez modifier que vos propres livraisons",
+    "genericError": "Une erreur s'est produite. Veuillez réessayer.",
+    "deleteBlockedPaymentPending": "Impossible de supprimer cette livraison car le paiement a été effectué mais la livraison n'a pas encore été confirmée.",
+    "deleteBlockedVerificationError": "Impossible de vérifier l'éligibilité à la suppression. Veuillez réessayer."
+  },
+  
+  "editOffer": {
+    "_comment": "PAGE: /deliveries/edit-offer/[id] - Page de modification d'une offre d'espace de voyage existante",
+    "title": "Modifier l'offre de voyage",
+    "loading": "Chargement...",
+    "travelRoute": "Itinéraire de voyage",
+    "fromCountry": "Pays de départ",
+    "fromCountryPlaceholder": "Pays de départ",
+    "fromCity": "Ville de départ",
+    "fromCityPlaceholder": "Ville de départ",
+    "toCountry": "Pays de destination",
+    "toCountryPlaceholder": "Pays de destination",
+    "toCity": "Ville de destination",
+    "toCityPlaceholder": "Ville de destination",
+    "travelDetails": "Détails du voyage",
+    "departureDate": "Date de départ",
+    "availableSpace": "Espace disponible (kg)",
+    "spacePlaceholder": "5",
+    "pricePerKg": "Prix (FCFA)",
+    "pricePlaceholder": "500",
+    "additionalNotes": "Notes supplémentaires (optionnel)",
+    "notesPlaceholder": "Conditions ou préférences particulières...",
+    "deletionRestricted": "Suppression restreinte",
+    "deleteButton": "Supprimer",
+    "saveButton": "Enregistrer les modifications",
+    "saving": "Enregistrement...",
+    "confirmDelete": "Êtes-vous sûr de vouloir supprimer cette offre de voyage ? Cette action ne peut pas être annulée.",
+    "deleteSuccess": "Offre de voyage supprimée avec succès !",
+    "updateSuccess": "Offre de voyage mise à jour avec succès !",
+    "updateError": "Échec de la mise à jour de l'offre de voyage",
+    "deleteError": "Échec de la suppression de l'offre de voyage",
+    "loadError": "Échec du chargement de l'offre de voyage",
+    "ownershipError": "Vous ne pouvez modifier que vos propres offres de voyage",
+    "genericError": "Une erreur s'est produite. Veuillez réessayer.",
+    "deleteBlockedPaymentPending": "Impossible de supprimer cette livraison car le paiement a été effectué mais la livraison n'a pas encore été confirmée.",
+    "deleteBlockedVerificationError": "Impossible de vérifier l'éligibilité à la suppression. Veuillez réessayer."
+  },
+  
+  "deliveryDetail": {
+    "_comment": "PAGE: /deliveries/[id] - Page de détails de livraison individuelle avec info expéditeur, modal de contact et boutons d'action",
+    "loading": "Chargement des détails de la livraison...",
+    "notFound": "Livraison introuvable",
+    "title": "Détails de la livraison",
+    "route": {
+      "from": "De",
+      "to": "À"
+    },
+    "info": {
+      "weight": "Poids",
+      "price": "Prix",
+      "neededBy": "Arrivée à destination avant le",
+      "arrivalDate": "Date d'arrivée",
+      "departureDate": "Date de départ",
+      "itemDescription": "Description de l'article",
+      "serviceDescription": "Description du service",
+      "additionalInfo": "Informations supplémentaires"
+    },
+    "security": {
+      "paymentProtection": "Paiement sécurisé - Votre argent est protégé",
+      "privacyNotice": "Les informations personnelles sont partiellement masquées pour des raisons de confidentialité. Pour votre propre confidentialité et sécurité, veuillez éviter de partager des informations sensibles."
+    },
+    "sender": {
+      "title": "Expéditeur",
+      "traveler": "Voyageur",
+      "requester": "Demandeur de livraison",
+      "viewProfile": "Voir le profil",
+      "noReviews": "Aucun avis pour le moment",
+      "verified": "Vérifié",
+      "reviews": "Avis"
+    },
+    "profile": {
+      "title": "Profil",
+      "contactInfo": "Informations de contact",
+      "emailAddress": "Adresse e-mail",
+      "phoneNumber": "Numéro de téléphone",
+      "location": "Localisation"
+    },
+    "actions": {
+      "viewConversation": "Voir la conversation",
+      "acceptRequest": "Accepter la demande",
+      "contactTraveler": "Contacter le voyageur",
+      "startConversation": "Démarrer une conversation",
+      "contact": "Contacter",
+      "loading": "Chargement...",
+      "starting": "Démarrage..."
+    },
+    "status": {
+      "available": "Disponible",
+      "inProgress": "En cours",
+      "completed": "Terminé",
+      "cancelled": "Annulé"
+    },
+    "confirmModal": {
+      "acceptTitle": "Accepter la demande ?",
+      "startTitle": "Démarrer une conversation ?",
+      "acceptMessage": "Discutez avec {name} à propos de cette livraison",
+      "startMessage": "Contactez {name} à propos de cette offre",
+      "theRequester": "le demandeur",
+      "theTraveler": "le voyageur"
+    }
+  },
+  
+  "messages": {
+    "_comment": "PAGE: /messages - Page de messages/chat avec liste de conversations et interface de chat",
+    "title": "Messages",
+    "search": {
+      "placeholder": "Rechercher conversations, villes, noms...",
+      "clearFilters": "Effacer tous les filtres"
+    },
+    "filters": {
+      "deliveryType": "Type de livraison",
+      "deliveryStatus": "Statut de livraison",
+      "priceRange": "Fourchette de prix",
+      "all": "Tout",
+      "requests": "Demandes",
+      "offers": "Offres",
+      "delivered": "Livré",
+      "pending": "En attente",
+      "low": "< 5 000 FCFA",
+      "medium": "5 000 - 20 000 FCFA",
+      "high": "> 20 000 FCFA"
+    },
+    "conversations": {
+      "title": "Conversations",
+      "noConversations": "Aucune conversation pour le moment",
+      "noResults": "Aucun résultat trouvé",
+      "selectConversation": "Sélectionner une conversation",
+      "selectPrompt": "Choisissez une conversation pour commencer à échanger"
+    },
+    "status": {
+      "delivered": "Livré",
+      "deliveryDeleted": "Livraison supprimée"
+    },
+    "cardMessages": {
+      "sentOffer": "💰 A envoyé une offre",
+      "offerAccepted": "✅ Offre acceptée",
+      "offerRejected": "❌ Offre refusée",
+      "paymentConfirmation": "💳 Confirmation de paiement",
+      "deliveryConfirmed": "📦 Livraison confirmée",
+      "systemMessage": "Message système",
+      "sentCard": "📋 A envoyé une carte"
+    },
+    "bottomNav": {
+      "search": "Rechercher",
+      "messages": "Messages",
+      "post": "Publier",
+      "notifications": "Notifications",
+      "profile": "Profil"
+    }
+  },
+  "chat": {
+    "_comment": "Page de discussion/conversation individuelle - /chat/[conversationId]",
+    "status": {
+      "online": "En ligne",
+      "offline": "Hors ligne"
+    },
+    "notFound": {
+      "title": "Conversation introuvable",
+      "description": "La conversation que vous recherchez n'existe pas ou vous n'y avez pas accès.",
+      "backButton": "Retour aux messages"
+    },
+    "deliveryCard": {
+      "request": "Demande",
+      "offer": "Offre"
+    },
+    "dateSeparator": {
+      "today": "Aujourd'hui",
+      "yesterday": "Hier"
+    },
+    "typingIndicator": "en train d'écrire...",
+    "systemMessages": {
+      "requestAcceptedByYou": "Vous avez accepté la demande de livraison de {name}",
+      "requestAcceptedByOther": "{name} a accepté votre demande de livraison",
+      "offerRequestByYou": "Vous demandez l'approbation de {name} pour une offre de livraison de {fromCity}, {fromCountry} à {toCity}, {toCountry}",
+      "offerRequestByOther": "{name} demande votre approbation pour une offre de livraison",
+      "offerAccepted": "Offre acceptée ! Le prix convenu est de {price} {currency}.",
+      "offerDeclined": "L'offre de {price} {currency} a été refusée.",
+      "conversationStarted": "Conversation démarrée à propos de la livraison : {title}",
+      "deliveryDeleted": "Cette annonce a été supprimée"
+    },
+    "offerCard": {
+      "title": "Nouvelle offre",
+      "acceptedTitle": "Offre acceptée",
+      "rejectedTitle": "Offre refusée",
+      "from": "De",
+      "offered": "a proposé",
+      "agreedOn": "Vous êtes tous les deux d'accord sur",
+      "declined": "Vous avez refusé cette offre",
+      "rejectedBy": "a refusé votre offre",
+      "you": "Vous",
+      "waitingResponse": "En attente de réponse...",
+      "processing": "Traitement en cours...",
+      "acceptButton": "Accepter",
+      "declineButton": "Refuser"
+    },
+    "paymentCard": {
+      "title": "Paiement réussi",
+      "completed": "Paiement effectué",
+      "pending": "Paiement en attente",
+      "forDelivery": "pour la livraison",
+      "paidBy": "Payé par",
+      "breakdown": {
+        "deliveryFee": "Frais de livraison",
+        "platformFee": "Frais de plateforme",
+        "totalPaid": "Total payé"
+      },
+      "deliveryCode": {
+        "title": "Code de confirmation de livraison",
+        "copyButton": "Copier le code",
+        "copiedAlert": "Code copié dans le presse-papiers !",
+        "instruction": "Partagez ce code avec le voyageur lorsque votre article est livré."
+      },
+      "delivererInstructions": {
+        "title": "Instructions de livraison",
+        "paymentAmount": "Montant du paiement",
+        "platformFee": "Frais de plateforme",
+        "youReceive": "Vous recevez",
+        "step1": "Livrez l'article en toute sécurité",
+        "step2": "Demandez à {name} son code de livraison",
+        "step3": "Confirmez la livraison avec le code pour recevoir votre paiement",
+        "cautionTitle": "⚠️ Important",
+        "cautionText": "Il est impératif de procéder à une inspection minutieuse et approfondie des articles avant de les transporter. Bagami décline expressément toute responsabilité quant à la fausse déclaration, l'inexactitude ou la nature illégale des articles transportés.",
+        "termsLink": "Voir nos Conditions Générales"
+      }
+    },
+    "confirmationCard": {
+      "title": "Livraison confirmée !",
+      "status": "Statut",
+      "confirmed": "Confirmé",
+      "youConfirmed": "Vous avez confirmé la livraison",
+      "paymentReleased": "Le paiement a été versé au voyageur",
+      "paymentReleasedToWallet": "Le paiement a été versé dans votre portefeuille",
+      "grossAmount": "Montant brut",
+      "platformFee": "Frais de plateforme",
+      "netAmount": "Montant reçu",
+      "thanksForUsing": "Merci d'utiliser notre service !"
+    },
+    "buttons": {
+      "pay": "Payer",
+      "paymentProtectionTitle": "Protection du paiement",
+      "paymentProtectionDescription": "Votre paiement est <strong>protégé et sécurisé</strong> jusqu'à ce que les marchandises soient livrées avec succès.",
+      "makeOffer": "Faire une offre",
+      "confirmDelivery": "Confirmer la livraison",
+      "rate": "Noter"
+    },
+    "makeOfferModal": {
+      "title": "Faire une offre",
+      "subtitle": "Proposez votre prix",
+      "deliveryLabel": "Livraison",
+      "currentPrice": "Prix actuel :",
+      "offerPriceLabel": "Votre prix proposé",
+      "offerPricePlaceholder": "Entrez votre offre",
+      "messageLabel": "Message (Optionnel)",
+      "messagePlaceholder": "Ajoutez une note à votre offre...",
+      "cancelButton": "Annuler",
+      "sendButton": "Envoyer l'offre",
+      "sendingButton": "Envoi en cours..."
+    },
+    "messageInput": {
+      "placeholder": "Tapez votre message...",
+      "sendButton": "Envoyer"
+    },
+    "confirmDeliveryModal": {
+      "title": "Confirmer la livraison",
+      "subtitle": "Entrez le code à 6 chiffres",
+      "instruction": "🔐 Le payeur possède un code de livraison unique à 6 chiffres. Veuillez lui demander de le fournir pour finaliser la confirmation de livraison.",
+      "codeLabel": "Code de livraison",
+      "codePlaceholder": "000000",
+      "codeHint": "Entrez le code à 6 chiffres fourni par le payeur",
+      "paymentReady": "Paiement prêt",
+      "willBeReleased": "vous seront versés après confirmation",
+      "confirmButton": "Confirmer",
+      "confirming": "Confirmation en cours...",
+      "cancelButton": "Annuler",
+      "attemptsRemaining": "Il vous reste {count} tentatives avant le blocage temporaire.",
+      "cooldown30": "Trop de tentatives échouées. Veuillez réessayer dans {minutes} minutes.",
+      "cooldown60": "Trop de tentatives échouées. Veuillez réessayer dans {minutes} minutes."
+    },
+    "alerts": {
+      "deliveryConfirmed": "✅ Livraison confirmée ! Le paiement a été versé.",
+      "invalidCode": "❌ Code de livraison invalide. Veuillez vérifier et réessayer.",
+      "offerAccepted": "✅ Offre acceptée ! Veuillez procéder au paiement.",
+      "offerRejected": "L'offre a été refusée.",
+      "errorProcessingOffer": "Erreur lors du traitement de l'offre. Veuillez réessayer."
+    },
+    "profileModal": {
+      "anonymousUser": "Utilisateur anonyme",
+      "requester": "Demandeur",
+      "traveler": "Voyageur",
+      "noReviewsYet": "Pas encore d'avis",
+      "verified": "Vérifié",
+      "contactInformation": "Informations de contact",
+      "emailAddress": "Adresse e-mail",
+      "phoneNumber": "Numéro de téléphone",
+      "location": "Localisation",
+      "privacyNotice": "Les informations personnelles sont partiellement masquées pour des raisons de confidentialité. Pour votre propre confidentialité et sécurité, veuillez éviter de partager des détails sensibles.",
+      "closeButton": "Fermer",
+      "reviews": "avis"
+    },
+    "ratingModal": {
+      "title": "Noter",
+      "experienceLabel": "Comment s'est passée votre expérience ?",
+      "ratingPoor": "Mauvais",
+      "ratingFair": "Moyen",
+      "ratingGood": "Bien",
+      "ratingVeryGood": "Très bien",
+      "ratingExcellent": "Excellent",
+      "commentLabel": "Ajouter un commentaire (optionnel)",
+      "commentPlaceholder": "Partagez-en plus sur votre expérience...",
+      "characters": "caractères",
+      "cancelButton": "Annuler",
+      "submitButton": "Soumettre l'avis",
+      "submitting": "Envoi en cours...",
+      "selectRating": "Veuillez sélectionner une note",
+      "successMessage": "Avis soumis avec succès !",
+      "errorMessage": "Échec de la soumission de l'avis",
+      "networkError": "Erreur réseau. Veuillez réessayer."
+    }
+  },
+  "payment": {
+    "title": "Récapitulatif du paiement",
+    "successBanner": {
+      "title": "Paiement direct réussi !",
+      "message": "Paiement de {amount} FCFA traité via {method}"
+    },
+    "tripDetails": {
+      "deliveryRequest": "Demande de livraison",
+      "spaceOffer": "Offre d'espace"
+    },
+    "priceBreakdown": {
+      "originalPrice": "Prix initial :",
+      "amountToPay": "Montant à payer :",
+      "negotiated": "✓ Négocié"
+    },
+    "protection": {
+      "title": "🔒 Protection du paiement",
+      "messageRequest": "Votre paiement est conservé en sécurité et ne sera versé au voyageur qu'après la confirmation de la livraison.",
+      "messageOffer": "Votre paiement est conservé en sécurité et ne sera versé à l'expéditeur qu'après la confirmation de la livraison."
+    },
+    "buttons": {
+      "cancel": "Annuler",
+      "confirm": "Confirmer",
+      "processing": "Traitement..."
+    }
+  },
+  "insufficientBalance": {
+    "title": "Solde insuffisant",
+    "subtitle": "Fonds insuffisants dans le portefeuille",
+    "requiredAmount": "Montant requis :",
+    "currentBalance": "Solde actuel :",
+    "shortfall": "Manque :",
+    "howItWorks": {
+      "title": "Comment fonctionne le paiement direct",
+      "step1": "Votre solde actuel ({balance} {currency}) sera utilisé",
+      "step2": "Vous paierez le manque ({shortfall} {currency}) via votre mode de paiement choisi",
+      "step3": "Les deux paiements apparaîtront dans votre historique de transactions"
+    },
+    "buttons": {
+      "payDirectly": "Payer directement",
+      "goToWallet": "Aller au portefeuille"
+    }
+  },
+  
+  "directPayment": {
+    "title": "Paiement direct",
+    "paymentBreakdown": {
+      "title": "Détails du paiement",
+      "subtitle": "Vérifiez les détails de votre paiement",
+      "totalRequired": "Montant total requis",
+      "totalRequiredDesc": "Paiement complet pour cette livraison",
+      "yourBalance": "Votre solde actuel",
+      "yourBalanceDesc": "Sera déduit de votre portefeuille",
+      "amountToPay": "Montant à payer maintenant",
+      "amountToPayDesc": "Solde restant après déduction du portefeuille"
+    },
+    "howItWorks": {
+      "title": "Comment ça marche",
+      "step1": "Votre solde de portefeuille de {balance} sera utilisé en premier",
+      "step2": "Vous paierez le reste de {shortfall} via votre mode de paiement choisi",
+      "step3": "Les deux paiements apparaîtront dans votre historique de transactions"
+    },
+    "selectMethod": {
+      "title": "Sélectionner le mode de paiement",
+      "mobileMoney": {
+        "name": "Mobile Money",
+        "description": "MTN, Orange, Moov"
+      },
+      "card": {
+        "name": "Paiement par carte",
+        "description": "Visa, Mastercard"
+      },
+      "bankTransfer": {
+        "name": "Virement bancaire",
+        "description": "Virement bancaire direct"
+      }
+    },
+    "notices": {
+      "gatewayPending": {
+        "title": "Intégration de la passerelle de paiement en attente",
+        "message": "Le paiement sera validé instantanément pour le moment. L'intégration réelle de la passerelle de paiement sera ajoutée bientôt."
+      }
+    },
+    "buttons": {
+      "cancel": "Annuler",
+      "pay": "Payer {amount}",
+      "processing": "Traitement en cours..."
+    },
+    "errors": {
+      "paymentFailed": "Le paiement a échoué. Veuillez réessayer.",
+      "invalidParameters": "Paramètres de paiement invalides"
+    }
+  },
+  
+  "notifications": {
+    "title": "Notifications",
+    "markAllAsRead": "Tout marquer comme lu",
+    "empty": {
+      "title": "Aucune notification pour le moment",
+      "message": "Nous vous informerons lorsqu'il y aura des mises à jour concernant vos livraisons et alertes."
+    },
+    "signIn": {
+      "title": "Veuillez vous connecter",
+      "message": "Vous devez être authentifié pour voir les notifications."
+    },
+    "types": {
+      "alertMatch": {
+        "requestTitle": "📦 Nouvelle demande de livraison correspondant à votre alerte",
+        "offerTitle": "✈️ Nouvelle offre d'espace correspondant à votre alerte"
+      },
+      "transaction": {
+        "walletTopUp": "💰 Recharge du portefeuille",
+        "refundReceived": "💰 Remboursement reçu",
+        "paymentReceived": "💰 Paiement reçu",
+        "walletCredited": "💰 Portefeuille crédité",
+        "moneyReceived": "💰 Argent reçu",
+        "withdrawalRequested": "📤 Retrait demandé",
+        "paymentSent": "💸 Paiement envoyé",
+        "moneySent": "💸 Argent envoyé",
+        "directPaymentCompleted": "💳 Paiement direct effectué",
+        "paymentProcessed": "💸 Paiement traité",
+        "withdrawalApproved": "✅ Retrait approuvé",
+        "withdrawalRejected": "❌ Retrait rejeté",
+        "withdrawalApprovedMessage": "Votre retrait de {amount} {currency} a été approuvé et traité",
+        "withdrawalRejectedMessage": "Votre retrait de {amount} {currency} a été rejeté. Les fonds ont été remboursés dans votre portefeuille. Raison : {reason}"
+      },
+      "review": {
+        "title": "Nouvel avis reçu",
+        "withComment": "{name} vous a donné {rating} étoiles : \"{comment}\"",
+        "withoutComment": "{name} vous a donné {rating} étoiles"
+      },
+      "ratingReminder": {
+        "title": "⭐ Notez votre partenaire de livraison",
+        "message": "Cela fait {time} que votre livraison a été complétée. Comment s'est passée votre expérience avec {name} ? Partagez votre avis !"
+      },
+      "update": {
+        "profileUpdated": "📝 Profil mis à jour",
+        "emailUpdated": "Vos informations de profil ont été mises à jour : Adresse e-mail",
+        "phoneUpdated": "Vos informations de profil ont été mises à jour : Numéro de téléphone",
+        "passwordChanged": "🔒 Mot de passe modifié",
+        "passwordChangedMessage": "Votre mot de passe a été mis à jour avec succès. Si vous n'avez pas effectué ce changement, veuillez contacter le support immédiatement.",
+        "profileFieldsUpdated": "Vos informations de profil ont été mises à jour : {fields}"
+      },
+      "idVerification": {
+        "approved": "✅ Vérification d'identité approuvée",
+        "rejected": "❌ Vérification d'identité rejetée",
+        "approvedMessageNationalId": "Votre carte d'identité nationale a été vérifiée et approuvée. Vous pouvez maintenant accéder à toutes les fonctionnalités de la plateforme.",
+        "approvedMessagePassport": "Votre passeport a été vérifié et approuvé. Vous pouvez maintenant accéder à toutes les fonctionnalités de la plateforme.",
+        "rejectedMessageNationalId": "La vérification de votre carte d'identité nationale a été rejetée. Veuillez télécharger un document d'identité clair et valide et réessayer.",
+        "rejectedMessagePassport": "La vérification de votre passeport a été rejetée. Veuillez télécharger un document d'identité clair et valide et réessayer."
+      }
+    }
+  },
+  "alertsPage": {
+    "title": "Mes alertes",
+    "newAlert": "Nouvelle Alerte",
+    "loading": "Chargement des alertes...",
+    "deleteAlert": "Supprimer l'alerte",
+    "emptyState": {
+      "title": "Aucune Alerte",
+      "description": "Soyez notifié instantanément lorsque des livraisons correspondant à vos préférences sont publiées",
+      "createButton": "Créer Première Alerte"
+    },
+    "alertTypes": {
+      "requests": "Demandes de Livraison",
+      "offers": "Offres d'Espace",
+      "all": "Toutes les Livraisons"
+    },
+    "errors": {
+      "deleteFailed": "Échec de la suppression de l'alerte",
+      "deleteError": "Erreur lors de la suppression de l'alerte"
+    }
+  },
+  "reviewsPage": {
+    "title": "Mes Avis",
+    "loading": "Chargement...",
+    "review": "avis",
+    "reviews": "avis",
+    "totalReviews": "Total des Avis",
+    "avgRating": "Note Moyenne",
+    "fiveStarReviews": "Avis 5 Étoiles",
+    "allReviews": "Tous les Avis",
+    "allRatings": "Toutes les Notes",
+    "stars": "Étoiles",
+    "deliveryRequest": "Demande de Livraison",
+    "spaceOffer": "Offre d'Espace",
+    "emptyState": {
+      "title": "Aucun Avis",
+      "noFilter": "Vous n'avez encore reçu aucun avis. Complétez des livraisons pour commencer à recevoir des avis !",
+      "withFilter": "Aucun avis {rating} étoiles trouvé. Essayez un autre filtre."
+    }
+  },
+  "walletPage": {
+    "title": "Mon Portefeuille",
+    "loading": "Chargement du portefeuille...",
+    "availableBalance": "Solde Disponible",
+    "hideBalance": "Masquer le solde",
+    "showBalance": "Afficher le solde",
+    "pending": "en attente",
+    "addMoney": "Ajouter de l'Argent",
+    "withdraw": "Retirer",
+    "credit": "Crédit",
+    "debit": "Débit",
+    "transactions": "Transactions",
+    "all": "Tout",
+    "income": "Revenus",
+    "expenses": "Dépenses",
+    "paymentMethods": "Méthodes de Paiement",
+    "add": "Ajouter",
+    "mobileMoney": "Mobile Money",
+    "orangeMoney": "Orange Money",
+    "primary": "Principal",
+    "status": {
+      "completed": "Terminé",
+      "pending": "En Attente",
+      "failed": "Échoué"
+    },
+    "categories": {
+      "deliveryPayment": "Paiement de Livraison",
+      "directPayment": "Paiement Direct",
+      "platformFee": "Frais de Plateforme",
+      "withdrawal": "Retrait",
+      "deposit": "Dépôt",
+      "refund": "Remboursement",
+      "transfer": "Transfert",
+      "topUp": "Recharge",
+      "fee": "Frais",
+      "serviceFee": "Frais de Service",
+      "commission": "Commission",
+      "bonus": "Bonus",
+      "deliveryIncome": "Revenu de Livraison"
+    },
+    "descriptions": {
+      "paymentForDeliveryFromTo": "Paiement pour livraison de {from} à {to}",
+      "paymentForTravelOfferFromTo": "Paiement pour offre de voyage de {from} à {to}",
+      "paymentReceivedForTravelOffer": "Paiement reçu pour offre de voyage : {title}",
+      "paymentForDeliveryOffer": "Paiement pour offre de livraison de {from} à {to}",
+      "paymentFrom": "Paiement de {name}",
+      "paymentTo": "Paiement à {name}",
+      "withdrawalRequest": "Demande de retrait",
+      "withdrawalTo": "Retrait vers {destination}",
+      "withdrawalRejectedRefunded": "Retrait rejeté - Montant remboursé",
+      "walletTopUp": "Recharge du portefeuille",
+      "walletTopUpFromBagami": "Recharge du portefeuille par Bagami",
+      "walletTopUpVia": "Recharge du portefeuille via {method}",
+      "directPaymentFrom": "Paiement direct de {name}",
+      "directPaymentTo": "Paiement direct à {name}",
+      "directPaymentForDelivery": "Paiement direct pour livraison : {title}",
+      "walletPaymentForDelivery": "Paiement portefeuille pour livraison : {title}",
+      "paymentReceivedForDelivery": "Paiement reçu pour livraison : {title}",
+      "moneyReceivedFrom": "Argent reçu de {name}",
+      "moneySentTo": "Argent envoyé à {name}",
+      "platformFeeFor": "Frais de plateforme pour {item}",
+      "refundFor": "Remboursement pour {item}",
+      "serviceFee": "Frais de service"
+    },
+    "emptyState": {
+      "title": "Aucune Transaction Trouvée",
+      "allMessage": "Votre historique de transactions apparaîtra ici",
+      "creditMessage": "Aucune transaction de revenu trouvée",
+      "debitMessage": "Aucune transaction de dépense trouvée"
+    },
+    "verificationModal": {
+      "title": "Vérification d'Identité Requise",
+      "description": "Pour retirer des fonds de votre portefeuille, vous devez vérifier votre identité. Ceci est requis pour des raisons de sécurité et pour se conformer aux réglementations financières.",
+      "whatYouNeed": "Ce dont vous avez besoin :",
+      "requirement1": "Une pièce d'identité valide émise par le gouvernement",
+      "requirement2": "Photo claire de votre document",
+      "requirement3": "La vérification prend généralement 24 à 48 heures",
+      "cancel": "Annuler",
+      "verifyId": "Vérifier l'Identité"
+    },
+    "transactionDetails": {
+      "title": "Détails de la Transaction",
+      "received": "Reçu",
+      "sent": "Envoyé",
+      "detailsSection": "Détails",
+      "description": "Description",
+      "category": "Catégorie",
+      "dateTime": "Date et Heure",
+      "transactionId": "ID de Transaction",
+      "referenceId": "ID de Référence",
+      "copyId": "Copier l'ID",
+      "copyReferenceId": "Copier l'ID de Référence",
+      "copiedToClipboard": "Copié dans le presse-papiers !",
+      "paymentBreakdown": "Détail du Paiement",
+      "walletPayment": "Paiement Portefeuille",
+      "directPayment": "Paiement Direct",
+      "paymentMethod": "Méthode de Paiement",
+      "additionalInfo": "Informations Supplémentaires",
+      "reason": "Raison",
+      "close": "Fermer",
+      "share": "Partager"
+    },
+    "withdrawSuccess": "Demande de retrait soumise avec succès ! Le transfert vers le numéro mobile money est en cours.",
+    "addMoneySuccess": "Ajout de {amount} à votre portefeuille réussi !",
+    "addMoneyModal": {
+      "title": "Ajouter de l'Argent",
+      "subtitle": "Recharger votre portefeuille",
+      "amountLabel": "Montant à Ajouter",
+      "amountPlaceholder": "Entrez le montant",
+      "quickSelect": "Sélection Rapide",
+      "paymentMethodLabel": "Méthode de Paiement",
+      "mobileMoney": "Mobile Money",
+      "mobileMoneyDesc": "MTN, Orange, Moov",
+      "cardPayment": "Paiement par Carte",
+      "cardPaymentDesc": "Visa, Mastercard",
+      "bankTransfer": "Virement Bancaire",
+      "bankTransferDesc": "Transfert direct",
+      "cancel": "Annuler",
+      "addMoney": "Ajouter de l'Argent",
+      "processing": "Traitement en cours...",
+      "errors": {
+        "invalidAmount": "Veuillez entrer un montant valide",
+        "minAmount": "Le montant minimum est de 100 FCFA",
+        "maxAmount": "Le montant maximum est de 10 000 000 FCFA par transaction"
+      }
+    },
+    "withdrawModal": {
+      "title": "Retirer des Fonds",
+      "subtitle": "Demander un retrait",
+      "availableBalance": "Solde Disponible",
+      "amountLabel": "Montant du Retrait",
+      "amountPlaceholder": "Entrez le montant (min. 1 000)",
+      "minAmountInfo": "Retrait minimum : 1 000 FCFA",
+      "phoneLabel": "Numéro Mobile Money",
+      "phonePlaceholder": "70 00 00 00",
+      "phoneInfo": "Entrez votre numéro mobile money",
+      "processingTimeTitle": "Délai de Traitement",
+      "processingTimeDesc": "Les fonds seront envoyés sur votre compte mobile money dans un délai de <strong>1 à 2 heures.</strong>",
+      "internationalTitle": "Transferts Internationaux",
+      "internationalDesc": "Les retraits en dehors de la zone FCFA peuvent entraîner des frais de conversion de devises par votre fournisseur de mobile money.",
+      "cancel": "Annuler",
+      "request": "Demander",
+      "processing": "Traitement en cours...",
+      "errors": {
+        "invalidAmount": "Veuillez entrer un montant valide",
+        "minAmount": "Le montant minimum de retrait est de 1 000 FCFA",
+        "insufficientBalance": "Solde insuffisant. Votre solde actuel est de {balance} FCFA",
+        "phoneRequired": "Veuillez entrer votre numéro mobile money",
+        "invalidPhone": "Veuillez entrer un numéro de téléphone valide"
+      }
+    }
+  },
+  "authPage": {
+    "welcome": {
+      "login": "Bienvenue ! Connectez-vous avec votre communauté pour des livraisons intelligentes et flexibles.",
+      "signup": "Rejoignez Bagami - Transformez chaque voyage en une opportunité de vous connecter, partager et soutenir votre communauté."
+    },
+    "tabs": {
+      "signIn": "Connexion",
+      "signUp": "Inscription"
+    },
+    "labels": {
+      "signInWith": "Se connecter avec",
+      "contactInfo": "Informations de Contact",
+      "fullName": "Nom Complet",
+      "phoneNumber": "Numéro",
+      "email": "Email",
+      "password": "Mot de Passe",
+      "rememberMe": "Se souvenir de moi",
+      "searchCountries": "Rechercher des pays..."
+    },
+    "placeholders": {
+      "phoneNumber": "Entrez votre numéro",
+      "email": "votre.email@exemple.com",
+      "password": "Entrez votre mot de passe",
+      "fullName": "Entrez votre nom complet"
+    },
+    "buttons": {
+      "signIn": "Se Connecter",
+      "signUp": "S'inscrire",
+      "signingIn": "Connexion en cours...",
+      "creatingAccount": "Création du compte...",
+      "forgotPassword": "Mot de passe oublié ?"
+    },
+    "terms": {
+      "agreeText": "J'accepte les",
+      "terms": "Conditions d'Utilisation",
+      "and": "et la",
+      "policy": "Politique de Confidentialité"
+    },
+    "or": "Ou continuer avec",
+    "socialSignIn": {
+      "google": {
+        "signIn": "Se connecter avec Google",
+        "signUp": "S'inscrire avec Google",
+        "signingIn": "Connexion en cours..."
+      },
+      "facebook": {
+        "signIn": "Se connecter avec Facebook",
+        "signUp": "S'inscrire avec Facebook",
+        "signingIn": "Connexion en cours..."
+      }
+    },
+    "hints": {
+      "otpVerification": "Ceci sera utilisé pour la vérification OTP",
+      "noCountriesFound": "Aucun pays trouvé"
+    },
+    "footer": "© 2025 Bagami - Livraisons Intelligentes Alimentées par la Communauté. Tous droits réservés.",
+    "validationErrors": {
+      "contactMethodRequired": "La méthode de contact est requise",
+      "phoneInvalid": "Veuillez entrer un numéro de téléphone valide",
+      "phoneRequired": "Le numéro de téléphone est requis",
+      "emailInvalid": "Email invalide",
+      "emailRequired": "L'email est requis",
+      "countryCodeRequired": "Le code pays est requis",
+      "passwordMin": "Le mot de passe doit contenir au moins 6 caractères",
+      "passwordRequired": "Le mot de passe est requis",
+      "fullNameRequired": "Le nom complet est requis",
+      "termsRequired": "Vous devez accepter les Conditions de Bagami",
+      "termsAcceptanceRequired": "L'acceptation des conditions est requise"
+    },
+    "errors": {
+      "signupFailed": "L'inscription a échoué. Veuillez réessayer.",
+      "loginFailed": "La connexion a échoué. Veuillez vérifier vos identifiants et réessayer.",
+      "phoneExists": "Ce numéro de téléphone est déjà enregistré",
+      "emailExists": "Cet email est déjà enregistré",
+      "invalidCredentials": "Identifiants invalides",
+      "networkError": "Erreur réseau. Veuillez vérifier votre connexion."
+    },
+    "success": {
+      "verificationSent": "Code de vérification envoyé ! Veuillez vérifier votre téléphone.",
+      "accountCreated": "Compte créé avec succès !"
+    },
+    "forgotPassword": {
+      "backToLogin": "Retour à la connexion",
+      "title": "Mot de Passe Oublié",
+      "subtitle": "Entrez votre numéro de téléphone ou votre adresse email et nous vous aiderons à réinitialiser votre mot de passe.",
+      "resetVia": "Réinitialiser le mot de passe via",
+      "tabPhone": "Numéro",
+      "tabEmail": "Email",
+      "enterPhonePlaceholder": "Entrez votre numéro de téléphone",
+      "enterEmailPlaceholder": "votre.email@exemple.com",
+      "searchCountries": "Rechercher des pays...",
+      "sending": "Envoi en cours...",
+      "receiveCode": "Recevoir le code",
+      "rememberPassword": "Vous vous souvenez de votre mot de passe ?",
+      "signInInstead": "Se connecter",
+      "smsSent": "SMS Envoyé !",
+      "emailSent": "Email Envoyé !",
+      "smsSentMessage": "Nous avons envoyé un code de vérification à",
+      "emailSentMessage": "Nous avons envoyé des instructions de réinitialisation de mot de passe à",
+      "redirectMessage": "Vous serez redirigé pour entrer le code de vérification dans un instant...",
+      "checkEmail": "Veuillez vérifier votre email et suivre les instructions pour réinitialiser votre mot de passe.",
+      "checkSpam": "N'oubliez pas de vérifier votre dossier spam si vous ne voyez pas l'email.",
+      "backToLoginButton": "Retour à la Connexion",
+      "userNotFoundAlert": "⚠️ {message}\n\nVeuillez vérifier votre {contactType} ou créer un nouveau compte si vous n'en avez pas.",
+      "phoneNumber": "numéro de téléphone",
+      "emailAddress": "adresse email"
+    },
+    "otpVerification": {
+      "back": "Retour",
+      "titlePhone": "Vérifier le Numéro de Téléphone",
+      "titleEmail": "Vérifier l'Email",
+      "subtitleSent": "Nous avons envoyé un code de vérification à 6 chiffres à",
+      "hintRequest": "Vous pouvez demander un nouveau code si nécessaire",
+      "enterCode": "Entrez le code de vérification",
+      "sendNewCode": "Envoyer un Nouveau Code",
+      "sendingNewCode": "Envoi du Nouveau Code...",
+      "requestNewCodeIn": "Demander un nouveau code dans {seconds}s",
+      "verifyCode": "Vérifier le Code",
+      "verifying": "Vérification en cours...",
+      "didNotReceive": "Vous n'avez pas reçu le code ?",
+      "changePhone": "Changer le numéro de téléphone",
+      "changeEmail": "Changer l'email",
+      "resendSuccess": "Nouveau code de vérification envoyé avec succès !",
+      "resendFailed": "Échec de l'envoi du code de vérification"
+    },
+    "newPassword": {
+      "back": "Retour",
+      "title": "Définir un Nouveau Mot de Passe",
+      "subtitle": "Entrez votre nouveau mot de passe pour",
+      "newPasswordLabel": "Nouveau Mot de Passe",
+      "newPasswordPlaceholder": "Entrez votre nouveau mot de passe",
+      "strengthWeak": "Faible",
+      "strengthFair": "Passable",
+      "strengthGood": "Bon",
+      "strengthStrong": "Fort",
+      "requirement8Chars": "8+ caractères",
+      "requirementUppercase": "Lettre majuscule",
+      "requirementLowercase": "Lettre minuscule",
+      "requirementNumber": "Chiffre",
+      "requirementSpecial": "Caractère spécial",
+      "updatePassword": "Mettre à Jour le Mot de Passe",
+      "updatingPassword": "Mise à Jour du Mot de Passe..."
+    }
+  },
+  
+  "contact": {
+    "_comment": "PAGE: /contact - Page de contact Bagami",
+    "title": "Contacter Bagami",
+    "infoTitle": "Nous sommes là pour vous aider !",
+    "infoMessage": "Vous avez une question, une suggestion ou besoin d'assistance ? Envoyez-nous un message et notre équipe vous répondra dans les plus brefs délais.",
+    "nameLabel": "Votre nom",
+    "namePlaceholder": "Entrez votre nom complet",
+    "emailLabel": "Adresse e-mail",
+    "emailPlaceholder": "votre.email@exemple.com",
+    "subjectLabel": "Sujet",
+    "subjectPlaceholder": "De quoi s'agit-il ?",
+    "messageLabel": "Message",
+    "messagePlaceholder": "Parlez-nous de votre demande...",
+    "messageHint": "Veuillez fournir autant de détails que possible",
+    "sendButton": "Envoyer le message",
+    "sending": "Envoi en cours...",
+    "successTitle": "Message envoyé !",
+    "successMessage": "Merci de nous avoir contactés. Nous vous répondrons dans les 24 heures.",
+    "redirecting": "Redirection en cours...",
+    "responseTime": "Nous répondons généralement dans les 24 heures",
+    "error": "Échec de l'envoi du message. Veuillez réessayer."
+  },
+
+  "homepage": {
+    "_comment": "PAGE: /homepage - Page d'accueil principale authentifiée",
+    "hero": {
+      "title": "Livraison intelligente.",
+      "titleGradient": "Propulsée par la communauté.",
+      "subtitle": "Connectez-vous avec des voyageurs sur des itinéraires existants pour envoyer des colis à prix abordable.",
+      "subtitleBold": "Économisez de l'argent tout en soutenant la livraison durable.",
+      "postDeliveries": "Publier des livraisons",
+      "browseListings": "Parcourir les annonces actives",
+      "affordableRates": "Tarifs abordables",
+      "saveUpTo": "Économisez jusqu'à 70%",
+      "protectedPayments": "Paiements protégés",
+      "guaranteed": "100% garanti",
+      "trustedCommunity": "Communauté de confiance",
+      "verifiedMembers": "Membres vérifiés"
+    },
+    "howItWorks": {
+      "title": "Commencer est",
+      "titleGradient": "rapide et facile",
+      "subtitle": "Que vous ayez besoin d'envoyer un colis ou que vous ayez de l'espace en voyageant, rejoignez des milliers de personnes qui facilitent les livraisons",
+      "step1": {
+        "title": "Publiez votre annonce",
+        "needDelivery": "Besoin de livraison ?",
+        "needDeliveryDesc": "Publiez les détails du colis et la destination.",
+        "traveling": "Vous voyagez ?",
+        "travelingDesc": "Partagez votre itinéraire et l'espace disponible."
+      },
+      "step2": {
+        "title": "Connectez & négociez",
+        "description": "Soyez mis en relation avec des membres vérifiés de la communauté. Discutez directement pour convenir des détails, du prix et organiser l'enlèvement/livraison."
+      },
+      "step3": {
+        "title": "Finalisez & notez",
+        "description": "Finalisez avec des paiements sécurisés et un suivi de livraison. Laissez des avis pour aider à renforcer la confiance dans notre communauté."
+      }
+    },
+    "winWin": {
+      "title": "Tout le monde y gagne",
+      "titleGradient": "avec Bagami",
+      "subtitle": "Les voyageurs compensent leurs frais de voyage tandis que les expéditeurs bénéficient de tarifs de livraison abordables. Une plateforme mutuellement bénéfique qui crée de la valeur pour tous !",
+      "senders": {
+        "title": "Expéditeurs de Colis",
+        "description": "Envoyez des articles de toute taille à des tarifs",
+        "savingHighlight": "jusqu'à 70% inférieurs",
+        "descriptionContinued": "aux coursiers traditionnels ! Des solutions de livraison rapides, fiables et écologiques à portée de main.",
+        "cta": "Envoyer un colis"
+      },
+      "travelers": {
+        "title": "Voyageurs",
+        "description": "Gagnez un",
+        "earningHighlight": "revenu supplémentaire",
+        "descriptionContinued": "sur les trajets que vous faites déjà ! Que ce soit pour vous déplacer ou voyager, aidez les autres tout en couvrant vos propres frais de voyage.",
+        "cta": "Commencer à gagner"
+      }
+    },
+    "whyChoose": {
+      "title": "Pourquoi choisir",
+      "titleGradient": "Bagami ?",
+      "feature1": {
+        "title": "Membres satisfaits",
+        "description": "Rejoignez des milliers d'utilisateurs actifs qui font confiance à Bagami pour leurs besoins de livraison et leurs opportunités de revenus."
+      },
+      "feature2": {
+        "title": "Manipulation soignée",
+        "description": "Vos articles sont traités avec un soin exceptionnel. Notre taux de livraison réussie de 99,99% parle de lui-même."
+      },
+      "feature3": {
+        "title": "Axé sur la communauté",
+        "description": "Construire des connexions significatives grâce à l'entraide. Tout le monde aide tout le monde à prospérer ensemble."
+      },
+      "feature4": {
+        "title": "Support réactif",
+        "description": "Des personnes réelles prêtes à vous aider. Obtenez rapidement des réponses à vos questions de notre équipe d'assistance dédiée."
+      }
+    },
+    "trustSecurity": {
+      "title": "Votre sécurité est notre",
+      "titleGradient": "priorité",
+      "subtitle": "Nous avons construit Bagami avec la sécurité au cœur. Chaque transaction est protégée, chaque utilisateur est vérifié et chaque livraison est suivie.",
+      "securePayments": {
+        "title": "Paiements sécurisés",
+        "description": "Paiement retenu jusqu'à confirmation de livraison réussie"
+      },
+      "verifiedUsers": {
+        "title": "Utilisateurs vérifiés",
+        "description": "Tous les membres passent par une vérification d'identité"
+      },
+      "ratings": {
+        "title": "Notes & avis",
+        "description": "Confiance communautaire grâce à des retours transparents"
+      },
+      "deliveryTracking": {
+        "title": "Suivi de livraison",
+        "description": "Suivi en temps réel des colis"
+      },
+      "support": {
+        "title": "Support 24/7",
+        "description": "Nous sommes toujours là pour vous aider"
+      },
+      "encryption": {
+        "title": "Cryptage des données",
+        "description": "Vos données sont entièrement cryptées"
+      },
+      "satisfaction": {
+        "title": "99,99% de Satisfaction",
+        "description": "Basé sur des avis vérifiés",
+        "rated": "Noté",
+        "successRate": "Taux de réussite",
+        "testimonial": "La plateforme Bagami a transformé ma façon d'envoyer des colis ! Connexions rapides avec des voyageurs fiables et toute l'expérience était fluide. Je recommande absolument à tout le monde !",
+        "testimonialAuthor": "- Sarah T.",
+        "lowerCost": "Coût réduit",
+        "fastMatching": "Rapide",
+        "matching": "Correspondance"
+      }
+    },
+    "finalCta": {
+      "title": "Rejoignez la communauté Bagami",
+      "subtitle": "Faites partie d'un réseau en pleine croissance où les voisins s'entraident, économisent de l'argent tout en créant des liens.",
+      "cta": "Commencer votre expérience Bagami"
+    },
+    "bottomNav": {
+      "search": "Rechercher",
+      "messages": "Messages",
+      "post": "Publier",
+      "notifications": "Notifications",
+      "profile": "Profil"
+    }
+  },
+  "downloadPage": {
+    "tagline": "Votre Réseau de Livraison Mondial",
+    "downloadNow": "Télécharger Maintenant",
+    "downloadOn": "Télécharger sur",
+    "getItOn": "DISPONIBLE SUR",
+    "availableOn": "Disponible sur iOS et Android",
+    "allRightsReserved": "Tous droits réservés.",
+    "features": {
+      "trusted": "Communauté de Confiance",
+      "secure": "Paiements Sécurisés",
+      "fast": "Livraison Rapide",
+      "global": "Réseau Mondial"
+    }
+  }
+}
+
+
+
+

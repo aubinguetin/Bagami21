@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { 
   X,
   Package,
@@ -10,6 +10,7 @@ import {
   Scale
 } from 'lucide-react';
 import { getCountriesList, getCitiesByCountry, searchCitiesByCountry } from '@/data/locations';
+import { useLocale, useT } from '@/lib/i18n-helpers';
 
 // SearchableSelect component with optimization
 function SearchableSelect({ 
@@ -34,6 +35,7 @@ function SearchableSelect({
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedTerm, setDebouncedTerm] = useState('');
+  const dropdownRef = useRef<HTMLDivElement>(null);
   
   // Debounce search term for better performance
   useEffect(() => {
@@ -42,6 +44,25 @@ function SearchableSelect({
     }, 300);
     return () => clearTimeout(timer);
   }, [searchTerm]);
+
+  // Handle click outside to close dropdown
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+        setSearchTerm('');
+        setDebouncedTerm('');
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isOpen]);
 
   // Memoized filtering for optimal performance
   const filteredOptions = useMemo(() => {
@@ -74,7 +95,7 @@ function SearchableSelect({
   }, [onChange]);
   
   return (
-    <div className="relative">
+    <div className="relative" ref={dropdownRef}>
       <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
       <div className="relative">
         <button
@@ -152,6 +173,7 @@ function CitySearchableSelect({
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedTerm, setDebouncedTerm] = useState('');
+  const dropdownRef = useRef<HTMLDivElement>(null);
   
   // Ultra-fast debounce for Trie-based instant search
   useEffect(() => {
@@ -160,6 +182,25 @@ function CitySearchableSelect({
     }, 50); // Trie search is so fast we can use minimal debounce
     return () => clearTimeout(timer);
   }, [searchTerm]);
+
+  // Handle click outside to close dropdown
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+        setSearchTerm('');
+        setDebouncedTerm('');
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isOpen]);
 
   // High-performance Trie-based city search
   const cities = useMemo(() => {
@@ -193,7 +234,7 @@ function CitySearchableSelect({
   }, []);
   
   return (
-    <div className="relative">
+    <div className="relative" ref={dropdownRef}>
       <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
       <div className="relative">
         <button
@@ -268,8 +309,9 @@ interface PostModalProps {
 export function PostModal({ isOpen, onClose, editingDelivery, onSuccess }: PostModalProps) {
   const [postType, setPostType] = useState<'delivery' | 'travel'>('delivery');
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const countries = getCountriesList();
+  const locale = useLocale();
+  const countries = getCountriesList(locale);
+  const { postModal } = useT();
 
   const [formData, setFormData] = useState(() => {
     if (editingDelivery) {
@@ -341,7 +383,7 @@ export function PostModal({ isOpen, onClose, editingDelivery, onSuccess }: PostM
       const result = await response.json();
 
       if (response.ok) {
-        alert(`${editingDelivery ? 'Updated' : 'Posted'} successfully!`);
+        alert(editingDelivery ? postModal('messages.updated') : postModal('messages.posted'));
         onSuccess?.();
         onClose();
         
@@ -362,11 +404,11 @@ export function PostModal({ isOpen, onClose, editingDelivery, onSuccess }: PostM
           });
         }
       } else {
-        alert(`Error: ${result.error}`);
+        alert(postModal('messages.error').replace('{message}', result.error));
       }
     } catch (error) {
       console.error('❌ Network error:', error);
-      alert('Network error. Please try again.');
+      alert(postModal('messages.networkError'));
     } finally {
       setIsSubmitting(false);
     }
@@ -387,12 +429,12 @@ export function PostModal({ isOpen, onClose, editingDelivery, onSuccess }: PostM
               <div>
                 <h2 className="text-xl font-bold">
                   {editingDelivery 
-                    ? `Edit ${postType === 'delivery' ? 'Request' : 'Offer'}`
-                    : `${postType === 'delivery' ? 'Request Delivery' : 'Offer Space'}`
+                    ? (postType === 'delivery' ? postModal('delivery.editTitle') : postModal('travel.editTitle'))
+                    : (postType === 'delivery' ? postModal('delivery.title') : postModal('travel.title'))
                   }
                 </h2>
                 <p className="text-white/80 text-sm">
-                  {postType === 'delivery' ? 'Find someone to deliver your items' : 'Help others by carrying their items'}
+                  {postType === 'delivery' ? postModal('delivery.subtitle') : postModal('travel.subtitle')}
                 </p>
               </div>
             </div>
@@ -421,10 +463,10 @@ export function PostModal({ isOpen, onClose, editingDelivery, onSuccess }: PostM
                   <Package className={`w-5 h-5 ${postType === 'delivery' ? 'text-orange-600' : 'text-gray-500'}`} />
                   <div className="text-left">
                     <h3 className={`font-medium text-sm ${postType === 'delivery' ? 'text-orange-800' : 'text-gray-700'}`}>
-                      Need Delivery
+                      {postModal('postType.needDelivery')}
                     </h3>
                     <p className={`text-xs ${postType === 'delivery' ? 'text-orange-600' : 'text-gray-500'}`}>
-                      Send items
+                      {postModal('postType.sendItems')}
                     </p>
                   </div>
                 </div>
@@ -442,10 +484,10 @@ export function PostModal({ isOpen, onClose, editingDelivery, onSuccess }: PostM
                   <Plane className={`w-5 h-5 ${postType === 'travel' ? 'text-blue-600' : 'text-gray-500'}`} />
                   <div className="text-left">
                     <h3 className={`font-medium text-sm ${postType === 'travel' ? 'text-blue-800' : 'text-gray-700'}`}>
-                      Offer Space
+                      {postModal('postType.offerSpace')}
                     </h3>
                     <p className={`text-xs ${postType === 'travel' ? 'text-blue-600' : 'text-gray-500'}`}>
-                      Carry items
+                      {postModal('postType.carryItems')}
                     </p>
                   </div>
                 </div>
@@ -475,13 +517,13 @@ export function PostModal({ isOpen, onClose, editingDelivery, onSuccess }: PostM
                         className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-400 focus:border-transparent bg-white"
                         required
                       >
-                        <option value="">Select type</option>
-                        <option value="documents">Documents</option>
-                        <option value="electronics">Electronics</option>
-                        <option value="clothing">Clothing</option>
-                        <option value="food">Food/Consumables</option>
-                        <option value="gifts">Gifts</option>
-                        <option value="other">Other</option>
+                        <option value="">{postModal('itemDetails.itemTypePlaceholder')}</option>
+                        <option value="documents">{postModal('itemDetails.itemTypes.documents')}</option>
+                        <option value="electronics">{postModal('itemDetails.itemTypes.electronics')}</option>
+                        <option value="clothing">{postModal('itemDetails.itemTypes.clothing')}</option>
+                        <option value="food">{postModal('itemDetails.itemTypes.food')}</option>
+                        <option value="gifts">{postModal('itemDetails.itemTypes.gifts')}</option>
+                        <option value="other">{postModal('itemDetails.itemTypes.other')}</option>
                       </select>
                     </div>
                     
